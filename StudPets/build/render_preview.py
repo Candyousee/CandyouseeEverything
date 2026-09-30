@@ -269,6 +269,8 @@ def main():
             else:
                 indices = range(len(frames))
             for i in indices:
+                if mode == "strip" and os.path.exists(os.path.join(out_dir, f"{pet['name']}__{anim['name']}__{i:04d}.png")):
+                    continue  # resume after an interrupted run
                 pose_pet(objs, base, frames[i])
                 if mode == "sheet":
                     name = f"{pet['name']}_{anim['name']}.png"
