@@ -186,7 +186,7 @@ local function makeModel(R, set, origin, editorRig)
 		part.Size = v3(p.size)
 		part.CFrame = origin * p.cf
 		part.Color = Color3.fromRGB(p.color[1], p.color[2], p.color[3])
-		part.Material = Enum.Material.Plastic
+		part.Material = if p.neon then Enum.Material.Neon else Enum.Material.Plastic
 		part.TopSurface = if p.studs then Enum.SurfaceType.Studs else Enum.SurfaceType.Smooth
 		part.BottomSurface = if p.studs then Enum.SurfaceType.Inlet else Enum.SurfaceType.Smooth
 		part.FrontSurface = Enum.SurfaceType.Smooth
@@ -261,7 +261,9 @@ end
 local function makeDemo(compiled)
 	local folder = Instance.new("Folder")
 	folder.Name = "StudPetsDemo"
-	studPart("DemoFloor", Vector3.new(120, 1, 90), CFrame.new(0, -0.5, -22), { 75, 151, 75 }).Parent = folder
+	local rows = math.ceil(#compiled / 10)
+	local farZ = -(8 + rows * 12)
+	studPart("DemoFloor", Vector3.new(120, 1, 30 - farZ), CFrame.new(0, -0.5, (22 + farZ) / 2), { 75, 151, 75 }).Parent = folder
 	local spawn = Instance.new("SpawnLocation")
 	spawn.Name = "DemoSpawn"
 	spawn.Size = Vector3.new(6, 1, 6)
@@ -477,7 +479,7 @@ if process.args[1] == "preview" then
 		local parts = {}
 		for _, p in R.list do
 			if not p.root then
-				table.insert(parts, { name = p.name, class = p.class or "Part", size = p.size, color = p.color, studs = p.studs == true })
+				table.insert(parts, { name = p.name, class = p.class or "Part", size = p.size, color = p.color, studs = p.studs == true, neon = p.neon == true })
 			end
 		end
 		local anims = {}

@@ -171,7 +171,7 @@ return function(A, Q)
 			Pose = function(t)
 				local P = {}
 				local br = wave(t, 4)
-				P.Torso = J(-6, 0, 3, 0, drop + 0.03 * br)
+				P.Torso = J(-6, 0, 0, 0, drop + 0.03 * br)
 				P.LegL = J(84)
 				P.LegR = J(84)
 				arms(P, 10, 10, 2)

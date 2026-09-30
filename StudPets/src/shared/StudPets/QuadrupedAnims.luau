@@ -529,7 +529,7 @@ return function(A)
 				P.Head = J(-phi * 0.6 * u + 10 * u)
 				Q.ears(spec, P, 18 * math.max(0, u), 0)
 				Q.eyes(P, 0)
-				P.Tail1 = J(20 * u)
+				P.Tail1 = J((spec.rearTail or 20) * u)
 				P.Jaw = J(-20 * math.max(0, u))
 				return Q.plant(spec, P)
 			end,
@@ -602,7 +602,11 @@ return function(A)
 		local t2 = p.tail2Pitch or (t1 + 25)
 		if p.tail == "curly" then
 			t1, t2 = 20, 140
+		elseif p.tail == "paddle" then
+			t1, t2 = -15, -15
 		end
+		local lowTail = t1 < 20 -- tails that trail along the ground (crocs, dinos, otters)
+		local highTail = t1 >= 60 -- tails carried up over the back (squirrels, huskies)
 		local spec = {
 			rootY = legH + b[2] / 2,
 			halfLen = b[3] / 2,
@@ -619,16 +623,22 @@ return function(A)
 			runSwing = 38,
 			tailWag = 10,
 			idleWag = { 9, 4 },
-			walkTail = { -10, 5 },
-			runTail = { 25, 15 },
+			walkTail = if lowTail then { 0, 0 } else { -10, 5 },
+			runTail = if lowTail then { -4, 0 } else { 25, 15 },
+			jumpTailScale = if lowTail then 0.2 else 1,
 			sitPitch = 32,
 			sitClear = 0.05,
 			sitWag = 0,
 			tailRest = { t1, t2 },
-			sitTailDirs = { { -0.5, -0.3, 0.8 }, { -0.55, 0, -0.83 } },
+			sitTailDirs = if lowTail then { { -0.25, 0, 1 }, { -0.35, 0, 0.94 } }
+				elseif highTail then { { -0.1, 0.7, 0.7 }, { -0.1, 0.95, -0.3 } }
+				else { { -0.5, -0.3, 0.8 }, { -0.55, 0, -0.83 } },
 			jumpHeight = 1.2 + 0.4 * legH,
 			sleepHead = { -12, -0.35 },
-			sleepTailDirs = { { -0.55, -0.45, 0.7 }, { -0.4, -0.3, -0.87 } },
+			sleepTailDirs = if lowTail then { { -0.3, -0.05, 1 }, { -0.5, 0, 0.87 } }
+				elseif highTail then { { -0.2, 0.5, 0.85 }, { -0.2, 0.9, -0.4 } }
+				else { { -0.55, -0.45, 0.7 }, { -0.4, -0.3, -0.87 } },
+			rearTail = if lowTail then -45 else 20,
 		}
 		for key, v in p.anim or {} do
 			spec[key] = v

@@ -11,10 +11,13 @@ return function(A, Q)
 
 	function S.measure(p)
 		local b = p.body or { 1.8, 1.6, 3 }
-		local hover = p.hover or 1.4
+		local base = p.hover or 1.4
+		-- tall bottom fins need extra clearance
+		local hover = base + (if p.tallFins then b[2] * 0.95 else 0)
 		local spec = {
 			rootY = hover + b[2] / 2,
 			hover = hover,
+			baseHover = base,
 			noPlant = true,
 			kick = p.kick or "side",
 			swim = p.swimPeriod or 1, -- must divide 4 s
@@ -110,7 +113,7 @@ return function(A, Q)
 			Pose = function(t)
 				local P = {}
 				stroke(spec, P, t, 4, 0.3)
-				P.Torso = J(3 * wave(t, 4), 0, 4 * wave(t, 4, 0.3), 0, -spec.hover * 0.55 + 0.08 * wave(t, 4))
+				P.Torso = J(3 * wave(t, 4), 0, 4 * wave(t, 4, 0.3), 0, -spec.baseHover * 0.55 + 0.08 * wave(t, 4))
 				eyes(P, Q.blink(t, { 2.2 }))
 				return P
 			end,
@@ -144,7 +147,7 @@ return function(A, Q)
 			Pose = function(t)
 				local P = {}
 				stroke(spec, P, t, 4, 0.15)
-				P.Torso = J(-3, 0, 12 + 2 * wave(t, 4), 0, -spec.hover * 0.6 + 0.06 * wave(t, 4))
+				P.Torso = J(-3, 0, 12 + 2 * wave(t, 4), 0, -spec.baseHover * 0.6 + 0.06 * wave(t, 4))
 				eyes(P, 1)
 				return P
 			end,

@@ -39,7 +39,7 @@ for _, m in models:GetChildren() do
 	table.insert(petNames, m.Name)
 end
 table.sort(petNames)
-check(#petNames == 50, ("StudPetModels has 50 pets (found %d)"):format(#petNames))
+check(#petNames == 200, ("StudPetModels has 200 pets (found %d)"):format(#petNames))
 local quiet = true
 for _, petName in petNames do
 	local model = models and models:FindFirstChild(petName)
@@ -70,7 +70,7 @@ for _, d in demo:GetChildren() do
 		showcase += 1
 	end
 end
-check(showcase == 50, "demo has 50 showcase pets")
+check(showcase == 200, "demo has 200 showcase pets")
 
 print("[compile]")
 for _, d in game:GetDescendants() do

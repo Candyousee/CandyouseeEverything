@@ -49,12 +49,14 @@ local function rigBuilder()
 end
 
 -- Front-facing eyes with a joint each (they slide back into the head to blink).
-local function frontEyes(add, parent, x, y, zFront, size, eyeColor, glint)
+local function frontEyes(add, parent, x, y, zFront, size, eyeColor, glint, glow)
 	for _, side in { -1, 1 } do
 		local nm = if side < 0 then "L" else "R"
 		local ex = side * x
-		add({ name = "Eye" .. nm, size = { size[1], size[2], 0.1 }, pos = { ex, y, zFront - 0.05 }, color = eyeColor, joint = { parent, { ex, y, zFront - 0.05 } } })
-		if eyeColor[1] + eyeColor[2] > 200 then
+		add({ name = "Eye" .. nm, size = { size[1], size[2], 0.1 }, pos = { ex, y, zFront - 0.05 }, color = eyeColor, neon = glow, joint = { parent, { ex, y, zFront - 0.05 } } })
+		if glow then
+			-- glowing eyes: no pupil or glint
+		elseif eyeColor[1] + eyeColor[2] > 200 then
 			-- coloured eyes get a slit pupil instead of a glint
 			add({ name = "Pupil" .. nm, size = { 0.12, size[2] * 0.7, 0.04 }, pos = { ex, y, zFront - 0.12 }, color = K, weld = "Eye" .. nm })
 		else
@@ -97,15 +99,16 @@ function Kit.Quadruped(p, Q)
 	add({ name = "Chest", size = { b[1] * 0.55, b[2] * 0.5, 0.05 }, pos = { 0, rootY - b[2] * 0.15, -b[3] / 2 - 0.025 }, color = col("accent"), weld = "Torso" })
 	for _, leg in { { "FL", -1, -zLeg }, { "FR", 1, -zLeg }, { "BL", -1, zLeg }, { "BR", 1, zLeg } } do
 		local x, z = leg[2] * hipX, leg[3]
-		add({ name = "Leg" .. leg[1], size = { legW, legH - 0.2, legW }, pos = { x, (0.4 + legH + 0.2) / 2, z }, color = col("leg"), joint = { "Torso", { x, legH, z } } })
-		add({ name = "Paw" .. leg[1], size = { legW, 0.4, legW }, pos = { x, 0.2, z }, color = col("paw", "accent"), weld = "Leg" .. leg[1] })
+		local pawH = math.min(0.4, legH * 0.5)
+		add({ name = "Leg" .. leg[1], size = { legW, legH + 0.2 - pawH, legW }, pos = { x, (pawH + legH + 0.2) / 2, z }, color = col("leg"), joint = { "Torso", { x, legH, z } } })
+		add({ name = "Paw" .. leg[1], size = { legW, pawH, legW }, pos = { x, pawH / 2, z }, color = col("paw", "accent"), weld = "Leg" .. leg[1] })
 	end
 	if p.wool then
 		add({ name = "Wool", size = { b[1] + 0.3, 0.6, b[3] - 0.4 }, pos = { 0, top + 0.2, 0 }, color = col("main"), studs = true, weld = "Torso" })
 	end
 	for i = 1, p.hump or 0 do
 		local z = if p.hump == 1 then 0 else (i - 1.5) * b[3] * 0.4
-		add({ name = name("Hump"), size = { b[1] * 0.6, 0.8, b[3] * 0.3 }, pos = { 0, top + 0.3, z }, color = col("main"), studs = true, weld = "Torso" })
+		add({ name = name("Hump"), size = { b[1] * 0.6, 0.8, b[3] * 0.3 }, pos = { 0, top + 0.35, z }, color = col("main"), studs = true, weld = "Torso" })
 	end
 
 	-- neck + head
@@ -126,7 +129,7 @@ function Kit.Quadruped(p, Q)
 		if p.markings == "giraffe" or p.markings == "zebra" then
 			for i = 1, 3 do
 				for _, side in { -1, 1 } do
-					add({ name = name("NeckMark"), size = { 0.05, 0.4, if p.markings == "zebra" then nw * 0.7 else 0.4 }, pos = { side * (nw / 2 + 0.025), baseY + p.neck * i / 3.5, nz + (if p.markings == "zebra" then 0 else (i % 2 - 0.5) * 0.3) }, color = col("dark"), weld = "Neck" })
+					add({ name = name("NeckMark"), size = { 0.05, math.min(0.4, p.neck / 4), if p.markings == "zebra" then nw * 0.7 else 0.4 }, pos = { side * (nw / 2 + 0.025), baseY + p.neck * i / 3.5, nz + (if p.markings == "zebra" then 0 else (i % 2 - 0.5) * 0.3) }, color = col("dark"), weld = "Neck" })
 				end
 			end
 		end
@@ -153,7 +156,7 @@ function Kit.Quadruped(p, Q)
 		for _, side in { -1, 1 } do
 			add({ name = name("Nostril"), size = { 0.18, 0.18, 0.06 }, pos = { side * sn[1] * 0.22, snY + sn[2] * 0.1, snFront - 0.03 }, color = col("nose", "dark"), weld = "Head" })
 		end
-	else
+	elseif not p.noNose then
 		add({ name = "Nose", size = { math.min(0.55, sn[1] * 0.45), 0.28, 0.1 }, pos = { 0, snTop - 0.2, snFront - 0.05 }, color = col("nose", "dark"), weld = "Head" })
 	end
 	if p.jaw then
@@ -165,8 +168,9 @@ function Kit.Quadruped(p, Q)
 	end
 	if p.trunk then
 		local tz = snFront + 0.3
-		add({ name = "Trunk", size = { 0.7, 2.0, 0.7 }, pos = { 0, snY - 0.7, tz }, color = col("main"), joint = { "Head", { 0, snY, tz } } })
-		add({ name = "TrunkTip", size = { 0.76, 0.3, 0.76 }, pos = { 0, snY - 1.58, tz }, color = col("dark"), weld = "Trunk" })
+		local tl = p.trunkLen or 2.0
+		add({ name = "Trunk", size = { 0.7, tl, 0.7 }, pos = { 0, snY + sn[2] / 2 - 0.05 - tl / 2, tz }, color = col("main"), joint = { "Head", { 0, snY, tz } } })
+		add({ name = "TrunkTip", size = { 0.76, 0.3, 0.76 }, pos = { 0, snY - tl + 0.42, tz }, color = col("dark"), weld = "Trunk" })
 	end
 	if p.tusks then
 		for _, side in { -1, 1 } do
@@ -186,7 +190,7 @@ function Kit.Quadruped(p, Q)
 	elseif p.markings == "mask" then
 		add({ name = "Mask", size = { hw * 0.85, es[2] + 0.2, 0.03 }, pos = { 0, eyeY, headFront - 0.025 }, color = col("dark"), weld = "Head" })
 	end
-	frontEyes(add, "Head", eyeX, eyeY, headFront, es, p.colors.eye or K, W)
+	frontEyes(add, "Head", eyeX, eyeY, headFront, es, p.colors.eye or K, W, p.eyeGlow)
 
 	-- mane (lion) sits round the head; ears go on top of it
 	local earBaseY = headTop
@@ -264,17 +268,91 @@ function Kit.Quadruped(p, Q)
 		add({ name = "Beard", size = { 0.4, 0.55, 0.3 }, pos = { 0, headBottom - 0.15, snZ + sn[3] * 0.3 }, color = col("dark"), weld = "Head" })
 	end
 
+	-- extra body features
+	if p.shell then
+		add({ name = "ShellRim", size = { b[1] + 0.4, 0.2, b[3] + 0.3 }, pos = { 0, top, 0 }, color = col("accent"), weld = "Torso" })
+		add({ name = "Shell", size = { b[1] + 0.2, 0.7, b[3] + 0.1 }, pos = { 0, top + 0.4, 0 }, color = col("shell", "dark"), studs = true, weld = "Torso" })
+		add({ name = "ShellTop", size = { b[1] - 0.4, 0.35, b[3] - 0.7 }, pos = { 0, top + 0.9, 0 }, color = col("shell", "dark"), studs = true, weld = "Torso" })
+		if p.shellBands then
+			for i = 1, 3 do
+				add({ name = name("ShellBand"), size = { b[1] + 0.24, 0.74, 0.18 }, pos = { 0, top + 0.4, (i - 2) * b[3] * 0.28 }, color = col("accent"), weld = "Torso" })
+			end
+		end
+	end
+	if p.quills then
+		for i = 1, 3 do
+			for j = 1, 3 do
+				add({ name = name("Quill"), size = { 0.22, 0.55, 0.22 }, pos = { (j - 2) * b[1] * 0.3, top + 0.15, (i - 2) * b[3] * 0.3 }, rot = { 35, 0, (j - 2) * -20 }, color = col("quill", "dark"), weld = "Torso" })
+			end
+		end
+	end
+	if p.wings then
+		for _, side in { -1, 1 } do
+			local th, ph = math.rad(-side * 28), math.rad(-15)
+			local up = { -math.sin(th), math.cos(th) * math.cos(ph), math.cos(th) * math.sin(ph) }
+			local c = { side * (b[1] / 2 - 0.1), top + 0.6, -0.1 }
+			add({ name = name("Wing"), size = { 0.2, 1.4, 1.6 }, pos = c, rot = { -15, 0, -side * 28 }, color = col("wing", "main"), weld = "Torso" })
+			add({ name = name("WingTip"), size = { 0.24, 0.5, 1.62 }, pos = { c[1] + up[1] * 0.46, c[2] + up[2] * 0.46, c[3] + up[3] * 0.46 }, rot = { -15, 0, -side * 28 }, color = col("wingTip", "accent"), weld = "Torso" })
+		end
+	end
+	if p.backPlates then
+		for i = 1, 4 do
+			local side = if i % 2 == 0 then 1 else -1
+			add({ name = name("Plate"), class = "WedgePart", size = { 0.2, 0.9, 0.8 }, pos = { side * 0.25, top + 0.4, -b[3] * 0.35 + (i - 1) * b[3] * 0.22 }, color = col("plate", "accent"), weld = "Torso" })
+		end
+	end
+	if p.frill then
+		add({ name = "Frill", size = { hw + 1.2, h[2] + 1.0, 0.3 }, pos = { 0, headY + 0.4, headZ + h[3] / 2 - 0.1 }, color = col("frill", "accent"), weld = "Head" })
+		for _, side in { -1, 1 } do
+			add({ name = name("BrowHorn"), size = { 0.25, 0.25, 1.1 }, pos = { side * hw * 0.28, headTop - 0.1, headFront - 0.35 }, rot = { -25, 0, 0 }, color = col("horn"), weld = "Head" })
+		end
+		add({ name = "NoseHorn", size = { 0.25, 0.5, 0.25 }, pos = { 0, snTop + 0.2, snZ - sn[3] * 0.2 }, color = col("horn"), weld = "Head" })
+	end
+	if p.headGills then
+		for _, side in { -1, 1 } do
+			for i, dy in { 0.35, 0, -0.35 } do
+				add({ name = name("Gill"), size = { 0.15, 0.6, 0.15 }, pos = { side * (hw / 2 + 0.2), headY + dy, headZ + 0.2 + (i - 2) * 0.03 }, rot = { 0, 0, -side * (i - 2) * 30 + side * 15 }, color = col("gill", "dark"), weld = "Head" })
+			end
+		end
+	end
+	if p.horns == "moose" then
+		for _, side in { -1, 1 } do
+			add({ name = name("Palm"), size = { 1.0, 0.2, 0.7 }, pos = { side * (hw / 2 + 0.4), headTop + 0.25, headZ + 0.1 }, rot = { 0, 0, side * 22 }, color = col("horn"), weld = "Head" })
+			add({ name = name("PalmTine"), size = { 0.18, 0.45, 0.18 }, pos = { side * (hw / 2 + 0.75), headTop + 0.6, headZ + 0.1 }, color = col("horn"), weld = "Head" })
+		end
+	elseif p.horns == "ram" then
+		for _, side in { -1, 1 } do
+			add({ name = name("RamHorn"), size = { 0.45, 0.45, 0.9 }, pos = { side * (hw / 2 + 0.1), headTop - 0.2, headZ + 0.25 }, color = col("horn"), weld = "Head" })
+			add({ name = name("RamCurl"), size = { 0.44, 0.65, 0.44 }, pos = { side * (hw / 2 + 0.1), headTop - 0.6, headZ - 0.15 }, color = col("horn"), weld = "Head" })
+		end
+	end
+	if p.teeth then
+		for _, side in { -1, 1 } do
+			add({ name = name("Tooth"), size = { 0.18, 0.25, 0.05 }, pos = { side * 0.1, snY - sn[2] / 2 - 0.1, snFront + 0.05 }, color = W, weld = "Head" })
+		end
+	end
+	if p.beakSnout then
+		add({ name = "BeakHook", size = { sn[1] * 0.6, 0.35, 0.3 }, pos = { 0, snY - sn[2] / 2 - 0.1, snFront + 0.1 }, color = col("snout", "accent"), weld = "Head" })
+	end
+
 	-- body markings
 	local mk = p.markings
 	local function sideMarks(list, size, color)
 		for i, m in list do
 			for _, side in { -1, 1 } do
-				add({ name = name("Mark"), size = { 0.05, size[1], size[2] }, pos = { side * (b[1] / 2 + 0.025 + (i % 2) * 0.012), rootY + m[2] * b[2], m[1] * b[3] }, color = color, weld = "Torso" })
+				add({ name = name("Mark"), size = { 0.05, size[1], size[2] }, pos = { side * (b[1] / 2 + 0.025 + i * 0.008), rootY + m[2] * b[2], m[1] * b[3] }, color = color, weld = "Torso" })
 			end
 		end
 	end
 	local SPOTS = { { -0.32, 0.2 }, { -0.1, -0.12 }, { 0.12, 0.22 }, { 0.3, -0.1 }, { -0.28, -0.25 }, { 0.05, 0.05 } }
-	if mk == "stripes" or mk == "zebra" then
+	if (mk == "stripes" or mk == "zebra") and hw < 2.2 then
+		local n = if mk == "zebra" then 6 else 4
+		local list = {}
+		for i = 1, n do
+			table.insert(list, { -0.36 + (i - 1) * 0.72 / (n - 1), 0.2 })
+		end
+		sideMarks(list, { b[2] * 0.6, 0.22 }, col("dark"))
+	elseif mk == "stripes" or mk == "zebra" then
 		local n = if mk == "zebra" then 6 else 4
 		local list = {}
 		for i = 1, n do
@@ -299,6 +377,17 @@ function Kit.Quadruped(p, Q)
 		for _, side in { -1, 1 } do
 			add({ name = name("Cheek"), size = { 0.45, 0.4, 0.05 }, pos = { side * (hw / 2 - 0.3), snY + 0.05, headFront - 0.025 }, color = col("accent"), weld = "Head" })
 		end
+	elseif mk == "skunk" then
+		add({ name = "BackStripe", size = { 0.5, 0.06, b[3] - 0.3 }, pos = { 0, top + 0.03, 0 }, color = col("accent"), weld = "Torso" })
+		add({ name = "HeadStripe", size = { 0.25, h[2] * 0.6, 0.04 }, pos = { 0, headTop - h[2] * 0.3, headFront - 0.02 }, color = col("accent"), weld = "Head" })
+	elseif mk == "chipmunk" then
+		for _, x in { -0.35, 0.35 } do
+			add({ name = name("BackStripe"), size = { 0.18, 0.06, b[3] - 0.5 }, pos = { x, top + 0.03, 0 }, color = col("dark"), weld = "Torso" })
+		end
+	elseif mk == "badger" then
+		add({ name = "HeadStripe", size = { 0.3, h[2] * 0.7, 0.04 }, pos = { 0, headTop - h[2] * 0.35, headFront - 0.02 }, color = col("accent"), weld = "Head" })
+	elseif mk == "saddle" then
+		add({ name = "Saddle", size = { b[1] + 0.06, b[2] * 0.55, b[3] * 0.6 }, pos = { 0, top - b[2] * 0.25, 0.1 }, color = col("dark"), weld = "Torso" })
 	elseif mk == "scutes" then
 		for i = 1, 4 do
 			for _, side in { -1, 1 } do
@@ -323,9 +412,25 @@ function Kit.Quadruped(p, Q)
 		tailChain(add, base, 20, 140, 0.2, { 0.45, 0.4 }, col("accent"), nil, 0)
 	elseif style == "croc" then
 		tailChain(add, { 0, rootY, b[3] / 2 - 0.2 }, t1, t2, p.tailW or 0.9, p.tailLen or { 1.8, 1.6 }, tailCol, nil, 0)
+	elseif style == "club" then
+		tailChain(add, { 0, rootY, b[3] / 2 - 0.2 }, t1, t2, p.tailW or 0.6, p.tailLen or { 1.4, 1.3 }, tailCol, col("dark"), 0.95)
+	elseif style == "paddle" then
+		local c, r = seg(base, -15, 1.2)
+		add({ name = "Tail1", size = { 0.9, 0.22, 1.2 }, pos = c, rot = r, color = col("tail", "dark"), joint = { "Torso", base } })
+	elseif style == "thin" then
+		tailChain(add, base, t1, t2, 0.2, p.tailLen or { 1.0, 0.9 }, tailCol, nil, 0)
 	elseif style == "stub" or style == "puff" then
 		local s = if style == "puff" then 0.6 else 0.45
 		add({ name = "Tail1", size = { s, s, s }, pos = { 0, top - 0.35, b[3] / 2 + s / 2 - 0.1 }, color = if style == "puff" then col("accent") else tailCol, joint = { "Torso", { 0, top - 0.3, b[3] / 2 - 0.1 } } })
+	end
+	-- extra welded tails fanned out (kitsune): they wag along with Tail1
+	for i = 1, p.extraTails or 0 do
+		local yaw = (if i % 2 == 1 then 1 else -1) * (22 + 10 * math.floor((i - 1) / 2))
+		local len = (p.tailLen or { 1.0, 1.0 })[1] + (p.tailLen or { 1.0, 1.0 })[2]
+		local pr, yr = math.rad(t1 + 10), math.rad(yaw)
+		local dir = { math.sin(yr), math.cos(yr) * math.sin(pr), math.cos(yr) * math.cos(pr) }
+		add({ name = name("ExtraTail"), size = { 0.5 + i * 0.03, 0.5 + i * 0.03, len * 0.9 }, pos = { base[1] + dir[1] * len * 0.45, base[2] + dir[2] * len * 0.45, base[3] + dir[3] * len * 0.45 }, rot = { -(t1 + 10), yaw, 0 }, color = tailCol, weld = "Tail1" })
+		add({ name = name("ExtraTip"), size = { 0.58 + i * 0.03, 0.58 + i * 0.03, 0.4 }, pos = { base[1] + dir[1] * len * 0.88, base[2] + dir[2] * len * 0.88, base[3] + dir[3] * len * 0.88 }, rot = { -(t1 + 10), yaw, 0 }, color = col("accent"), weld = "Tail1" })
 	end
 
 	return parts, spec
@@ -343,7 +448,7 @@ function Kit.Flyer(p, F)
 	local top = rootY + b[2] / 2
 
 	add({ name = "Torso", size = b, pos = { 0, rootY, 0 }, color = col("main"), studs = true, joint = { "RootPart", { 0, rootY, 0 } } })
-	if not p.stripes then
+	if not p.stripes and not p.shell then
 		add({ name = "Belly", size = { b[1] * 0.7, b[2] * 0.6, 0.05 }, pos = { 0, rootY - b[2] * 0.12, -b[3] / 2 - 0.025 }, color = col("accent"), weld = "Torso" })
 	else
 		for _, z in { -0.15, 0.35 } do
@@ -352,6 +457,16 @@ function Kit.Flyer(p, F)
 	end
 	if p.stinger then
 		add({ name = "Stinger", size = { 0.2, 0.2, 0.45 }, pos = { 0, rootY - 0.1, b[3] / 2 + 0.2 }, color = col("dark"), weld = "Torso" })
+	end
+	if p.shell then
+		add({ name = "Shell", size = { b[1] + 0.2, b[2] * 0.6, b[3] + 0.1 }, pos = { 0, top - b[2] * 0.2, 0 }, color = col("shell", "main"), studs = true, weld = "Torso" })
+		add({ name = "ShellLine", size = { 0.08, b[2] * 0.62, b[3] + 0.12 }, pos = { 0, top - b[2] * 0.2, 0 }, color = K, weld = "Torso" })
+		for _, s in { { -1, -0.25 }, { 1, 0.1 }, { -1, 0.35 }, { 1, -0.3 } } do
+			add({ name = name("ShellSpot"), size = { 0.35, 0.06, 0.35 }, pos = { s[1] * b[1] * 0.28, top + b[2] * 0.1 + 0.03, s[2] * b[3] }, color = K, weld = "Torso" })
+		end
+	end
+	if p.glowTail then
+		add({ name = "Glow", size = { b[1] * 0.8, b[2] * 0.8, 0.7 }, pos = { 0, rootY - 0.05, b[3] / 2 + 0.3 }, color = col("glow", "accent"), neon = true, weld = "Torso" })
 	end
 	if p.spikes then
 		for i = 1, 3 do
@@ -381,6 +496,14 @@ function Kit.Flyer(p, F)
 		add({ name = "BeakHook", size = { 0.4, 0.35, 0.2 }, pos = { 0, headY - 0.35, headFront - 0.36 }, color = beak, weld = "Head" })
 	elseif p.beak == "small" then
 		add({ name = "Beak", size = { 0.4, 0.32, 0.35 }, pos = { 0, headY - 0.15, headFront - 0.12 }, color = beak, weld = "Head" })
+	elseif p.beak == "big" then
+		add({ name = "Beak", size = { 0.65, 0.65, 1.2 }, pos = { 0, headY - 0.1, headFront - 0.55 }, color = beak, weld = "Head" })
+		add({ name = "BeakTip", size = { 0.5, 0.5, 0.3 }, pos = { 0, headY - 0.1, headFront - 1.25 }, color = col("dark"), weld = "Head" })
+	elseif p.beak == "pouch" then
+		add({ name = "Beak", size = { 0.5, 0.25, 1.5 }, pos = { 0, headY - 0.05, headFront - 0.7 }, color = beak, weld = "Head" })
+		add({ name = "Pouch", size = { 0.45, 0.45, 1.1 }, pos = { 0, headY - 0.38, headFront - 0.55 }, color = col("pouch", "accent"), weld = "Head" })
+	elseif p.beak == "needle" then
+		add({ name = "Beak", size = { 0.12, 0.12, 0.9 }, pos = { 0, headY - 0.1, headFront - 0.42 }, color = beak, weld = "Head" })
 	elseif p.beak == "snout" then
 		local sn = { hw * 0.62, h[2] * 0.45, 0.8 }
 		local sy = headY - h[2] / 2 + sn[2] / 2 + 0.1
@@ -418,6 +541,9 @@ function Kit.Flyer(p, F)
 			add({ name = name("Antenna"), size = { 0.08, 0.8, 0.08 }, pos = { side * 0.28, headTop + 0.35, headZ - 0.05 }, rot = { -15, 0, -side * 18 }, color = col("dark"), weld = "Head" })
 			add({ name = name("AntennaTip"), size = { 0.2, 0.2, 0.2 }, pos = { side * 0.4, headTop + 0.72, headZ - 0.15 }, color = col("dark"), weld = "Head" })
 		end
+	end
+	if p.beetleHorn then
+		add({ name = "Horn", size = { 0.25, 0.9, 0.25 }, pos = { 0, headTop + 0.25, headFront + 0.05 }, rot = { -30, 0, 0 }, color = col("dark"), weld = "Head" })
 	end
 	if p.fangs then
 		for _, side in { -1, 1 } do
@@ -467,6 +593,12 @@ function Kit.Flyer(p, F)
 		add({ name = "Tail1", size = { b[1] * 0.6, 0.18, len }, pos = c, rot = r, color = col("tail", "wing", "dark"), joint = { "Torso", base } })
 	elseif p.tail == "dragon" then
 		tailChain(add, { 0, rootY, b[3] / 2 - 0.2 }, -10, -5, 0.6, { 1.3, 1.2 }, col("main"), col("accent"), 0.5)
+	elseif p.tail == "stick" then
+		local c, r = seg(base, 0, 2.0)
+		add({ name = "Tail1", size = { 0.3, 0.3, 2.0 }, pos = c, rot = r, color = col("main"), joint = { "Torso", base } })
+	elseif p.tail == "flame" then
+		local c, r = seg(base, -20, 1.6)
+		add({ name = "Tail1", size = { b[1] * 0.7, 0.2, 1.6 }, pos = c, rot = r, color = col("tail", "accent"), neon = true, joint = { "Torso", base } })
 	end
 	return parts, spec
 end
@@ -480,6 +612,11 @@ function Kit.Swimmer(p, S)
 	local parts, add, name = rigBuilder()
 	local b = p.body or { 1.8, 1.6, 3 }
 	local h = table.clone(p.head or { b[1] * 0.95, b[2] * 0.95, b[3] * 0.4 })
+	for i = 1, 2 do
+		if math.abs(h[i] - b[i]) < 0.05 then
+			h[i] -= 0.1
+		end
+	end
 	local rootY = spec.rootY
 	local fin = col("fin", "dark")
 
@@ -489,7 +626,7 @@ function Kit.Swimmer(p, S)
 	local headFront = headZ - h[3] / 2
 	if p.belly then
 		add({ name = "Belly", size = { b[1] * 0.8, 0.05, b[3] * 0.85 }, pos = { 0, rootY - b[2] / 2 - 0.025, 0 }, color = col("accent"), weld = "Torso" })
-		add({ name = "HeadBelly", size = { h[1] * 0.8, 0.05, h[3] * 0.8 }, pos = { 0, rootY - h[2] / 2 - 0.025, headZ }, color = col("accent"), weld = "Head" })
+		add({ name = "HeadBelly", size = { h[1] * 0.8, 0.04, h[3] * 0.8 }, pos = { 0, rootY - h[2] / 2 - 0.02, headZ }, color = col("accent"), weld = "Head" })
 	end
 	if p.beak then
 		add({ name = "Beak", size = { h[1] * 0.45, h[2] * 0.3, 0.7 }, pos = { 0, rootY - h[2] * 0.2, headFront - 0.3 }, color = col("main"), weld = "Head" })
@@ -520,15 +657,36 @@ function Kit.Swimmer(p, S)
 		add({ name = "Glint" .. nm, size = { 0.04, 0.14, 0.14 }, pos = { side * (h[1] / 2 + 0.12), y + ey * 0.2, z - ey * 0.2 }, color = W, weld = "Eye" .. nm })
 	end
 	-- tail + fins
-	local t1 = { b[1] * 0.55, b[2] * 0.55, 1.1 }
-	add({ name = "Tail1", size = t1, pos = { 0, rootY, b[3] / 2 + 0.45 }, color = col("main"), joint = { "Torso", { 0, rootY, b[3] / 2 - 0.05 } } })
-	local tz = b[3] / 2 + 0.95
-	local fluke = if spec.kick == "vertical" then { b[1] * 1.5, 0.2, 0.8 } else { 0.2, b[2] * 1.3, 0.8 }
-	add({ name = "Tail2", size = fluke, pos = { 0, rootY, tz + 0.35 }, color = fin, joint = { "Tail1", { 0, rootY, tz } } })
+	local t1 = if p.thinTail then { 0.16, 0.16, 2.0 } else { b[1] * 0.55, b[2] * 0.55, 1.1 }
+	add({ name = "Tail1", size = t1, pos = { 0, rootY, b[3] / 2 + t1[3] / 2 - 0.1 }, color = col("main"), joint = { "Torso", { 0, rootY, b[3] / 2 - 0.05 } } })
+	local tz = b[3] / 2 + t1[3] - 0.15
+	local fs = p.tailFin or 1
+	local fluke = if p.thinTail then { 0.3, 0.3, 0.4 } elseif spec.kick == "vertical" then { b[1] * 1.5 * fs, 0.2, 0.8 * fs } else { 0.2, b[2] * 1.3 * fs, 0.8 * fs }
+	add({ name = "Tail2", size = fluke, pos = { 0, rootY, tz + fluke[3] / 2 - 0.05 }, color = fin, joint = { "Tail1", { 0, rootY, tz } } })
+	local finSize = p.finSize or { 0.8, 0.15, 0.6 }
 	for _, side in { -1, 1 } do
 		local nm = if side < 0 then "L" else "R"
-		local py, pz = rootY - b[2] * 0.25, -b[3] * 0.15
-		add({ name = "Fin" .. nm, size = { 0.8, 0.15, 0.6 }, pos = { side * (b[1] / 2 + 0.38), py, pz }, color = fin, joint = { "Torso", { side * b[1] / 2, py, pz } } })
+		local py, pz = rootY - b[2] * (if p.finSize then 0 else 0.25), -b[3] * (if p.finSize then 0 else 0.15)
+		add({ name = "Fin" .. nm, size = finSize, pos = { side * (b[1] / 2 + finSize[1] / 2 - 0.02), py, pz }, color = fin, joint = { "Torso", { side * b[1] / 2, py, pz } } })
+	end
+	if p.tallFins then
+		add({ name = "TopFin", class = "WedgePart", size = { 0.15, b[2] * 0.9, b[3] * 0.6 }, pos = { 0, rootY + b[2] * 0.95 - 0.05, b[3] * 0.1 }, color = fin, weld = "Torso" })
+		add({ name = "BottomFin", class = "WedgePart", size = { 0.15, b[2] * 0.9, b[3] * 0.6 }, pos = { 0, rootY - b[2] * 0.95 + 0.05, b[3] * 0.1 }, rot = { 180, 180, 0 }, color = fin, weld = "Torso" })
+	end
+	if p.lure then
+		add({ name = "LureStalk", size = { 0.08, 1.0, 0.08 }, pos = { 0, rootY + h[2] / 2 + 0.45, headZ - 0.1 }, rot = { -25, 0, 0 }, color = col("dark"), weld = "Head" })
+		add({ name = "LureBulb", size = { 0.3, 0.3, 0.3 }, pos = { 0, rootY + h[2] / 2 + 0.95, headZ - 0.35 }, color = col("glow", "accent"), neon = true, weld = "Head" })
+	end
+	if p.patches then
+		for _, side in { -1, 1 } do
+			add({ name = name("Patch"), size = { 0.05, h[2] * 0.3, h[3] * 0.3 }, pos = { side * (h[1] / 2 + 0.025), rootY + h[2] * 0.2, headZ + h[3] * 0.25 }, color = col("accent"), weld = "Head" })
+		end
+	end
+	if p.walrusTusks then
+		for _, side in { -1, 1 } do
+			add({ name = name("Tusk"), size = { 0.16, 1.0, 0.16 }, pos = { side * 0.3, rootY - h[2] / 2 - 0.3, headFront + 0.12 }, color = col("horn"), weld = "Head" })
+		end
+		add({ name = "Mustache", size = { h[1] * 0.6, 0.35, 0.3 }, pos = { 0, rootY - h[2] * 0.2, headFront - 0.12 }, color = col("accent"), weld = "Head" })
 	end
 	if p.dorsal then
 		add({ name = "Dorsal", class = "WedgePart", size = { 0.2, b[2] * 0.55, b[3] * 0.35 }, pos = { 0, rootY + b[2] / 2 + b[2] * 0.275 - 0.05, b[3] * 0.05 }, color = fin, weld = "Torso" })
@@ -593,6 +751,14 @@ function Kit.Biped(p, B)
 		end
 		headY = top + h[2] / 2 - 0.2
 		pivot = { 0, top - 0.1, headZ }
+	end
+	if p.neckH then
+		-- long neck (swan, ostrich): the head sits on a tall welded neck
+		local nz = headZ + 0.1
+		local ny0 = top - 0.2
+		add({ name = "Neck", size = { 0.5, p.neckH + 0.4, 0.5 }, pos = { 0, ny0 + (p.neckH + 0.4) / 2, nz }, color = col("neck", "main"), weld = "Torso" })
+		headY += p.neckH
+		pivot = { 0, pivot[2] + p.neckH, pivot[3] }
 	end
 	add({ name = "Head", size = h, pos = { 0, headY, headZ }, color = col("head"), studs = not p.comb, joint = { "Torso", pivot } })
 	local hw, headFront, headTop, headBottom = h[1], headZ - h[3] / 2, headY + h[2] / 2, headY - h[2] / 2
@@ -679,7 +845,22 @@ function Kit.Biped(p, B)
 		tailChain(add, { 0, rootY - b[2] * 0.35, b[3] / 2 - 0.1 }, 20, 80, 0.25, { 1.2, 1.0 }, col("main"), nil, 0)
 	elseif t == "rex" then
 		local base = { 0, rootY + 0.1, b[3] / 2 - 0.2 }
-		tailChain(add, base, -8, -12, 1.1, { 1.6, 1.5 }, col("main"), nil, 0)
+		tailChain(add, base, p.tailPitch or -8, p.tail2Pitch or -12, p.tailW or 1.1, p.tailLen or { 1.6, 1.5 }, col("main"), nil, 0)
+	elseif t == "thin" then
+		tailChain(add, { 0, rootY - b[2] * 0.35, b[3] / 2 - 0.1 }, p.tailPitch or -40, p.tail2Pitch or -20, 0.2, p.tailLen or { 0.9, 0.8 }, col("main"), col("dark"), 0.26)
+	elseif t == "fan" then
+		local base = { 0, rootY + b[2] * 0.1, b[3] / 2 - 0.1 }
+		local fw, fh = p.fanSize and p.fanSize[1] or 2.6, p.fanSize and p.fanSize[2] or 2.2
+		add({ name = "Tail1", size = { fw, fh, 0.2 }, pos = { 0, base[2] + fh / 2 - 0.3, base[3] + 0.25 }, color = col("tail", "main"), joint = { "Torso", base } })
+		for i, s in { { -0.3, 0.55 }, { 0, 0.75 }, { 0.3, 0.55 }, { -0.15, 0.3 }, { 0.15, 0.3 } } do
+			add({ name = name("FanEye"), size = { 0.35, 0.35, 0.04 }, pos = { s[1] * fw, base[2] - 0.3 + s[2] * fh, base[3] + 0.37 }, color = col("accent"), weld = "Tail1" })
+		end
+	end
+	if p.sail then
+		add({ name = "Sail", size = { 0.2, 1.6, b[3] * 0.6 }, pos = { 0, top + 0.7, 0.25 }, color = col("accent"), weld = "Torso" })
+	end
+	if p.crest then
+		add({ name = "Crest", size = { 0.3, 0.35, 1.7 }, pos = { 0, headTop + 0.25, headZ + 0.9 }, rot = { -30, 0, 0 }, color = col("accent"), weld = "Head" })
 	end
 	return parts, spec
 end

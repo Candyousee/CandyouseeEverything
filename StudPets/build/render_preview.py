@@ -61,8 +61,8 @@ def reset_scene():
 _materials = {}
 
 
-def material(rgb, rough=0.38):
-    key = (tuple(rgb), rough)
+def material(rgb, rough=0.38, glow=False):
+    key = (tuple(rgb), rough, glow)
     if key in _materials:
         return _materials[key]
     mat = bpy.data.materials.new(f"m{len(_materials)}")
@@ -70,6 +70,9 @@ def material(rgb, rough=0.38):
     bsdf = mat.node_tree.nodes["Principled BSDF"]
     bsdf.inputs["Base Color"].default_value = (*[srgb_to_linear(c) for c in rgb], 1)
     bsdf.inputs["Roughness"].default_value = rough
+    if glow:
+        bsdf.inputs["Emission Color"].default_value = (*[srgb_to_linear(c) for c in rgb], 1)
+        bsdf.inputs["Emission Strength"].default_value = 2.0
     _materials[key] = mat
     return mat
 
@@ -109,7 +112,7 @@ def build_pet(pet, offset=(0, 0, 0)):
     objs = []
     for part in pet["parts"]:
         obj = bpy.data.objects.new(part["name"], part_mesh(part))
-        obj.data.materials.append(material(part["color"]))
+        obj.data.materials.append(material(part["color"], glow=part.get("neon", False)))
         bpy.context.scene.collection.objects.link(obj)
         objs.append(obj)
     return objs, Matrix.Translation(offset)
