@@ -237,9 +237,42 @@ return function(A)
 		}
 	end
 
+	-- Hopping gait (frogs, rabbits): all four legs push together, the body arcs,
+	-- front paws reach to land. `height` in studs, one hop per period.
+	function Q.hop(spec, P, t: number, period: number, height: number)
+		local u = (t % period) / period
+		local air = curve(u, { { 0, 0 }, { 0.18, -0.08 }, { 0.3, 0.2 }, { 0.6, 1, "QuadOut" }, { 0.88, 0, "QuadIn" }, { 1, 0 } })
+		local pitch = curve(u, { { 0, 0 }, { 0.18, -5 }, { 0.32, 14, "QuadOut" }, { 0.6, 0 }, { 0.85, -10 }, { 0.95, 2 }, { 1, 0 } })
+		local back = curve(u, { { 0, 0 }, { 0.18, 8 }, { 0.32, -45, "QuadOut" }, { 0.6, 20 }, { 0.88, 10 }, { 1, 0 } })
+		local front = curve(u, { { 0, 0 }, { 0.18, -8 }, { 0.32, -20 }, { 0.6, 35 }, { 0.85, 25 }, { 1, 0 } })
+		P.Torso = J(pitch, 0, 0, 0, height * math.max(air, 0) + math.min(air, 0), 0)
+		P.LegBL = J(back)
+		P.LegBR = J(back)
+		P.LegFL = J(front)
+		P.LegFR = J(front)
+		P.Head = J(-pitch * 0.6)
+		local e = spec.ears == "floppy"
+		Q.ears(spec, P, (if e then -1 else 1) * 25 * math.max(air, 0), if e then 8 * air else 0)
+		P.Tail1 = J(-15 * air)
+		P.Tail2 = J(-10 * air)
+	end
+
 	function Q.Walk(spec)
 		local T = spec.walkPeriod
 		local sw = spec.walkSwing
+		if spec.gait == "hop" then
+			return {
+				Name = "Walk",
+				Length = T * 1.6,
+				Looped = true,
+				Pose = function(t)
+					local P = {}
+					Q.hop(spec, P, t, T * 1.6, spec.hipY * 0.45 + 0.15)
+					Q.eyes(P, 0)
+					return Q.plant(spec, P)
+				end,
+			}
+		end
 		return {
 			Name = "Walk",
 			Length = T,
@@ -266,6 +299,19 @@ return function(A)
 	function Q.Run(spec)
 		local T = spec.runPeriod
 		local sw = spec.runSwing
+		if spec.gait == "hop" then
+			return {
+				Name = "Run",
+				Length = T * 1.4,
+				Looped = true,
+				Pose = function(t)
+					local P = {}
+					Q.hop(spec, P, t, T * 1.4, spec.hipY * 0.9 + 0.3)
+					Q.eyes(P, 0)
+					return Q.plant(spec, P)
+				end,
+			}
+		end
 		return {
 			Name = "Run",
 			Length = T,
@@ -281,7 +327,8 @@ return function(A)
 				P.Torso = J(7 * reach, 0, 1.5 * wave(t, T, 0.25), 0, 0.06 + 0.12 * reach, 0)
 				P.Head = J(-8 - 6 * reach, 0, 0, 0, 0, -0.1)
 				local flap = if spec.ears == "floppy" then 12 * wave(t, T / 2, 0.3) else 0
-				Q.ears(spec, P, 28 + flap, if spec.ears == "floppy" then 10 else 6)
+				local ef = spec.earFlap or 1 -- elephants: keep the big ears off the face
+				Q.ears(spec, P, (28 + flap) * ef, (if spec.ears == "floppy" then 10 else 6) * ef)
 				Q.eyes(P, 0)
 				P.Tail1 = J(spec.runTail[1] + 6 * wave(t, T / 2), 5 * wave(t, T, 0.2), 0)
 				P.Tail2 = J(spec.runTail[2] + 8 * wave(t, T / 2, 0.15), 6 * wave(t, T, 0.35), 0)
@@ -293,6 +340,29 @@ return function(A)
 	function Q.Sit(spec)
 		local S = Q.sitPose(spec)
 		local dirs = spec.sitTailDirs
+		if spec.sitStyle == "kush" then
+			-- camelid rest: all legs folded under, chest down, neck and head up
+			local drop = spec.legT * 0.5 - spec.hipY
+			return {
+				Name = "Sit",
+				Length = 3,
+				Looped = true,
+				Pose = function(t)
+					local P = {}
+					local br = wave(t, 1.5)
+					P.Torso = J(2, 0, 0, 0, drop + 0.03 * br, 0)
+					P.LegFL = J(-88)
+					P.LegFR = J(-88)
+					P.LegBL = J(88)
+					P.LegBR = J(88)
+					local look = curve(t, { { 0, 0 }, { 1.0, 0 }, { 1.3, 15 }, { 2.2, 15 }, { 2.6, 0 } })
+					P.Head = J(-br, look, 0)
+					Q.ears(spec, P, 2 * br, 0)
+					Q.eyes(P, Q.blink(t, { 1.9 }))
+					return Q.plant(spec, P)
+				end,
+			}
+		end
 		return {
 			Name = "Sit",
 			Length = 3,
@@ -407,14 +477,21 @@ return function(A)
 			Pose = function(t)
 				local P = {}
 				local br = wave(t, 4)
-				P.Torso = J(0, 0, 0, 0, drop + 0.035 * br, 0)
+				P.Torso = J(0, 0, 5, 0, drop + 0.035 * br, 0)
 				P.LegFL = J(90, 0, 0)
 				P.LegFR = J(90, 0, 0)
 				P.LegBL = J(90, 0, 0)
 				P.LegBR = J(90, 0, 0)
-				P.Head = J(spec.sleepHead[1] - 1.5 * br, 8, 4, 0, spec.sleepHead[2] - 0.02 * br, 0)
+				if spec.hasNeck then
+					-- long necks come down so the head rests low
+					P.Neck = J(-spec.neckDrop - 1.5 * br, 10, 0)
+					P.Head = J(spec.neckDrop * 0.55, 0, 4)
+				else
+					P.Head = J(spec.sleepHead[1] - 1.5 * br, 8, 4, 0, spec.sleepHead[2] - 0.02 * br, 0)
+				end
 				local tw = curve(t, { { 0, 0 }, { 2.6, 0 }, { 2.66, 1, "QuadOut" }, { 2.8, 0 } })
-				Q.ears(spec, P, if spec.ears == "floppy" then 0 else 12, if spec.ears == "floppy" then 6 else 10, 16 * tw, 0)
+				local earBack = if spec.ears == "floppy" then 0 elseif spec.earsTall then 70 else 12
+				Q.ears(spec, P, earBack, if spec.ears == "floppy" then 6 else 10, 16 * tw, 0)
 				Q.eyes(P, 1)
 				local tip = curve(t, { { 0, 0 }, { 1.2, 0 }, { 1.5, 1 }, { 1.9, 0 } })
 				local d2 = dirs[2]
@@ -626,7 +703,13 @@ return function(A)
 			walkTail = if lowTail then { 0, 0 } else { -10, 5 },
 			runTail = if lowTail then { -4, 0 } else { 25, 15 },
 			jumpTailScale = if lowTail then 0.2 else 1,
-			sitPitch = 32,
+			hasNeck = p.neck ~= nil,
+			neckDrop = math.min(55, 20 + (p.neck or 0) * 10),
+			earsTall = p.ears == "tall",
+			gait = p.gait,
+			sitStyle = p.sitStyle,
+			earFlap = if p.ears == "elephant" then 0.35 else 1,
+			sitPitch = if lowTail then 20 else 32,
 			sitClear = 0.05,
 			sitWag = 0,
 			tailRest = { t1, t2 },

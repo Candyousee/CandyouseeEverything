@@ -27,6 +27,9 @@ return function(A, Q)
 			walkPeriod = 0.45 + 0.25 * legH,
 			waddle = p.waddle or 6,
 			wings = p.arms == "wings",
+			foldBack = p.arms == "wings" or p.headFront == true, -- birds & dinos tuck their legs back
+			footLen = 0.42,
+			gait = p.gait,
 		}
 		for key, v in p.anim or {} do
 			spec[key] = v
@@ -71,8 +74,35 @@ return function(A, Q)
 		P.Tail2 = J(0, 14 * wave(t, T, 0.2))
 	end
 
+	-- two-footed hop (kangaroo): both legs push together, tail counterbalances
+	local function hop(spec, P, t: number, period: number, height: number)
+		local u = (t % period) / period
+		local air = curve(u, { { 0, 0 }, { 0.15, -0.1 }, { 0.3, 0.2 }, { 0.6, 1, "QuadOut" }, { 0.9, 0, "QuadIn" }, { 1, 0 } })
+		local leg = curve(u, { { 0, 0 }, { 0.15, 10 }, { 0.3, -35, "QuadOut" }, { 0.65, 25 }, { 0.9, 10 }, { 1, 0 } })
+		P.Torso = J(-10 - 8 * math.max(air, 0), 0, 0, 0, height * math.max(air, 0) + 0.3 * math.min(air, 0))
+		P.LegL = J(leg)
+		P.LegR = J(leg)
+		P.Head = J(8 * math.max(air, 0))
+		P.Tail1 = J(-12 * air)
+		P.Tail2 = J(-8 * air)
+	end
+
 	function B.Walk(spec)
 		local T = spec.walkPeriod
+		if spec.gait == "hop" then
+			return {
+				Name = "Walk",
+				Length = T * 1.5,
+				Looped = true,
+				Pose = function(t)
+					local P = {}
+					hop(spec, P, t, T * 1.5, 0.5)
+					arms(P, 25, 25, 6)
+					Q.eyes(P, 0)
+					return Q.plant(spec, P)
+				end,
+			}
+		end
 		return {
 			Name = "Walk",
 			Length = T,
@@ -90,6 +120,20 @@ return function(A, Q)
 
 	function B.Run(spec)
 		local T = spec.walkPeriod * 0.6
+		if spec.gait == "hop" then
+			return {
+				Name = "Run",
+				Length = T * 1.6,
+				Looped = true,
+				Pose = function(t)
+					local P = {}
+					hop(spec, P, t, T * 1.6, 1.2)
+					arms(P, 40, 40, 10)
+					Q.eyes(P, 0)
+					return Q.plant(spec, P)
+				end,
+			}
+		end
 		return {
 			Name = "Run",
 			Length = T,
@@ -119,10 +163,17 @@ return function(A, Q)
 			Pose = function(t)
 				local P = {}
 				local br = wave(t, 2)
-				P.Torso = J(-6 + br, 0, 0, 0, drop + 0.03 * br)
-				P.LegL = J(84)
-				P.LegR = J(84)
-				arms(P, 20, 20, 6)
+				local fold = if spec.foldBack then -84 else 84
+				-- folded back, the feet (which stick out forward) point down: sit a little higher
+				local lift = if spec.foldBack then spec.footLen else 0
+				P.Torso = J((if spec.foldBack then 4 else -6) + br, 0, 0, 0, drop + lift + 0.03 * br)
+				P.LegL = J(fold)
+				P.LegR = J(fold)
+				if spec.wings then
+					arms(P, 0, 0, 3)
+				else
+					arms(P, 55, 55, 10) -- hands resting on the knees
+				end
 				P.Head = J(4 - br, curve(t, { { 0, 0 }, { 1.4, 0 }, { 1.8, 18 }, { 2.8, 18 }, { 3.2, 0 } }))
 				P.Tail1 = J(spec.sitTail)
 				Q.eyes(P, Q.blink(t, { 1.0, 3.4 }))
@@ -171,11 +222,13 @@ return function(A, Q)
 			Pose = function(t)
 				local P = {}
 				local br = wave(t, 4)
-				P.Torso = J(-6, 0, 0, 0, drop + 0.03 * br)
-				P.LegL = J(84)
-				P.LegR = J(84)
-				arms(P, 10, 10, 2)
-				P.Head = J(-28 - 2 * br, 10, 8)
+				local fold = if spec.foldBack then -84 else 84
+				local lift = if spec.foldBack then spec.footLen else 0
+				P.Torso = J((if spec.foldBack then 6 else 2) + 0.4 * br, 0, 0, 0, drop + lift + 0.02 * br)
+				P.LegL = J(fold)
+				P.LegR = J(fold)
+				arms(P, if spec.wings then 0 else 35, if spec.wings then 0 else 35, 2)
+				P.Head = J(-(spec.sleepHeadDrop or 32) - 2 * br, 12, 6)
 				P.Tail1 = J(spec.sitTail)
 				Q.eyes(P, 1)
 				return P

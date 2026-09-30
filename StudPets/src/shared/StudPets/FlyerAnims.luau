@@ -185,7 +185,7 @@ return function(A, Q)
 					P.LegL = J(0, 0, 0, 0, 0.3)
 					P.LegR = J(0, 0, 0, 0, 0.3)
 					wings(P, 0, 1)
-					P.Head = J(-25 - 2 * br, 25, 8)
+					P.Head = J(-(spec.sleepHeadDrop or 25) - 2 * br, 25, 8)
 				end
 				eyes(P, 1)
 				return Q.plant(spec, P)

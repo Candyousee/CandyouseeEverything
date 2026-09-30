@@ -93,7 +93,7 @@ return function(A, Q)
 			Looped = true,
 			Pose = function(t)
 				local P = {}
-				stroke(spec, P, t, T, 1.3)
+				stroke(spec, P, t, T, 1.7)
 				local side = if spec.kick == "side" then 6 * wave(t, T, 0.5) else 0
 				local bob = if spec.kick == "vertical" then 5 * wave(t, T, 0.5) else 0
 				P.Torso = J(bob - 6, side, 0, 0, 0.3 + 0.15 * wave(t, T, 0.25))
@@ -112,8 +112,10 @@ return function(A, Q)
 			Looped = true,
 			Pose = function(t)
 				local P = {}
-				stroke(spec, P, t, 4, 0.3)
-				P.Torso = J(3 * wave(t, 4), 0, 4 * wave(t, 4, 0.3), 0, -spec.baseHover * 0.55 + 0.08 * wave(t, 4))
+				-- resting: drifts down, noses up, barely fins
+				stroke(spec, P, t, 4, 0.2)
+				P.Torso = J(10 + 3 * wave(t, 4), 0, 4 * wave(t, 4, 0.3), 0, -spec.baseHover * 0.3 + 0.08 * wave(t, 4))
+				P.Head = A.add(P.Head, J(-6))
 				eyes(P, Q.blink(t, { 2.2 }))
 				return P
 			end,
