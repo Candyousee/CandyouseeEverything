@@ -3,6 +3,8 @@
 Blocky, studded Roblox pets built from plain Parts, each with 7 animations that
 play **straight from code**. There's nothing to upload, no asset IDs, and nothing to pay.
 
+![Stud Dog and Stud Cat](preview/hero_front.jpg)
+
 ![Stud Cat](preview/StudCat_all.gif)
 ![Stud Dog](preview/StudDog_all.gif)
 
@@ -87,6 +89,7 @@ lune run build/test_runtime.luau StudPets.rbxl
 lune run build/build.luau preview /tmp/preview.json
 python3 build/render_preview.py /tmp/preview.json /tmp/frames anim
 python3 build/make_gifs.py /tmp/frames preview
+python3 build/render_preview.py /tmp/preview.json preview hero   # big still
 ```
 
 The build's QA fails on any of these:
