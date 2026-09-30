@@ -198,7 +198,7 @@ return function(A, Q)
 	-- Loop: take off (if perched), barrel roll, settle back.
 	function F.Loop(spec)
 		local k = {
-			Up = { { 0, 0 }, { 0.3, 1.5, "QuadOut" }, { 1.3, 1.5 }, { 1.7, 0, "QuadIn" }, { 2, 0 } },
+			Up = { { 0, 0 }, { 0.3, 1.2, "QuadOut" }, { 1.3, 1.2 }, { 1.7, 0, "QuadIn" }, { 2, 0 } },
 			Roll = { { 0, 0 }, { 0.35, 0 }, { 1.25, 360, "Cubic" }, { 2, 360 } },
 			Open = { { 0, 0 }, { 0.15, 1 }, { 1.6, 1 }, { 1.85, 0 } },
 		}

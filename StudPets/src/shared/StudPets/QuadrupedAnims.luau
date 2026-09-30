@@ -386,7 +386,7 @@ return function(A)
 				-- dogs sweep the floor with a wag; cats just sway (0.75 s divides the 3 s loop)
 				local sway = if spec.sitWag > 0 then spec.sitWag * wave(t, 0.75) else 4 * wave(t, 3)
 				local d2 = Q.yawDir(dirs[2], sway)
-				local tail1, tail2 = Q.aimTail(spec, P.Torso, { Q.yawDir(dirs[1], sway), { d2[1], d2[2] + 0.7 * flick, d2[3] } })
+				local tail1, tail2 = Q.aimTail(spec, P.Torso, { Q.yawDir(dirs[1], sway), { d2[1], d2[2] + 0.7 * flick * (spec.sitFlick or 1), d2[3] } })
 				P.Tail1 = J(tail1[1], tail1[2], tail1[3])
 				P.Tail2 = J(tail2[1], tail2[2], tail2[3])
 				return Q.plant(spec, P)
@@ -490,7 +490,7 @@ return function(A)
 					P.Head = J(spec.neckDrop * 0.55, 0, 4)
 				elseif spec.horned then
 					-- horned heads rest forward, straight, so the horns stay clear of the back
-					P.Head = J(spec.sleepHead[1] - 1.5 * br, 0, 0, 0, spec.sleepHead[2] - 0.02 * br, -0.3)
+					P.Head = J(spec.sleepHead[1] - 1.5 * br, 0, 0, 0, spec.sleepHead[2] - 0.2 - 0.02 * br, -0.5)
 				else
 					P.Head = J(spec.sleepHead[1] - 1.5 * br, 8, 4, 0, spec.sleepHead[2] - 0.02 * br, 0)
 				end
