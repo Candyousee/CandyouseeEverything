@@ -488,6 +488,9 @@ return function(A)
 					-- long necks come down so the head rests low
 					P.Neck = J(-spec.neckDrop - 1.5 * br, 10, 0)
 					P.Head = J(spec.neckDrop * 0.55, 0, 4)
+				elseif spec.horned then
+					-- horned heads rest forward, straight, so the horns stay clear of the back
+					P.Head = J(spec.sleepHead[1] - 1.5 * br, 0, 0, 0, spec.sleepHead[2] - 0.02 * br, -0.3)
 				else
 					P.Head = J(spec.sleepHead[1] - 1.5 * br, 8, 4, 0, spec.sleepHead[2] - 0.02 * br, 0)
 				end
@@ -706,6 +709,7 @@ return function(A)
 			runTail = if lowTail then { -4, 0 } else { 25, 15 },
 			jumpTailScale = if lowTail then 0.2 else 1,
 			hasNeck = p.neck ~= nil,
+			horned = p.horns ~= nil,
 			neckDrop = math.min(55, 20 + (p.neck or 0) * 10),
 			earsTall = p.ears == "tall",
 			gait = p.gait,

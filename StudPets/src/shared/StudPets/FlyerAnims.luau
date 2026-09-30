@@ -14,7 +14,7 @@ return function(A, Q)
 		local b = p.body or { 1.4, 1.4, 1.8 }
 		local legH = if p.alwaysFly then 0 else (p.legH or 0.6)
 		local flap = p.flapPeriod or 0.4 -- must divide 4 s for seamless loops
-		local hover = p.hover or 1.3 -- flight height: close to the owner
+		local hover = p.hover or 1.0 -- flight height: close to the owner
 		local spec = {
 			rootY = legH + b[2] / 2 + (if p.alwaysFly then hover else 0),
 			hover = hover,
@@ -36,9 +36,11 @@ return function(A, Q)
 	end
 
 	-- lift > 0 raises the wings; fold 1 = tucked back along the body
+	-- folded wings hang down each side and point back (plates vertical, not a flat tray)
 	local function wings(P, lift: number, fold: number)
-		P.WingL = J(0, 90 * fold, -lift * (1 - fold))
-		P.WingR = J(0, -90 * fold, lift * (1 - fold))
+		local open = 1 - fold
+		P.WingL = J(-90 * fold, 0, 90 * fold - lift * open)
+		P.WingR = J(-90 * fold, 0, -90 * fold + lift * open)
 	end
 
 	-- Airborne pose: `speed` 0 = hover, 1 = fast forward flight.
@@ -196,7 +198,7 @@ return function(A, Q)
 	-- Loop: take off (if perched), barrel roll, settle back.
 	function F.Loop(spec)
 		local k = {
-			Up = { { 0, 0 }, { 0.3, 0.8, "QuadOut" }, { 1.3, 0.8 }, { 1.7, 0, "QuadIn" }, { 2, 0 } },
+			Up = { { 0, 0 }, { 0.3, 1.5, "QuadOut" }, { 1.3, 1.5 }, { 1.7, 0, "QuadIn" }, { 2, 0 } },
 			Roll = { { 0, 0 }, { 0.35, 0 }, { 1.25, 360, "Cubic" }, { 2, 360 } },
 			Open = { { 0, 0 }, { 0.15, 1 }, { 1.6, 1 }, { 1.85, 0 } },
 		}
