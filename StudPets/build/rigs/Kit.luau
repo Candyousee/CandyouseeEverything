@@ -121,22 +121,33 @@ function Kit.Quadruped(p, Q)
 		local nw = p.neckW or 1.0
 		local nz = -b[3] / 2 + nw / 2 + 0.15
 		local baseY = top - 0.3
-		local neckTop = baseY + p.neck + 0.3
-		add({ name = "Neck", size = { nw, p.neck + 0.3, nw }, pos = { 0, baseY + (p.neck + 0.3) / 2, nz }, color = col("main"), joint = { "Torso", { 0, baseY, nz } } })
+		local Ln = p.neck + 0.3
+		-- the neck leans forward by neckLean degrees (horses, dragons...)
+		local th = math.rad(p.neckLean or 0)
+		local dir = { 0, math.cos(th), -math.sin(th) }
+		local back = { 0, math.sin(th), math.cos(th) }
+		local function along(d, off)
+			off = off or 0
+			return { 0, baseY + dir[2] * d + back[2] * off, nz + dir[3] * d + back[3] * off }
+		end
+		local rot = { -(p.neckLean or 0), 0, 0 }
+		local topPt = along(Ln)
+		add({ name = "Neck", size = { nw, Ln, nw }, pos = along(Ln / 2), rot = rot, color = col("main"), joint = { "Torso", { 0, baseY, nz } } })
 		if p.maneStrip then
-			add({ name = "NeckMane", size = { 0.3, p.neck + 0.2, 0.35 }, pos = { 0, baseY + (p.neck + 0.3) / 2 + 0.1, nz + nw / 2 + 0.15 }, color = col("mane", "dark"), weld = "Neck" })
+			add({ name = "NeckMane", size = { 0.3, p.neck + 0.2, 0.35 }, pos = along(Ln / 2 + 0.1, nw / 2 + 0.15), rot = rot, color = col("mane", "dark"), weld = "Neck" })
 		end
 		if p.markings == "giraffe" or p.markings == "zebra" then
 			for i = 1, 3 do
 				for _, side in { -1, 1 } do
-					add({ name = name("NeckMark"), size = { 0.05, math.min(0.4, p.neck / 4), if p.markings == "zebra" then nw * 0.7 else 0.4 }, pos = { side * (nw / 2 + 0.025), baseY + p.neck * i / 3.5, nz + (if p.markings == "zebra" then 0 else (i % 2 - 0.5) * 0.3) }, color = col("dark"), weld = "Neck" })
+					local c = along(Ln * i / 3.8, if p.markings == "zebra" then 0 else (i % 2 - 0.5) * 0.3)
+					add({ name = name("NeckMark"), size = { 0.05, math.min(0.4, p.neck / 4), if p.markings == "zebra" then nw * 0.7 else 0.4 }, pos = { side * (nw / 2 + 0.025), c[2], c[3] }, rot = rot, color = col("dark"), weld = "Neck" })
 				end
 			end
 		end
 		headParent = "Neck"
-		headY = neckTop + h[2] / 2 - 0.5
-		headZ = nz - h[3] / 2 + nw / 2 + 0.2
-		headPivot = { 0, neckTop - 0.3, nz }
+		headY = topPt[2] + h[2] / 2 - 0.5
+		headZ = topPt[3] - h[3] / 2 + nw / 2 + 0.2
+		headPivot = { 0, topPt[2] - 0.3, topPt[3] }
 	else
 		headZ = -b[3] / 2 - h[3] / 2 + 0.6
 		headY = top - 0.3 + h[2] / 2 + (p.headUp or 0)

@@ -183,6 +183,28 @@ def main():
         data = json.load(f)
     os.makedirs(out_dir, exist_ok=True)
 
+    if mode == "lineup":
+        # every pet in the data, side by side at true scale, left to right
+        scene = reset_scene()
+        scene.cycles.samples = 48
+        scene.render.resolution_x, scene.render.resolution_y = 2400, 700
+        x = 0.0
+        tallest = 0.0
+        for pet in data["pets"]:
+            lo, hi = rest_bounds(pet)
+            width = hi[0] - lo[0]
+            objs, _ = build_pet(pet)
+            base = Matrix.Translation((x - lo[0], 0, 0))
+            pose_pet(objs, base, pet["anims"][0]["frames"][0])
+            x += width + 1.2
+            tallest = max(tallest, hi[2])
+        cam = add_stage(scene, (x / 2, 0, tallest * 0.45), 1, yaw=0, pitch=6)
+        cam.data.type = "ORTHO"
+        cam.data.ortho_scale = x + 2
+        cam.location = (x / 2, 60, tallest * 0.45 + 2)
+        render_to(scene, os.path.join(out_dir, "lineup.png"))
+        return
+
     if mode == "hero":
         scene = reset_scene()
         scene.cycles.samples = 64
@@ -211,7 +233,7 @@ def main():
         center = ((lo[0] + hi[0]) / 2, (lo[1] + hi[1]) / 2, (hi[2]) * 0.55)
         yaw = float(os.environ.get("PREVIEW_YAW", "-38"))
         size = max(hi[2] + 1.5, hi[1] - lo[1], hi[0] - lo[0])
-        add_stage(scene, center, max(15.5, size * 2.9), yaw=yaw)
+        add_stage(scene, center, max(12, size * float(os.environ.get("PREVIEW_DIST", "2.9"))), yaw=yaw)
         for anim in pet["anims"]:
             frames = anim["frames"]
             if mode == "sheet":

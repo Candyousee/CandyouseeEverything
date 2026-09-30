@@ -693,6 +693,21 @@ return function(A)
 		if p.wings then
 			Q.addWings(anims)
 		end
+		if p.trunk then
+			-- trunk swings gently unless the animation drives it (Trumpet, Roar)
+			for name, anim in anims do
+				local pose = anim.Pose
+				local period = if anim.Looped then anim.Length / math.max(1, math.round(anim.Length / 2)) else 2
+				anim.Pose = function(t)
+					local P = pose(t)
+					if not P.Trunk then
+						local swing = if name == "Run" then 20 else 8
+						P.Trunk = J(18 + swing * wave(t, period), 6 * wave(t, period, 0.25), 0)
+					end
+					return P
+				end
+			end
+		end
 		return { Spec = spec, Anims = anims, Order = { "Idle", "Walk", "Run", "Sit", "Jump", "Sleep", trick }, Trick = trick }
 	end
 
