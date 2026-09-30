@@ -201,7 +201,9 @@ def main():
         if only_pet and pet["name"] != only_pet:
             continue
         scene = reset_scene()
-        scene.render.resolution_x, scene.render.resolution_y = (420, 360) if mode == "sheet" else (360, 310)
+        scene.render.resolution_x, scene.render.resolution_y = (420, 360) if mode == "sheet" else (300, 260) if mode == "strip" else (360, 310)
+        if mode == "strip":
+            scene.cycles.samples = 10
         if mode == "anim":
             scene.cycles.samples = 14
         objs, base = build_pet(pet)
@@ -215,11 +217,19 @@ def main():
             if mode == "sheet":
                 pick = {"Jump": 0.47, "Stretch": 0.4, "Bark": 0.19}.get(anim["name"], 0.3)
                 indices = [min(len(frames) - 1, int(len(frames) * pick))]
+            elif mode == "strip":
+                n = len(frames)
+                indices = sorted({round(k * (n - 1) / 4) for k in range(5)})
             else:
                 indices = range(len(frames))
             for i in indices:
                 pose_pet(objs, base, frames[i])
-                name = f"{pet['name']}_{anim['name']}.png" if mode == "sheet" else os.path.join(pet["name"], anim["name"], f"{i:04d}.png")
+                if mode == "sheet":
+                    name = f"{pet['name']}_{anim['name']}.png"
+                elif mode == "strip":
+                    name = f"{pet['name']}__{anim['name']}__{i:04d}.png"
+                else:
+                    name = os.path.join(pet["name"], anim["name"], f"{i:04d}.png")
                 render_to(scene, os.path.join(out_dir, name))
 
 

@@ -114,14 +114,16 @@ local function spawnFollower(petType: string)
 	local template = PetModels:WaitForChild("Stud" .. petType) :: Model
 	local model = template:Clone()
 	model:SetAttribute("Showcase", nil)
-	model:ScaleTo(FOLLOW_SCALE)
+	-- big pets stay big, but not so big they swallow the player
+	local followScale = FOLLOW_SCALE / math.sqrt((model:GetAttribute("AnimScale") :: number?) or 1)
+	model:ScaleTo(followScale)
 	model.Name = "MyStud" .. petType
 	model.Parent = workspace
 	follower = {
 		model = model,
 		animator = PetAnimator.new(model),
 		petType = petType,
-		rootHeight = (model:GetAttribute("RootHeight") :: number) * FOLLOW_SCALE,
+		rootHeight = (model:GetAttribute("RootHeight") :: number) * followScale,
 		pos = nil,
 		vel = Vector3.zero,
 		yaw = 0,

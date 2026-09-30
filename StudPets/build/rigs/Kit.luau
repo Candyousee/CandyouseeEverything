@@ -73,13 +73,13 @@ local function tailChain(add, base, t1, t2, w, lens, color, tipColor, tipSize, r
 	end
 	local b2 = along1(lens[1] - 0.1)
 	local p2, r2, along2 = seg(b2, t2, lens[2])
-	add({ name = "Tail2", size = { w * 0.94, w * 0.94, lens[2] }, pos = p2, rot = r2, color = color, joint = { "Tail1", b2 } })
+	add({ name = "Tail2", size = { w * 0.88, w * 0.88, lens[2] }, pos = p2, rot = r2, color = color, joint = { "Tail1", b2 } })
 	if tipColor then
 		add({ name = "TailTip", size = { tipSize, tipSize, math.min(0.45, tipSize) }, pos = along2(lens[2] - math.min(0.45, tipSize) / 2 + 0.02), rot = r2, color = tipColor, weld = "Tail2" })
 	end
 	if rings then
 		add({ name = "TailRing1", size = { w + 0.06, w + 0.06, 0.22 }, pos = along1(lens[1] * 0.5), rot = r1, color = ringColor, weld = "Tail1" })
-		add({ name = "TailRing2", size = { w * 0.94 + 0.06, w * 0.94 + 0.06, 0.22 }, pos = along2(lens[2] * 0.4), rot = r2, color = ringColor, weld = "Tail2" })
+		add({ name = "TailRing2", size = { w * 0.88 + 0.06, w * 0.88 + 0.06, 0.22 }, pos = along2(lens[2] * 0.4), rot = r2, color = ringColor, weld = "Tail2" })
 	end
 end
 
@@ -287,12 +287,22 @@ function Kit.Quadruped(p, Q)
 		end
 	end
 	if p.wings then
+		-- animated wings (WingL / WingR joints at the shoulders)
+		local ws = p.wingSize or { 1.4, 1.6 }
+		local wz = p.wingZ or -0.1
 		for _, side in { -1, 1 } do
+			local nm = if side < 0 then "L" else "R"
 			local th, ph = math.rad(-side * 28), math.rad(-15)
 			local up = { -math.sin(th), math.cos(th) * math.cos(ph), math.cos(th) * math.sin(ph) }
-			local c = { side * (b[1] / 2 - 0.1), top + 0.6, -0.1 }
-			add({ name = name("Wing"), size = { 0.2, 1.4, 1.6 }, pos = c, rot = { -15, 0, -side * 28 }, color = col("wing", "main"), weld = "Torso" })
-			add({ name = name("WingTip"), size = { 0.24, 0.5, 1.62 }, pos = { c[1] + up[1] * 0.46, c[2] + up[2] * 0.46, c[3] + up[3] * 0.46 }, rot = { -15, 0, -side * 28 }, color = col("wingTip", "accent"), weld = "Torso" })
+			local root = { side * (b[1] / 2 - 0.15), top - 0.05, wz }
+			local function at(d)
+				return { root[1] + up[1] * d, root[2] + up[2] * d, root[3] + up[3] * d }
+			end
+			add({ name = "Wing" .. nm, size = { 0.2, ws[1], ws[2] }, pos = at(ws[1] / 2), rot = { -15, 0, -side * 28 }, color = col("wing", "main"), joint = { "Torso", root } })
+			add({ name = "WingTip" .. nm, size = { 0.24, ws[1] * 0.34, ws[2] + 0.02 }, pos = at(ws[1] * 0.83 + 0.01), rot = { -15, 0, -side * 28 }, color = col("wingTip", "accent"), weld = "Wing" .. nm })
+			if p.wingRibs then
+				add({ name = "WingRib" .. nm, size = { 0.26, ws[1] * 0.62, 0.16 }, pos = at(ws[1] * 0.36), rot = { -15, 0, -side * 28 }, color = col("dark"), weld = "Wing" .. nm })
+			end
 		end
 	end
 	if p.backPlates then
@@ -319,6 +329,11 @@ function Kit.Quadruped(p, Q)
 		for _, side in { -1, 1 } do
 			add({ name = name("Palm"), size = { 1.0, 0.2, 0.7 }, pos = { side * (hw / 2 + 0.4), headTop + 0.25, headZ + 0.1 }, rot = { 0, 0, side * 22 }, color = col("horn"), weld = "Head" })
 			add({ name = name("PalmTine"), size = { 0.18, 0.45, 0.18 }, pos = { side * (hw / 2 + 0.75), headTop + 0.6, headZ + 0.1 }, color = col("horn"), weld = "Head" })
+		end
+	elseif p.horns == "dragon" then
+		for _, side in { -1, 1 } do
+			add({ name = name("Horn"), size = { 0.32, 0.32, 1.3 }, pos = { side * hw * 0.3, headTop + 0.3, headZ + 0.55 }, rot = { 35, 0, 0 }, color = col("horn"), weld = "Head" })
+			add({ name = name("HornTip"), size = { 0.22, 0.22, 0.6 }, pos = { side * hw * 0.3, headTop + 0.78, headZ + 1.1 }, rot = { 55, 0, 0 }, color = col("horn"), weld = "Head" })
 		end
 	elseif p.horns == "ram" then
 		for _, side in { -1, 1 } do
@@ -563,7 +578,7 @@ function Kit.Flyer(p, F)
 	for _, side in { -1, 1 } do
 		local nm = if side < 0 then "L" else "R"
 		local px = if p.wingTop then side * 0.3 else side * b[1] / 2
-		local py = if p.wingTop then top - 0.05 else rootY + b[2] * 0.25
+		local py = if p.wingTop then top + (if p.shell then b[2] * 0.1 + 0.12 else 0.02) else rootY + b[2] * 0.25
 		local pz = if p.wingTop then -0.1 else 0.1
 		add({ name = "Wing" .. nm, size = { span, 0.15, chord }, pos = { px + side * span / 2, py, pz }, color = wing, joint = { "Torso", { px, py, pz } } })
 		if p.wingSpots then
@@ -692,8 +707,8 @@ function Kit.Swimmer(p, S)
 		add({ name = "Dorsal", class = "WedgePart", size = { 0.2, b[2] * 0.55, b[3] * 0.35 }, pos = { 0, rootY + b[2] / 2 + b[2] * 0.275 - 0.05, b[3] * 0.05 }, color = fin, weld = "Torso" })
 	end
 	if p.bands then
-		add({ name = "Band1", size = { b[1] + 0.06, b[2] + 0.06, 0.35 }, pos = { 0, rootY, 0.25 }, color = col("accent"), weld = "Torso" })
-		add({ name = "Band2", size = { h[1] + 0.06, h[2] + 0.06, 0.3 }, pos = { 0, rootY, headZ + h[3] * 0.3 }, color = col("accent"), weld = "Head" })
+		add({ name = "Band1", size = { b[1] + 0.1, b[2] + 0.1, 0.35 }, pos = { 0, rootY, 0.25 }, color = col("accent"), weld = "Torso" })
+		add({ name = "Band2", size = { h[1] + 0.14, h[2] + 0.14, 0.3 }, pos = { 0, rootY, headZ + h[3] * 0.3 }, color = col("accent"), weld = "Head" })
 	end
 	if p.spots then
 		for _, m in { { -0.25, 0.2 }, { 0.05, 0.3 }, { 0.3, 0.15 }, { -0.05, 0.05 } } do
@@ -866,12 +881,26 @@ function Kit.Biped(p, B)
 end
 
 -- Build any Animals.luau entry. plans = { Quadruped = Q, Flyer = F, Swimmer = S, Biped = B }
+-- `entry.size` scales the whole rig uniformly. Animations are authored at size 1,
+-- so the model carries AnimScale and every pose translation is multiplied by it.
 function Kit.build(entry, plans)
 	local parts, spec = Kit[entry.Plan](entry, plans[entry.Plan])
+	local s = entry.size or 1
+	local function mul(v)
+		return { v[1] * s, v[2] * s, v[3] * s }
+	end
+	for _, part in parts do
+		part.size = mul(part.size)
+		part.pos = mul(part.pos)
+		if part.joint then
+			part.joint = { part.joint[1], mul(part.joint[2]) }
+		end
+	end
 	return {
 		Name = "Stud" .. entry.Name,
 		PetType = entry.Name,
-		RootHeight = spec.rootY,
+		RootHeight = spec.rootY * s,
+		AnimScale = s,
 		Parts = parts,
 	}
 end

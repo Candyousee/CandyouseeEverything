@@ -128,10 +128,6 @@ local list = {
 	{ Name = "Butterfly", Plan = "Flyer", body = { 0.6, 0.6, 1.8 }, head = { 0.8, 0.8, 0.7 }, alwaysFly = true, antennae = true,
 		wingSpan = 2.0, wingChord = 2.0, wingTop = true, wingSpots = true, tail = "none", flapPeriod = 0.5, flapAmp = 60, hover = 2.4,
 		colors = { main = { 50, 40, 60 }, accent = { 250, 220, 90 }, dark = K, wing = { 150, 90, 230 } } },
-	{ Name = "Dragon", Plan = "Flyer", body = { 1.8, 1.6, 2.8 }, head = { 1.6, 1.4, 1.6 }, legH = 0.9, beak = "snout", jaw = true, dragonHorns = true, spikes = true,
-		wingSpan = 2.6, wingChord = 1.6, tail = "dragon", flapPeriod = 0.8, flapAmp = 40,
-		colors = { main = { 70, 170, 90 }, accent = { 230, 210, 120 }, dark = { 40, 110, 60 }, wing = { 50, 130, 70 }, horn = { 240, 230, 200 }, eye = { 250, 200, 40 } } },
-
 	-------------------------------------------------------------- swimmers
 	{ Name = "Whale", Plan = "Swimmer", body = { 2.4, 2.2, 3.6 }, head = { 2.3, 2.1, 1.6 }, kick = "vertical", blowhole = true, belly = true, trick = "Flip",
 		colors = { main = { 70, 110, 190 }, accent = { 200, 220, 240 }, dark = { 40, 70, 140 } } },
@@ -351,11 +347,11 @@ local list = {
 		anim = { walkTail = { 0, 0 }, runTail = { -4, 0 }, jumpTailScale = 0.2, sitTailDirs = { { -0.25, 0, 1 }, { -0.35, 0, 0.94 } }, sleepTailDirs = { { -0.3, -0.05, 1 }, { -0.5, 0, 0.87 } } },
 		colors = { main = { 170, 140, 100 }, accent = { 120, 96, 70 }, dark = { 100, 80, 56 }, shell = { 140, 110, 76 }, nose = { 100, 80, 56 } } },
 	-------------------------------------------------------------- fantasy four-legged
-	{ Name = "Griffin", Plan = "Quadruped", body = { 2.2, 1.6, 3.6 }, legH = 1.4, head = { 1.8, 1.6, 1.6 }, snout = { 0.7, 0.5, 0.6 }, noNose = true, beakSnout = true, ears = "perky", earSize = 0.6, wings = true, tail = "tuft", markings = "none", trick = "Rear",
+	{ Name = "Griffin", Plan = "Quadruped", body = { 2.2, 1.6, 3.6 }, legH = 1.4, head = { 1.8, 1.6, 1.6 }, snout = { 0.7, 0.5, 0.6 }, noNose = true, beakSnout = true, ears = "perky", earSize = 0.6, wings = true, wingSize = { 1.9, 1.8 }, tail = "tuft", trick = "Rear",
 		colors = { main = { 214, 170, 90 }, accent = { 250, 200, 60 }, dark = { 150, 100, 50 }, head = W, snout = { 250, 200, 60 }, wing = W, wingTip = { 150, 100, 50 }, ear = W } },
-	{ Name = "Pegasus", Plan = "Quadruped", body = { 2.2, 1.8, 3.8 }, legH = 1.9, legW = 0.8, head = { 1.6, 1.6, 2.1 }, snout = { 1.4, 1.0, 0.8 }, nostrils = true, neck = 1.5, ears = "tall", earSize = 0.7, wings = true, tail = "hang", tailPitch = -40, tail2Pitch = -75, maneStrip = true, trick = "Rear",
+	{ Name = "Pegasus", Plan = "Quadruped", body = { 2.2, 1.8, 3.8 }, legH = 1.9, legW = 0.8, head = { 1.6, 1.6, 2.1 }, snout = { 1.4, 1.0, 0.8 }, nostrils = true, neck = 1.5, ears = "tall", earSize = 0.7, wings = true, wingSize = { 2.0, 1.8 }, tail = "hang", tailPitch = -40, tail2Pitch = -75, maneStrip = true, trick = "Rear",
 		colors = { main = W, accent = { 210, 230, 250 }, dark = { 120, 170, 240 }, paw = { 200, 200, 210 }, mane = { 120, 170, 240 }, tail = { 120, 170, 240 }, wing = W, wingTip = { 170, 210, 250 } } },
-	{ Name = "Alicorn", Plan = "Quadruped", body = { 2.2, 1.8, 3.8 }, legH = 1.9, legW = 0.8, head = { 1.6, 1.6, 2.1 }, snout = { 1.4, 1.0, 0.8 }, nostrils = true, neck = 1.5, ears = "tall", earSize = 0.7, horns = "unicorn", wings = true, tail = "hang", tailPitch = -40, tail2Pitch = -75, maneStrip = true, trick = "Rear",
+	{ Name = "Alicorn", Plan = "Quadruped", body = { 2.2, 1.8, 3.8 }, legH = 1.9, legW = 0.8, head = { 1.6, 1.6, 2.1 }, snout = { 1.4, 1.0, 0.8 }, nostrils = true, neck = 1.5, ears = "tall", earSize = 0.7, horns = "unicorn", wings = true, wingSize = { 2.0, 1.8 }, tail = "hang", tailPitch = -40, tail2Pitch = -75, maneStrip = true, trick = "Rear",
 		colors = { main = { 200, 170, 240 }, accent = { 230, 210, 250 }, dark = { 130, 90, 200 }, paw = { 250, 200, 90 }, mane = { 250, 130, 200 }, tail = { 250, 130, 200 }, horn = { 250, 205, 70 }, wing = { 220, 200, 250 }, wingTip = { 250, 200, 90 } } },
 	{ Name = "Kitsune", Plan = "Quadruped", body = { 1.8, 1.3, 3.2 }, legH = 1.2, head = { 2.2, 1.5, 1.6 }, snout = { 0.9, 0.6, 0.8 }, ears = "perky", earSize = 1.0, tail = "fluffy", extraTails = 4, markings = "cheeks", eyeGlow = true, trick = "Spin",
 		colors = { main = W, accent = { 250, 170, 60 }, dark = { 240, 90, 90 }, nose = K, eye = { 250, 120, 60 }, innerEar = { 250, 120, 120 } } },
@@ -368,6 +364,16 @@ local list = {
 	{ Name = "Qilin", Plan = "Quadruped", body = { 2.2, 1.7, 3.6 }, legH = 1.7, legW = 0.7, head = { 1.8, 1.6, 1.8 }, snout = { 1.2, 0.8, 0.6 }, jaw = true, neck = 1.0, ears = "side", earSize = 0.6, horns = "antlers", maneStrip = true, backPlates = true, tail = "fluffy", trick = "Rear",
 		colors = { main = { 250, 200, 80 }, accent = { 250, 230, 160 }, dark = { 60, 170, 140 }, horn = { 250, 240, 200 }, mane = { 60, 170, 140 }, plate = { 60, 170, 140 } } },
 
+	-------------------------------------------------------------- dragons (four legs + animated wings)
+	{ Name = "Dragon", Plan = "Quadruped", body = { 2.6, 2.0, 4.2 }, legH = 1.5, legW = 0.9, neck = 1.4, neckW = 1.0, head = { 1.8, 1.5, 1.9 }, snout = { 1.3, 0.8, 1.2 }, jaw = true, nostrils = true,
+		ears = "none", horns = "dragon", backPlates = true, wings = true, wingSize = { 2.8, 2.4 }, wingRibs = true, tail = "club", tailPitch = 18, tail2Pitch = 0, tailW = 0.75, tailLen = { 1.8, 1.7 }, trick = "Roar",
+		colors = { main = { 70, 170, 90 }, accent = { 230, 210, 120 }, dark = { 40, 110, 60 }, wing = { 60, 140, 80 }, wingTip = { 40, 110, 60 }, horn = { 240, 230, 200 }, plate = { 230, 210, 120 }, eye = { 250, 200, 40 } } },
+	{ Name = "FireDragon", Plan = "Quadruped", body = { 2.6, 2.0, 4.2 }, legH = 1.5, legW = 0.9, neck = 1.4, neckW = 1.0, head = { 1.8, 1.5, 1.9 }, snout = { 1.3, 0.8, 1.2 }, jaw = true, nostrils = true,
+		ears = "none", horns = "dragon", backPlates = true, wings = true, wingSize = { 2.8, 2.4 }, wingRibs = true, tail = "club", tailPitch = 18, tail2Pitch = 0, tailW = 0.75, tailLen = { 1.8, 1.7 }, eyeGlow = true, trick = "Roar",
+		colors = { main = { 200, 50, 40 }, accent = { 250, 190, 60 }, dark = { 120, 26, 26 }, wing = { 160, 40, 30 }, wingTip = { 250, 150, 40 }, horn = { 50, 44, 44 }, plate = { 250, 150, 40 }, eye = { 255, 190, 40 } } },
+	{ Name = "IceDragon", Plan = "Quadruped", body = { 2.6, 2.0, 4.2 }, legH = 1.5, legW = 0.9, neck = 1.4, neckW = 1.0, head = { 1.8, 1.5, 1.9 }, snout = { 1.3, 0.8, 1.2 }, jaw = true, nostrils = true,
+		ears = "none", horns = "dragon", backPlates = true, wings = true, wingSize = { 2.8, 2.4 }, wingRibs = true, tail = "club", tailPitch = 18, tail2Pitch = 0, tailW = 0.75, tailLen = { 1.8, 1.7 }, eyeGlow = true, trick = "Roar",
+		colors = { main = { 170, 214, 244 }, accent = W, dark = { 80, 130, 200 }, wing = { 120, 176, 236 }, wingTip = W, horn = W, plate = W, eye = { 120, 230, 255 } } },
 	-------------------------------------------------------------- flyers
 	{ Name = "Crow", Plan = "Flyer", body = { 1.3, 1.3, 1.8 }, head = { 1.3, 1.2, 1.2 }, beak = "hook", wingSpan = 1.8, tail = "long", flapPeriod = 0.4,
 		colors = { main = { 34, 34, 42 }, accent = { 50, 50, 60 }, dark = { 20, 20, 26 }, beak = { 30, 30, 34 }, eye = { 240, 200, 60 }, leg = { 30, 30, 34 } } },
@@ -403,10 +409,6 @@ local list = {
 		colors = { main = W, accent = { 250, 250, 250 }, dark = { 60, 60, 70 }, beak = { 60, 60, 66 }, eye = { 250, 210, 50 } } },
 	{ Name = "Phoenix", Plan = "Flyer", body = { 1.5, 1.5, 2.0 }, head = { 1.4, 1.3, 1.3 }, beak = "hook", crest = true, wingSpan = 2.6, tail = "flame", eyeGlow = true, flapPeriod = 0.5, flapAmp = 40,
 		colors = { main = { 240, 90, 30 }, accent = { 250, 200, 50 }, dark = { 200, 40, 20 }, beak = { 250, 220, 90 }, wing = { 250, 130, 40 }, tail = { 250, 180, 40 } } },
-	{ Name = "IceDragon", Plan = "Flyer", body = { 1.8, 1.6, 2.8 }, head = { 1.6, 1.4, 1.6 }, legH = 0.9, beak = "snout", jaw = true, dragonHorns = true, spikes = true, wingSpan = 2.6, wingChord = 1.6, tail = "dragon", flapPeriod = 0.8, flapAmp = 40,
-		colors = { main = { 170, 210, 240 }, accent = W, dark = { 90, 140, 210 }, wing = { 120, 170, 230 }, horn = W, eye = { 120, 220, 255 } } },
-	{ Name = "FireDragon", Plan = "Flyer", body = { 1.8, 1.6, 2.8 }, head = { 1.6, 1.4, 1.6 }, legH = 0.9, beak = "snout", jaw = true, dragonHorns = true, spikes = true, wingSpan = 2.6, wingChord = 1.6, tail = "dragon", flapPeriod = 0.8, flapAmp = 40,
-		colors = { main = { 200, 50, 40 }, accent = { 250, 190, 60 }, dark = { 130, 30, 30 }, wing = { 150, 40, 30 }, horn = { 60, 50, 50 }, eye = { 250, 200, 40 } } },
 	{ Name = "Pterodactyl", Plan = "Flyer", body = { 1.3, 1.3, 2.0 }, head = { 1.1, 1.0, 1.6 }, legH = 0.7, beak = "needle", crest = true, wingSpan = 2.8, wingChord = 1.4, tail = "none", flapPeriod = 0.8, flapAmp = 36,
 		colors = { main = { 170, 120, 90 }, accent = { 230, 150, 80 }, dark = { 120, 80, 60 }, beak = { 220, 190, 150 }, wing = { 150, 100, 76 } } },
 	-------------------------------------------------------------- bugs
@@ -502,9 +504,35 @@ local list = {
 		colors = { main = { 44, 50, 66 }, accent = { 250, 240, 220 }, dark = K, beak = { 60, 60, 66 }, leg = { 60, 60, 66 } } },
 }
 
+-- Real-world size classes (1 = cat/dog). The whole rig and its animation offsets scale.
+local SIZE = {
+	-- tiny
+	Bee = 0.55, Bumblebee = 0.6, Wasp = 0.55, Firefly = 0.55, Ladybug = 0.55, Beetle = 0.6, Hummingbird = 0.6, Dragonfly = 0.7,
+	Butterfly = 0.75, Moth = 0.7, Mouse = 0.6, Hamster = 0.6, Rat = 0.7, PoisonDartFrog = 0.6, Frog = 0.7, Gecko = 0.7, Canary = 0.7,
+	Clownfish = 0.75, Goldfish = 0.7, Betta = 0.7, BlueTang = 0.8, Angelfish = 0.8, Piranha = 0.8, Chipmunk = 0.7, Squirrel = 0.8,
+	Hedgehog = 0.75, GuineaPig = 0.75, Robin = 0.8, BlueJay = 0.8, Cardinal = 0.8, Chihuahua = 0.8, Ferret = 0.85, Meerkat = 0.85,
+	Kiwi = 0.85, Axolotl = 0.8, Chameleon = 0.8, Sparrow = 0.7, Pufferfish = 0.9, Pigeon = 0.85, Crow = 0.9, Woodpecker = 0.85,
+	Bat = 0.8, Quokka = 0.9, FennecFox = 0.85, Bunny = 0.9, LopBunny = 0.9, ArcticHare = 0.9, Skunk = 0.9, Opossum = 0.9,
+	Pug = 0.9, Corgi = 0.9, Dachshund = 0.9, Duck = 0.9, Chicken = 0.9, Puffin = 0.9, Penguin = 0.95,
+	-- large
+	Lion = 1.3, Tiger = 1.35, WhiteTiger = 1.35, Jaguar = 1.15, Leopard = 1.1, Cheetah = 1.1, Panther = 1.15, Cougar = 1.1, SnowLeopard = 1.1,
+	Wolf = 1.1, FrostWolf = 1.3, Hellhound = 1.3, Hyena = 1.1, GermanShepherd = 1.05, GoldenRetriever = 1.05, Husky = 1.05, Samoyed = 1.05,
+	Bear = 1.4, PolarBear = 1.5, Panda = 1.25, Horse = 1.35, Zebra = 1.3, Donkey = 1.15, Pony = 1.05, Unicorn = 1.35, Pegasus = 1.4,
+	Alicorn = 1.4, Griffin = 1.4, Qilin = 1.3, Cow = 1.35, Bull = 1.45, Yak = 1.45, Bison = 1.5, Moose = 1.6, Reindeer = 1.25, Deer = 1.15,
+	Camel = 1.4, Llama = 1.15, Alpaca = 1.1, Gorilla = 1.4, Orangutan = 1.2, Yeti = 1.6, Kangaroo = 1.2, Ostrich = 1.35, Crocodile = 1.4,
+	Komodo = 1.25, Tapir = 1.15, Capybara = 1.05, Anteater = 1.1, Warthog = 1.05, Eagle = 1.15, Vulture = 1.15, Pelican = 1.15,
+	EmperorPenguin = 1.15, Flamingo = 1.1, Peacock = 1.1, Swan = 1.1, Turkey = 1.05, Phoenix = 1.25, Pterodactyl = 1.4, Raptor = 1.15,
+	Shark = 1.5, Dolphin = 1.35, Hammerhead = 1.5, Swordfish = 1.4, Stingray = 1.4, Seal = 1.2, Walrus = 1.5, SeaTurtle = 1.2, Tortoise = 1.1,
+	-- huge
+	Hippo = 1.6, Rhino = 1.6, Elephant = 1.9, Giraffe = 1.6, Whale = 2.5, Orca = 1.9, Narwhal = 1.7, Beluga = 1.7, Manatee = 1.7,
+	Brachiosaurus = 2.1, Triceratops = 1.8, Stegosaurus = 1.8, Ankylosaurus = 1.6, TRex = 2.0, Spinosaurus = 2.0, Parasaurolophus = 1.7,
+	Dragon = 1.8, FireDragon = 1.9, IceDragon = 1.9,
+}
+
 local byName = {}
 local order = {}
 for _, entry in list do
+	entry.size = entry.size or SIZE[entry.Name] or 1
 	byName[entry.Name] = entry
 	table.insert(order, entry.Name)
 end

@@ -647,11 +647,52 @@ return function(A)
 	end
 
 	-- Full animation set for an entry in Animals.luau.
+	-- Wing motion for winged four-legged pets (dragons, pegasus, griffin): layered
+	-- on top of every animation. open > 0 spreads both wings outward.
+	local function wingOpen(name: string, t: number, len: number): number
+		if name == "Idle" then
+			-- breathing, plus a big stretch-and-shake once per loop
+			return 3 * wave(t, 2) + curve(t, { { 0, 0 }, { 2.2, 0 }, { 2.6, 55, "BackOut" }, { 3.0, 50 }, { 3.5, 0 } }) + (if t > 2.6 and t < 3.0 then 6 * math.sin(t * 40) else 0)
+		elseif name == "Walk" then
+			return 4 + 4 * wave(t, len)
+		elseif name == "Run" then
+			return 40 + 32 * wave(t, len)
+		elseif name == "Sit" then
+			return -6 + 2 * wave(t, 1.5)
+		elseif name == "Sleep" then
+			return -10
+		elseif name == "Jump" then
+			local open = curve(t, { { 0, 0 }, { 0.2, -8 }, { 0.36, 60, "QuadOut" }, { 0.85, 55 }, { 1.05, 8 }, { 1.2, 0 } })
+			local flap = if t > 0.36 and t < 0.85 then 28 * math.sin((t - 0.36) * 26) else 0
+			return open + flap
+		elseif name == "Roar" or name == "Rear" then
+			local open = curve(t, { { 0, 0 }, { 0.35, 70, "BackOut" }, { len - 0.4, 65 }, { len, 0 } })
+			return open + (if t > 0.35 and t < len - 0.4 then 8 * math.sin(t * 9) else 0)
+		end
+		return 20 * math.sin(math.pi * math.clamp(t / len, 0, 1))
+	end
+
+	function Q.addWings(anims)
+		for name, anim in anims do
+			local pose = anim.Pose
+			anim.Pose = function(t)
+				local P = pose(t)
+				local a = wingOpen(name, t, anim.Length)
+				P.WingL = J(-a * 0.15, 0, a)
+				P.WingR = J(-a * 0.15, 0, -a)
+				return P
+			end
+		end
+	end
+
 	function Q.fromParams(p)
 		local spec = Q.measure(p)
 		local anims = Q.build(spec)
 		local trick = p.trick or "Spin"
 		anims[trick] = Q[trick](spec)
+		if p.wings then
+			Q.addWings(anims)
+		end
 		return { Spec = spec, Anims = anims, Order = { "Idle", "Walk", "Run", "Sit", "Jump", "Sleep", trick }, Trick = trick }
 	end
 

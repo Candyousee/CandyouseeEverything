@@ -58,6 +58,7 @@ export type PetAnimator = typeof(setmetatable(
 		FadeTime: number,
 		OnFinished: ((name: string) -> ())?,
 		CanScale: boolean,
+		AnimScale: number,
 		_ancestry: RBXScriptConnection?,
 	},
 	PetAnimator
@@ -127,6 +128,7 @@ function PetAnimator.new(model: Model, options: Options?): PetAnimator
 			return model:GetScale()
 		end)),
 		_ancestry = nil,
+		AnimScale = (model:GetAttribute("AnimScale") :: number?) or 1,
 	}, PetAnimator)
 	assert(self.Current, `StudPets: {petType} has no "{default}" animation`)
 
@@ -214,7 +216,8 @@ end
 
 function PetAnimator._apply(self: PetAnimator, pose: PoseSet)
 	-- Motor offsets scale with Model:ScaleTo(); our translations must too.
-	local s = if self.CanScale then self.Model:GetScale() else 1
+	-- kit pets are built at their own size (AnimScale); Model:ScaleTo() adds on top
+	local s = (if self.CanScale then self.Model:GetScale() else 1) * self.AnimScale
 	local rad = math.rad
 	for name, motor in self.Motors do
 		local p = pose[name]

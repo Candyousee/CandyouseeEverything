@@ -64,11 +64,12 @@ local function restCF(p)
 end
 
 -- Must match PetAnimator: Transform = CFrame.new(pos) * CFrame.Angles(rx, ry, rz)
-local function poseCF(p)
+local function poseCF(p, scale)
 	if not p then
 		return CFrame.new()
 	end
-	return CFrame.new(p[4], p[5], p[6]) * CFrame.Angles(math.rad(p[1]), math.rad(p[2]), math.rad(p[3]))
+	local k = scale or 1
+	return CFrame.new(p[4] * k, p[5] * k, p[6] * k) * CFrame.Angles(math.rad(p[1]), math.rad(p[2]), math.rad(p[3]))
 end
 
 ---------------------------------------------------------------------------
@@ -123,7 +124,7 @@ local function compileRig(rig)
 			assert(p.parent.root or p.parent.kind == "motor", p.name .. ": motors must hang off the root or another motor part")
 		end
 	end
-	return { rig = rig, list = list, byName = byName }
+	return { rig = rig, list = list, byName = byName, scale = rig.AnimScale or 1 }
 end
 
 -- Forward kinematics, same maths as Roblox:
@@ -134,7 +135,7 @@ local function solve(R, poseSet, origin)
 		if p.root then
 			world[p.name] = origin * p.cf
 		elseif p.kind == "motor" then
-			world[p.name] = world[p.parent.name] * p.C0 * poseCF(poseSet[p.name]) * p.C1:Inverse()
+			world[p.name] = world[p.parent.name] * p.C0 * poseCF(poseSet[p.name], R.scale) * p.C1:Inverse()
 		else
 			world[p.name] = world[p.parent.name] * p.C0 * p.C1:Inverse()
 		end
@@ -162,7 +163,7 @@ local function bakeSequence(R, anim)
 			if p.root or p.kind == "motor" then
 				local pose = Instance.new("Pose")
 				pose.Name = p.name
-				pose.CFrame = if p.root then CFrame.new() else poseCF(ps[p.name])
+				pose.CFrame = if p.root then CFrame.new() else poseCF(ps[p.name], R.scale)
 				pose.Weight = 1
 				pose.EasingStyle = Enum.PoseEasingStyle.Linear
 				pose.EasingDirection = Enum.PoseEasingDirection.In
@@ -229,6 +230,7 @@ local function makeModel(R, set, origin, editorRig)
 	model.PrimaryPart = inst.RootPart
 	model:SetAttribute("StudPet", rig.PetType)
 	model:SetAttribute("RootHeight", rig.RootHeight)
+	model:SetAttribute("AnimScale", rig.AnimScale or 1)
 	model:AddTag("StudPet")
 	pcall(function()
 		model.ModelStreamingMode = Enum.ModelStreamingMode.Atomic
@@ -258,12 +260,22 @@ local function studPart(name, size, cf, rgb)
 	return part
 end
 
+local function corners(cf, size)
+	local out = {}
+	local hx, hy, hz = size[1] / 2, size[2] / 2, size[3] / 2
+	for _, sx in { -1, 1 } do
+		for _, sy in { -1, 1 } do
+			for _, sz in { -1, 1 } do
+				table.insert(out, cf * Vector3.new(sx * hx, sy * hy, sz * hz))
+			end
+		end
+	end
+	return out
+end
+
 local function makeDemo(compiled)
 	local folder = Instance.new("Folder")
 	folder.Name = "StudPetsDemo"
-	local rows = math.ceil(#compiled / 10)
-	local farZ = -(8 + rows * 12)
-	studPart("DemoFloor", Vector3.new(120, 1, 30 - farZ), CFrame.new(0, -0.5, (22 + farZ) / 2), { 75, 151, 75 }).Parent = folder
 	local spawn = Instance.new("SpawnLocation")
 	spawn.Name = "DemoSpawn"
 	spawn.Size = Vector3.new(6, 1, 6)
@@ -273,12 +285,38 @@ local function makeDemo(compiled)
 	spawn.Duration = 0
 	spawn.TopSurface = Enum.SurfaceType.Studs
 	spawn.Parent = folder
-	-- pedestals in rows of 10, facing the spawn (+Z)
-	for i, entry in compiled do
-		local col, row = (i - 1) % 10, (i - 1) // 10
-		local x, z = (col - 4.5) * 10, -8 - row * 12
-		studPart("Pedestal" .. entry.R.rig.PetType, Vector3.new(8, 1, 9), CFrame.new(x, 0.5, z), { 163, 162, 165 }).Parent = folder
-		local pet = makeModel(entry.R, entry.set, CFrame.new(x, 1, z) * CFrame.Angles(0, math.pi, 0), false)
+	-- pedestals packed in rows, each sized to its pet's footprint, facing the spawn (+Z)
+	local x, z, rowDepth = -55, -6, 0
+	local placed = {}
+	for _, entry in compiled do
+		local lo, hi = Vector3.new(math.huge, 0, math.huge), Vector3.new(-math.huge, 0, -math.huge)
+		local world = solve(entry.R, {}, CFrame.new())
+		for _, p in entry.R.list do
+			if not p.root then
+				for _, c in corners(world[p.name], p.size) do
+					lo = Vector3.new(math.min(lo.X, c.X), 0, math.min(lo.Z, c.Z))
+					hi = Vector3.new(math.max(hi.X, c.X), 0, math.max(hi.Z, c.Z))
+				end
+			end
+		end
+		local w = math.max(7, math.ceil(hi.X - lo.X) + 3)
+		local d = math.max(8, math.ceil(hi.Z - lo.Z) + 3)
+		if x + w > 55 then
+			x, z, rowDepth = -55, z - rowDepth - 3, 0
+		end
+		rowDepth = math.max(rowDepth, d)
+		local cx, cz = x + w / 2, z - d / 2
+		table.insert(placed, { entry = entry, cx = cx, cz = cz, w = w, d = d, lo = lo, hi = hi })
+		x += w + 2
+	end
+	local farZ = z - rowDepth - 6
+	studPart("DemoFloor", Vector3.new(124, 1, 30 - farZ), CFrame.new(0, -0.5, (22 + farZ) / 2), { 75, 151, 75 }).Parent = folder
+	for _, pl in placed do
+		local R = pl.entry.R
+		studPart("Pedestal" .. R.rig.PetType, Vector3.new(pl.w - 1, 1, pl.d - 1), CFrame.new(pl.cx, 0.5, pl.cz), { 163, 162, 165 }).Parent = folder
+		-- centre the pet's footprint on its pedestal (it is turned 180 degrees)
+		local ox, oz = (pl.lo.X + pl.hi.X) / 2, (pl.lo.Z + pl.hi.Z) / 2
+		local pet = makeModel(R, pl.entry.set, CFrame.new(pl.cx + ox, 1, pl.cz + oz) * CFrame.Angles(0, math.pi, 0), false)
 		pet:SetAttribute("Showcase", true)
 		pet.Parent = folder
 	end
@@ -298,18 +336,6 @@ local function warn(msg)
 	print("  !! " .. currentPet .. ": " .. msg)
 end
 
-local function corners(cf, size)
-	local out = {}
-	local hx, hy, hz = size[1] / 2, size[2] / 2, size[3] / 2
-	for _, sx in { -1, 1 } do
-		for _, sy in { -1, 1 } do
-			for _, sz in { -1, 1 } do
-				table.insert(out, cf * Vector3.new(sx * hx, sy * hy, sz * hz))
-			end
-		end
-	end
-	return out
-end
 
 local function lowestPoint(R, world)
 	local minY, who = math.huge, ""
@@ -429,10 +455,11 @@ local function qa(R, set)
 			end
 		end
 		local status = "ok"
-		if lo < -0.1 then
+		local tol = math.max(1, R.scale) -- tolerances grow with the pet
+		if lo < -0.1 * tol then
 			status = "SINKS"
 			warn(("%s: %s sinks %.2f below ground"):format(name, loWho, -lo))
-		elseif not AIRBORNE[name] and not hovers and hi > 0.12 then
+		elseif not AIRBORNE[name] and not hovers and hi > 0.12 * tol then
 			status = "FLOATS"
 			warn(("%s: floats up to %.2f above ground"):format(name, hi))
 		end
