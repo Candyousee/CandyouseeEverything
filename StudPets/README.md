@@ -12,11 +12,18 @@ play **straight from code**. There's nothing to upload, no asset IDs, and nothin
 
 The full list is in `src/shared/StudPets/Animals.luau`.
 
+**Sizes are real:** each pet has a size class (`SIZE` table in `Animals.luau`), from bugs at ~0.55×
+to the whale at 2.5×. The rig and all animation offsets scale together (`AnimScale` attribute), and
+`Model:ScaleTo()` still works on top. Winged four-legged pets (dragons, pegasus, alicorn, griffin)
+have animated wings: folded at rest, flapping when running and jumping, spread when roaring or rearing.
+
 Every pet uses the same animation names, so `anim:Play("Walk")` works on all of them.
 To add a pet, add an entry to `src/shared/StudPets/Animals.luau`. That entry sets its size,
 colours, ears, tail, markings and trick, then you rebuild.
 
 The detailed table below covers the original Cat & Dog.
+
+![Size lineup](preview/size_lineup.png)
 
 ![Pets A-K](preview/all200_A-K.jpg)
 ![Pets K-Z](preview/all200_K-Z.jpg)
