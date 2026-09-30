@@ -1,14 +1,16 @@
-# Stud Pets: 50 blocky Roblox pets
+# Stud Pets: 200 blocky Roblox pets
 
-50 blocky, studded Roblox pets built from plain Parts, each with 7 animations that
+200 blocky, studded Roblox pets built from plain Parts, each with 7 animations that
 play **straight from code**. There's nothing to upload, no asset IDs, and nothing to pay.
 
-| Body type | Pets | Animations |
-|---|---|---|
-| Four-legged (32) | Cat, Dog, Lion, Tiger, Cheetah, Leopard, Panther, Wolf, Fox, Bear, PolarBear, Panda, RedPanda, Raccoon, Pig, Cow, Horse, Zebra, Donkey, Unicorn, Sheep, Goat, Deer, Giraffe, Elephant, Rhino, Hippo, Camel, Llama, Crocodile, Mouse, Bunny | Idle, Walk, Run, Sit, Jump, Sleep + trick: Stretch / Roar / Rear / Spin / Trumpet / Bark |
-| Flyer (7) | Parrot, Owl, Eagle, Bat, Bee, Butterfly, Dragon | Idle, Walk (fly), Run (fast fly), Sit (perch), Jump (take off), Sleep + Loop |
-| Swimmer (6) | Whale, Shark, Dolphin, Clownfish, Pufferfish, Narwhal | Idle, Walk (swim), Run, Sit (drift), Jump (leap), Sleep + Flip / Spin |
-| Two-legged (5) | Penguin, Chicken, Duck, Monkey, TRex | Idle, Walk (waddle), Run, Sit, Jump, Sleep + Dance / Roar |
+| Body type | Count | Examples | Animations |
+|---|---|---|---|
+| Four-legged | 121 | dog & cat breeds, big cats, bears, farm, deer, safari, small mammals, reptiles, dinosaurs, unicorn/pegasus/griffin/kitsune | Idle, Walk, Run, Sit, Jump, Sleep + trick: Stretch / Roar / Rear / Spin / Trumpet / Bark |
+| Flyer | 34 | parrots, owls, hawks, songbirds, bugs, bats, dragons, phoenix | Idle, Walk (fly), Run (fast fly), Sit (perch), Jump (take off), Sleep + Loop |
+| Swimmer | 21 | whales, sharks, reef fish, seals, walrus, stingray | Idle, Walk (swim), Run, Sit (drift), Jump (leap), Sleep + Flip / Spin |
+| Two-legged | 24 | penguins, poultry, apes, flamingo, peacock, ostrich, T-rex & other dinos | Idle, Walk (waddle), Run, Sit, Jump, Sleep + Dance / Roar |
+
+The full list is in `src/shared/StudPets/Animals.luau`.
 
 Every pet uses the same animation names, so `anim:Play("Walk")` works on all of them.
 To add a pet, add an entry to `src/shared/StudPets/Animals.luau`. That entry sets its size,
@@ -16,7 +18,8 @@ colours, ears, tail, markings and trick, then you rebuild.
 
 The detailed table below covers the original Cat & Dog.
 
-![All 50 pets](preview/all50.jpg)
+![Pets A-K](preview/all200_A-K.jpg)
+![Pets K-Z](preview/all200_K-Z.jpg)
 
 ![Stud Dog and Stud Cat](preview/hero_front.jpg)
 
@@ -35,10 +38,10 @@ The detailed table below covers the original Cat & Dog.
 
 ## Open it in Studio
 
-- **Quickest:** open `StudPets.rbxl` in Studio and press Play. All 50 pets stand on pedestals
+- **Quickest:** open `StudPets.rbxl` in Studio and press Play. All 200 pets stand on pedestals
   cycling through their animations, and a small pet follows you around.
   - It walks, runs, sits after 5 s and falls asleep after 12 s, and it jumps when you jump.
-  - **G** makes it do its trick. **P** / **O** switch to the next / previous pet.
+  - **G** makes it do its trick. **P** / **O** cycle the follower through all 200.
 - **With Rojo:** run `rojo serve` in this folder and connect with the Rojo plugin.
 - **Just the models:** drag any file in `assets/pets/` into Studio.
   To animate them you also need the `src/shared/StudPets` modules.
@@ -64,7 +67,7 @@ anim:Play("Jump")             -- one-shots return to Idle on their own
 ## Real Animation assets (optional)
 
 `ServerStorage.StudPetEditorRigs` holds the Cat and Dog with all 7 animations baked
-into `AnimSaves` (20 keyframes/s). For all 50, run `lune run build/build.luau editor-all`.
+into `AnimSaves` (20 keyframes/s). For all 200, run `lune run build/build.luau editor-all`.
 It's left out of the default build to keep the place small.
 
 1. Drag an editor rig into Workspace.
