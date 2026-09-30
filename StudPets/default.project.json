@@ -8,9 +8,7 @@
         "$path": "src/shared/StudPets"
       },
       "StudPetModels": {
-        "$className": "Folder",
-        "StudCat": { "$path": "assets/StudCat.rbxm" },
-        "StudDog": { "$path": "assets/StudDog.rbxm" }
+        "$path": "assets/pets"
       }
     },
     "ServerStorage": {

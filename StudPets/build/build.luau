@@ -14,11 +14,31 @@ local Instance, CFrame, Vector3, Color3, Enum = roblox.Instance, roblox.CFrame, 
 
 local AnimLib = require("../src/shared/StudPets/AnimLib")
 local Quadruped = require("../src/shared/StudPets/QuadrupedAnims")(AnimLib)
+local PLANS = {
+	Quadruped = Quadruped,
+	Flyer = require("../src/shared/StudPets/FlyerAnims")(AnimLib, Quadruped),
+	Swimmer = require("../src/shared/StudPets/SwimmerAnims")(AnimLib, Quadruped),
+	Biped = require("../src/shared/StudPets/BipedAnims")(AnimLib, Quadruped),
+}
+local Animals = require("../src/shared/StudPets/Animals")
+local Kit = require("./rigs/Kit")
 
 local PETS = {
-	{ rig = require("./rigs/Cat"), set = require("../src/shared/StudPets/Pets/Cat")(AnimLib, Quadruped) },
-	{ rig = require("./rigs/Dog"), set = require("../src/shared/StudPets/Pets/Dog")(AnimLib, Quadruped) },
+	{ rig = require("./rigs/Cat"), set = require("../src/shared/StudPets/Pets/Cat")(AnimLib, Quadruped), editor = true },
+	{ rig = require("./rigs/Dog"), set = require("../src/shared/StudPets/Pets/Dog")(AnimLib, Quadruped), editor = true },
 }
+local EDITOR_ALL = table.find(process.args, "editor-all") ~= nil
+for _, name in Animals.Order do
+	local entry = Animals.ByName[name]
+	table.insert(PETS, { rig = Kit.build(entry, PLANS), set = PLANS[entry.Plan].fromParams(entry), editor = EDITOR_ALL })
+end
+
+-- every joint name any animation set may pose
+local KNOWN_JOINTS = {}
+for _, n in { "Torso", "Head", "Neck", "Jaw", "Trunk", "EarL", "EarR", "EyeL", "EyeR", "LegFL", "LegFR", "LegBL", "LegBR",
+	"LegL", "LegR", "ArmL", "ArmR", "WingL", "WingR", "FinL", "FinR", "Tail1", "Tail2" } do
+	KNOWN_JOINTS[n] = true
+end
 
 local BAKE_FPS = 20 -- Animation Editor keyframes per second
 local PREVIEW_FPS = 20
@@ -241,7 +261,7 @@ end
 local function makeDemo(compiled)
 	local folder = Instance.new("Folder")
 	folder.Name = "StudPetsDemo"
-	studPart("DemoFloor", Vector3.new(64, 1, 64), CFrame.new(0, -0.5, 0), { 75, 151, 75 }).Parent = folder
+	studPart("DemoFloor", Vector3.new(120, 1, 90), CFrame.new(0, -0.5, -22), { 75, 151, 75 }).Parent = folder
 	local spawn = Instance.new("SpawnLocation")
 	spawn.Name = "DemoSpawn"
 	spawn.Size = Vector3.new(6, 1, 6)
@@ -251,11 +271,12 @@ local function makeDemo(compiled)
 	spawn.Duration = 0
 	spawn.TopSurface = Enum.SurfaceType.Studs
 	spawn.Parent = folder
+	-- pedestals in rows of 10, facing the spawn (+Z)
 	for i, entry in compiled do
-		local x = if i == 1 then -6 else 6
-		studPart("Pedestal" .. entry.R.rig.PetType, Vector3.new(7, 1, 8), CFrame.new(x, 0.5, 0), { 163, 162, 165 }).Parent = folder
-		-- face the spawn (+Z)
-		local pet = makeModel(entry.R, entry.set, CFrame.new(x, 1, 0) * CFrame.Angles(0, math.pi, 0), false)
+		local col, row = (i - 1) % 10, (i - 1) // 10
+		local x, z = (col - 4.5) * 10, -8 - row * 12
+		studPart("Pedestal" .. entry.R.rig.PetType, Vector3.new(8, 1, 9), CFrame.new(x, 0.5, z), { 163, 162, 165 }).Parent = folder
+		local pet = makeModel(entry.R, entry.set, CFrame.new(x, 1, z) * CFrame.Angles(0, math.pi, 0), false)
 		pet:SetAttribute("Showcase", true)
 		pet.Parent = folder
 	end
@@ -265,12 +286,14 @@ end
 ---------------------------------------------------------------------------
 -- QA
 ---------------------------------------------------------------------------
-local AIRBORNE = { Jump = true, Run = true } -- allowed to leave the ground
+local AIRBORNE = { Jump = true, Run = true, Loop = true, Flip = true, Rear = true, Spin = true, Dance = true }
+local VERBOSE = table.find(process.args, "verbose") ~= nil -- allowed to leave the ground
 local problems = 0
 
+local currentPet = ""
 local function warn(msg)
 	problems += 1
-	print("  !! " .. msg)
+	print("  !! " .. currentPet .. ": " .. msg)
 end
 
 local function corners(cf, size)
@@ -321,6 +344,7 @@ local function zFightCheck(R)
 		end
 	end
 	local hits = 0
+	local seenPairs = {}
 	for i = 1, #faces do
 		for j = i + 1, #faces do
 			local f, g = faces[i], faces[j]
@@ -330,7 +354,9 @@ local function zFightCheck(R)
 				local du, dv = math.abs(d:Dot(f.u)), math.abs(d:Dot(f.v))
 				local gu = math.abs(g.u:Dot(f.u)) * g.su + math.abs(g.v:Dot(f.u)) * g.sv
 				local gv = math.abs(g.u:Dot(f.v)) * g.su + math.abs(g.v:Dot(f.v)) * g.sv
-				if du < f.su + gu - 0.004 and dv < f.sv + gv - 0.004 then
+				local key = f.part .. "|" .. g.part
+				if du < f.su + gu - 0.004 and dv < f.sv + gv - 0.004 and not seenPairs[key] then
+					seenPairs[key] = true
 					hits += 1
 					warn(("z-fight: %s and %s share a face plane"):format(f.part, g.part))
 				end
@@ -341,7 +367,10 @@ local function zFightCheck(R)
 end
 
 local function qa(R, set)
-	print(("[QA] %s"):format(R.rig.Name))
+	currentPet = R.rig.Name
+	if VERBOSE then
+		print(("[QA] %s (%d parts)"):format(R.rig.Name, #R.list - 1))
+	end
 	local joints = {}
 	for _, p in R.list do
 		if p.kind == "motor" then
@@ -352,7 +381,8 @@ local function qa(R, set)
 	zFightCheck(R)
 	local rest = solve(R, {}, origin)
 	local restMin = lowestPoint(R, rest)
-	if math.abs(restMin) > 0.001 then
+	local hovers = set.Spec ~= nil and set.Spec.hover ~= nil -- flyers & swimmers float by design
+	if not hovers and math.abs(restMin) > 0.001 then
 		warn(("rest pose lowest point %.3f (should be 0)"):format(restMin))
 	end
 	for _, name in set.Order do
@@ -365,7 +395,7 @@ local function qa(R, set)
 			local t = anim.Length * i / n
 			local ps = anim.Pose(t)
 			for joint, pose in ps do
-				if not joints[joint] and joint ~= "Jaw" then
+				if not joints[joint] and not KNOWN_JOINTS[joint] then
 					unknown[joint] = true
 				end
 				for c = 1, 6 do
@@ -400,11 +430,13 @@ local function qa(R, set)
 		if lo < -0.1 then
 			status = "SINKS"
 			warn(("%s: %s sinks %.2f below ground"):format(name, loWho, -lo))
-		elseif not AIRBORNE[name] and hi > 0.12 then
+		elseif not AIRBORNE[name] and not hovers and hi > 0.12 then
 			status = "FLOATS"
 			warn(("%s: floats up to %.2f above ground"):format(name, hi))
 		end
-		print(("  %-8s %4.2fs %-6s lowest point %+.2f..%+.2f (%s)"):format(name, anim.Length, if anim.Looped then "loop" else "once", lo, hi, status))
+		if VERBOSE or status ~= "ok" then
+			print(("  %-8s %4.2fs %-6s lowest point %+.2f..%+.2f (%s)"):format(name, anim.Length, if anim.Looped then "loop" else "once", lo, hi, status))
+		end
 	end
 end
 
@@ -413,7 +445,7 @@ end
 ---------------------------------------------------------------------------
 local compiled = {}
 for _, pet in PETS do
-	table.insert(compiled, { R = compileRig(pet.rig), set = pet.set })
+	table.insert(compiled, { R = compileRig(pet.rig), set = pet.set, editor = pet.editor })
 end
 
 for _, entry in compiled do
@@ -421,20 +453,27 @@ for _, entry in compiled do
 end
 
 fs.writeDir("assets/editor")
+fs.writeDir("assets/pets")
 for _, entry in compiled do
 	local name = entry.R.rig.Name
 	local runtime = makeModel(entry.R, entry.set, CFrame.new(), false)
-	fs.writeFile(`assets/{name}.rbxm`, roblox.serializeModel({ runtime }))
-	local editor = makeModel(entry.R, entry.set, CFrame.new(), true)
-	fs.writeFile(`assets/editor/{name}_EditorRig.rbxm`, roblox.serializeModel({ editor }))
+	fs.writeFile(`assets/pets/{name}.rbxm`, roblox.serializeModel({ runtime }))
+	if entry.editor then
+		local editor = makeModel(entry.R, entry.set, CFrame.new(), true)
+		fs.writeFile(`assets/editor/{name}_EditorRig.rbxm`, roblox.serializeModel({ editor }))
+	end
 end
 fs.writeFile("assets/StudPetsDemo.rbxm", roblox.serializeModel({ makeDemo(compiled) }))
-print("[build] wrote assets/StudCat.rbxm, assets/StudDog.rbxm, assets/editor/*, assets/StudPetsDemo.rbxm")
+print(("[build] wrote %d pets to assets/pets, editor rigs, assets/StudPetsDemo.rbxm"):format(#compiled))
 
 if process.args[1] == "preview" then
 	local out = { fps = PREVIEW_FPS, pets = {} }
+	local onlyPet = process.args[4]
 	for _, entry in compiled do
 		local R, set = entry.R, entry.set
+		if onlyPet and onlyPet ~= "all" and not string.find("," .. onlyPet .. ",", "," .. R.rig.PetType .. ",", 1, true) then
+			continue
+		end
 		local parts = {}
 		for _, p in R.list do
 			if not p.root then
@@ -443,6 +482,9 @@ if process.args[1] == "preview" then
 		end
 		local anims = {}
 		local only = process.args[3]
+		if only == "all" then
+			only = nil
+		end
 		for _, name in set.Order do
 			if not only or only == name then
 				local anim = set.Anims[name]

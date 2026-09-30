@@ -12,9 +12,10 @@ local placePath = process.args[1] or "StudPets.rbxl"
 local game = roblox.deserializePlace(fs.readFile(placePath))
 local failures = 0
 
+local passes = 0
 local function check(ok: boolean, msg: string)
 	if ok then
-		print("  ok   " .. msg)
+		passes += 1
 	else
 		failures += 1
 		print("  FAIL " .. msg)
@@ -33,7 +34,14 @@ for _, name in { "AnimLib", "QuadrupedAnims", "PetAnimator" } do
 	check(m ~= nil and m.ClassName == "ModuleScript", "module " .. name)
 end
 local models = ReplicatedStorage:FindFirstChild("StudPetModels")
-for _, petName in { "StudCat", "StudDog" } do
+local petNames = {}
+for _, m in models:GetChildren() do
+	table.insert(petNames, m.Name)
+end
+table.sort(petNames)
+check(#petNames == 50, ("StudPetModels has 50 pets (found %d)"):format(#petNames))
+local quiet = true
+for _, petName in petNames do
 	local model = models and models:FindFirstChild(petName)
 	check(model ~= nil and model.ClassName == "Model", petName .. " model")
 	if model then
@@ -47,8 +55,10 @@ for _, petName in { "StudCat", "StudDog" } do
 		end
 		check(model.PrimaryPart ~= nil and model.PrimaryPart.Name == "RootPart" and model.PrimaryPart.Anchored, petName .. " anchored RootPart is PrimaryPart")
 		check(model:HasTag("StudPet") and model:GetAttribute("StudPet") ~= nil, petName .. " tagged + StudPet attribute")
-		print(("       %s: %d parts, %d Motor6D joints"):format(petName, parts, motors))
+		check(motors >= 6 and parts <= 80, ("%s: %d parts, %d Motor6D joints"):format(petName, parts, motors))
 	end
+end
+for _, petName in { "StudCat", "StudDog" } do
 	local rig = ServerStorage.StudPetEditorRigs:FindFirstChild(petName .. "_EditorRig")
 	local saves = rig and rig:FindFirstChild("AnimSaves")
 	check(saves ~= nil and #saves:GetChildren() == 7, petName .. " editor rig has 7 KeyframeSequences in AnimSaves")
@@ -60,7 +70,7 @@ for _, d in demo:GetChildren() do
 		showcase += 1
 	end
 end
-check(showcase == 2, "demo has 2 showcase pets")
+check(showcase == 50, "demo has 50 showcase pets")
 
 print("[compile]")
 for _, d in game:GetDescendants() do
@@ -85,7 +95,7 @@ local function robloxRequire(module)
 end
 local PetAnimator = robloxRequire(StudPets.PetAnimator)
 
-for _, petName in { "StudCat", "StudDog" } do
+for _, petName in petNames do
 	local model = models:FindFirstChild(petName)
 	local finished = {}
 	local animator = PetAnimator.new(model, {
@@ -95,7 +105,8 @@ for _, petName in { "StudCat", "StudDog" } do
 		end,
 	})
 	local head = animator.Motors.Head
-	check(head ~= nil and animator.Motors.LegFL ~= nil and animator.Motors.Tail2 ~= nil, petName .. " motors found by Part1 name")
+	check(head ~= nil and animator.Motors.Torso ~= nil, petName .. " motors found by Part1 name")
+	local mover = animator.Motors.Torso
 	for _, name in animator.Set.Order do
 		animator:Play(name, 0.2)
 		local anim = animator.Set.Anims[name]
@@ -109,15 +120,15 @@ for _, petName in { "StudCat", "StudDog" } do
 					bad = true
 				end
 			end
-			local legs = animator.Motors.LegFL.Transform
+			local legs = mover.Transform
 			first = first or legs
 			if (legs.Position - first.Position).Magnitude > 1e-4 or legs.LookVector:Dot(first.LookVector) < 0.99999 then
 				moved = true
 			end
 		end
 		check(not bad, ("%s %s: finite transforms"):format(petName, name))
-		if name ~= "Idle" and name ~= "Sit" and name ~= "Sleep" then
-			check(moved, ("%s %s: legs actually move"):format(petName, name))
+		if name ~= "Sit" and name ~= "Sleep" then
+			check(moved, ("%s %s: body actually moves"):format(petName, name))
 		end
 		if not anim.Looped then
 			check(finished[#finished] == name and animator:GetName() == "Idle", ("%s %s: one-shot finishes and returns to Idle"):format(petName, name))
@@ -133,7 +144,7 @@ for _, petName in { "StudCat", "StudDog" } do
 	check(head.Transform.Position.Magnitude == 0, petName .. " Destroy resets joints")
 end
 
-print(if failures == 0 then "[test] all passed" else ("[test] %d failure(s)"):format(failures))
+print(if failures == 0 then ("[test] all %d checks passed"):format(passes) else ("[test] %d failure(s), %d passed"):format(failures, passes))
 if failures > 0 then
 	process.exit(1)
 end

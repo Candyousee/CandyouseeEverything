@@ -3,7 +3,7 @@
 --  * Pets marked "Showcase" cycle through every animation with a name tag.
 --  * A pet follows you and picks Idle / Walk / Run from its speed, jumps when
 --    you jump, sits after 5 s idle and falls asleep after 12 s.
---    G = trick (cat Stretch / dog Bark), P = swap cat <-> dog.
+--    G = trick, P / O = next / previous pet (all 50).
 -- The follower is local-only (other players don't see it); it's a demo of the
 -- animation system, not a networked pet system.
 
@@ -30,7 +30,7 @@ local function makeTag(adornee: BasePart, height: number): TextLabel
 	gui.Adornee = adornee
 	gui.Size = UDim2.fromOffset(220, 44)
 	gui.StudsOffset = Vector3.new(0, height, 0)
-	gui.MaxDistance = 80
+	gui.MaxDistance = 45
 	local label = Instance.new("TextLabel")
 	label.BackgroundTransparency = 1
 	label.Size = UDim2.fromScale(1, 1)
@@ -99,7 +99,7 @@ type Follower = {
 }
 
 local follower: Follower? = nil
-local petTypes = { "Cat", "Dog" }
+local petTypes = PetAnimator.GetTypes()
 local petIndex = 1
 
 local rayParams = RaycastParams.new()
@@ -202,8 +202,9 @@ UserInputService.InputBegan:Connect(function(input, processed)
 	if input.KeyCode == Enum.KeyCode.G and follower then
 		follower.still = 0
 		follower.animator:Play(follower.animator.Set.Trick, 0.15)
-	elseif input.KeyCode == Enum.KeyCode.P then
-		petIndex = petIndex % #petTypes + 1
+	elseif input.KeyCode == Enum.KeyCode.P or input.KeyCode == Enum.KeyCode.O then
+		local step = if input.KeyCode == Enum.KeyCode.P then 1 else -1
+		petIndex = (petIndex - 1 + step) % #petTypes + 1
 		spawnFollower(petTypes[petIndex])
 	end
 end)
@@ -222,7 +223,7 @@ do
 	label.FontFace = Font.new("rbxasset://fonts/families/FredokaOne.json")
 	label.TextSize = 18
 	label.TextColor3 = Color3.new(1, 1, 1)
-	label.Text = "G  pet trick     P  swap cat / dog"
+	label.Text = "G  trick     P / O  next / previous pet"
 	Instance.new("UICorner").Parent = label
 	label.Parent = screen
 	screen.Parent = playerGui

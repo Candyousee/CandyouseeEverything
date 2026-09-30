@@ -37,6 +37,9 @@ return function(A)
 		{ "LegBR", 1, "hipZB" },
 	}
 	function Q.plant(spec, P)
+		if spec.noPlant then
+			return P
+		end
 		local torso = P.Torso or A.ZERO
 		local rx, ry, rz = rad(torso[1]), rad(torso[2]), rad(torso[3])
 		local cx, sx, cy, sy, cz, sz = cos(rx), sin(rx), cos(ry), sin(ry), cos(rz), sin(rz)
@@ -48,10 +51,11 @@ return function(A)
 		end
 		local upY = worldY(0, 1, 0)
 		local top = spec.legTop or 0.2
-		for _, leg in LEGS do
+		for _, leg in spec.legList or LEGS do
 			local name, side, zKey = leg[1], leg[2], leg[3]
+			local zHip = if type(zKey) == "string" then spec[zKey] else zKey
 			local p = P[name] or J()
-			local hipY = spec.rootY + torso[5] + worldY(side * (spec.hipX or 0.5), spec.hipY - spec.rootY, spec[zKey]) + p[5] * upY
+			local hipY = spec.rootY + torso[5] + worldY(side * (spec.hipX or 0.5), spec.hipY - spec.rootY, zHip) + p[5] * upY
 			local theta = rad(torso[1] + p[1])
 			local c, s = cos(theta), sin(theta)
 			local h = spec.legT * 0.5
@@ -383,7 +387,7 @@ return function(A)
 				P.LegBL = J(b, 0, 0, 0, Q.legGroundLift(spec, b))
 				P.LegBR = J(b, 0, 0, 0, Q.legGroundLift(spec, b))
 				P.Head = J(curve(t, head))
-				local tl = curve(t, tail)
+				local tl = curve(t, tail) * (spec.jumpTailScale or 1)
 				P.Tail1 = J(tl, 0, 0)
 				P.Tail2 = J(tl * 0.6, 0, 0)
 				Q.ears(spec, P, curve(t, ears), 0)
@@ -423,6 +427,224 @@ return function(A)
 	end
 
 	-- The six shared animations for a pet spec.
+	-- Hind legs planted, torso pitched by `phi` degrees: torso py that keeps the
+	-- back hips at standing height, plus the front-hip height that results.
+	local function pitchOnHind(spec, phi)
+		local c, s = cos(rad(phi)), sin(rad(phi))
+		local hipRel = spec.hipY - spec.rootY
+		local py = spec.hipY - (spec.rootY + hipRel * c - spec.hipZB * s)
+		return py, spec.rootY + py + hipRel * c - spec.hipZF * s
+	end
+
+	-- Stretch: front paws slide out, chest down, rear up, then a back-leg stretch.
+	function Q.Stretch(spec)
+		local phi = -20
+		local py, frontHip = pitchOnHind(spec, phi)
+		local front = Q.solveLegAngle(spec, frontHip) - phi
+		local back = -phi
+		local k = {
+			Torso = { { 0, J() }, { 0.6, J(phi, 0, 0, 0, py, 0.2) }, { 1.35, J(phi + 1, 0, 0, 0, py - 0.02, 0.22) }, { 1.75, J(3, 0, 0, 0, 0.05, 0) }, { 2.05, J(4, 0, -2, 0, 0.06, -0.05) }, { 2.35, J() }, { 2.6, J() } },
+			Front = { { 0, 0 }, { 0.6, front }, { 1.35, front - 1 }, { 1.75, 0 }, { 2.6, 0 } },
+			Back = { { 0, 0 }, { 0.6, back }, { 1.35, back + 1 }, { 1.75, 0 }, { 2.6, 0 } },
+			BackL = { { 0, 0 }, { 0.6, back }, { 1.35, back + 1 }, { 1.75, 0 }, { 2.05, -42, "QuadOut" }, { 2.35, 0 }, { 2.6, 0 } },
+			Head = { { 0, 0 }, { 0.6, 26 }, { 1.0, 30 }, { 1.35, 28 }, { 1.75, -4 }, { 2.05, 4 }, { 2.6, 0 } },
+			Tail = { { 0, 0 }, { 0.6, -32 }, { 1.35, -36 }, { 1.75, 0 }, { 2.05, -10 }, { 2.6, 0 } },
+			Ears = { { 0, 0 }, { 0.6, 20 }, { 1.35, 22 }, { 1.75, 0 }, { 2.6, 0 } },
+			Eyes = { { 0, 0 }, { 0.7, 0 }, { 0.8, 1 }, { 1.25, 1 }, { 1.35, 0 } },
+		}
+		return {
+			Name = "Stretch",
+			Length = 2.6,
+			Looped = false,
+			Pose = function(t)
+				local P = {}
+				local tremble = if t > 0.6 and t < 1.35 then 0.6 * math.sin(t * 40) else 0
+				P.Torso = A.add(curve(t, k.Torso), J(tremble))
+				local f, b, bl = curve(t, k.Front), curve(t, k.Back), curve(t, k.BackL)
+				P.LegFL = J(f)
+				P.LegFR = J(f)
+				P.LegBR = J(b)
+				P.LegBL = J(bl, 0, 0, 0, if bl < 0 then -bl / 42 * 0.35 else 0)
+				P.Head = J(curve(t, k.Head))
+				local tl = curve(t, k.Tail)
+				P.Tail1 = J(tl)
+				P.Tail2 = J(tl * 0.5)
+				Q.ears(spec, P, curve(t, k.Ears), 0)
+				Q.eyes(P, curve(t, k.Eyes))
+				return Q.plant(spec, P)
+			end,
+		}
+	end
+
+	-- Roar / howl / moo: head thrown up, jaw wide, head shake, front paw stamp.
+	function Q.Roar(spec)
+		local k = {
+			Head = { { 0, 0 }, { 0.25, -10 }, { 0.5, 28, "BackOut" }, { 1.2, 26 }, { 1.5, 0 }, { 1.8, 0 } },
+			Shake = { { 0, 0 }, { 0.5, 0 }, { 0.6, 1 }, { 1.2, 1 }, { 1.4, 0 } },
+			Jaw = { { 0, 0 }, { 0.3, 0 }, { 0.5, -40, "QuadOut" }, { 1.2, -38 }, { 1.4, 0 } },
+			Torso = { { 0, J() }, { 0.25, J(-4, 0, 0, 0, -0.08, 0.1) }, { 0.5, J(6, 0, 0, 0, 0.05, -0.05) }, { 1.3, J(5) }, { 1.8, J() } },
+			Stamp = { { 0, 0 }, { 0.2, 0 }, { 0.32, 25, "QuadOut" }, { 0.46, 0, "QuadIn" }, { 1.8, 0 } },
+			Ears = { { 0, 0 }, { 0.4, 25 }, { 1.3, 25 }, { 1.7, 0 } },
+		}
+		return {
+			Name = "Roar",
+			Length = 1.8,
+			Looped = false,
+			Pose = function(t)
+				local P = {}
+				P.Torso = curve(t, k.Torso)
+				local shake = curve(t, k.Shake) * 7 * math.sin(t * 38)
+				P.Head = J(curve(t, k.Head), shake, shake * 0.4)
+				P.Jaw = J(curve(t, k.Jaw))
+				P.LegFR = J(curve(t, k.Stamp), 0, 0, 0, curve(t, k.Stamp) * 0.012)
+				P.Trunk = J(-curve(t, k.Head) * 2)
+				Q.ears(spec, P, curve(t, k.Ears), 4)
+				Q.eyes(P, 0)
+				P.Tail1 = J(-15 * curve(t, k.Shake), 10 * math.sin(t * 12))
+				return Q.plant(spec, P)
+			end,
+		}
+	end
+
+	-- Rear up on the hind legs, front legs pawing the air (horses, bears, goats).
+	function Q.Rear(spec)
+		local phi = spec.rearPitch or 38
+		local py = pitchOnHind(spec, phi)
+		local k = {
+			Up = { { 0, 0 }, { 0.2, -0.12 }, { 0.55, 1, "BackOut" }, { 1.35, 1 }, { 1.7, -0.08, "QuadIn" }, { 1.9, 0 } },
+		}
+		return {
+			Name = "Rear",
+			Length = 1.9,
+			Looped = false,
+			Pose = function(t)
+				local P = {}
+				local u = curve(t, k.Up)
+				local paw = if u > 0.5 then 30 * math.sin(t * 14) else 0
+				P.Torso = J(phi * u, 0, 0, 0, py * math.max(0, u) + (if u < 0 then 0.6 * u else 0), 0)
+				P.LegBL = J(-phi * u)
+				P.LegBR = J(-phi * u)
+				P.LegFL = J(-phi * u + 55 * math.max(0, u) + paw)
+				P.LegFR = J(-phi * u + 55 * math.max(0, u) - paw)
+				P.Head = J(-phi * 0.6 * u + 10 * u)
+				Q.ears(spec, P, 18 * math.max(0, u), 0)
+				Q.eyes(P, 0)
+				P.Tail1 = J(20 * u)
+				P.Jaw = J(-20 * math.max(0, u))
+				return Q.plant(spec, P)
+			end,
+		}
+	end
+
+	-- Happy spin: a little hop and a full turn on the spot.
+	function Q.Spin(spec)
+		local T = spec.walkPeriod * 0.8
+		local k = {
+			Turn = { { 0, 0 }, { 0.15, -15 }, { 1.05, 360, "Cubic" }, { 1.4, 360 } },
+			Hop = { { 0, 0 }, { 0.15, -0.1 }, { 0.35, 0.5, "QuadOut" }, { 0.6, 0, "QuadIn" }, { 0.8, 0.35, "QuadOut" }, { 1.0, 0, "QuadIn" }, { 1.4, 0 } },
+		}
+		return {
+			Name = "Spin",
+			Length = 1.4,
+			Looped = false,
+			Pose = function(t)
+				local P = {}
+				local turn = curve(t, k.Turn)
+				P.Torso = J(0, if turn >= 360 then 0 else turn, 0, 0, curve(t, k.Hop), 0)
+				local e = if t < 1.1 then 1 else 0
+				P.LegFL = Q.gaitLeg(spec, t, T, 0.0, 20 * e, 0.1)
+				P.LegBR = Q.gaitLeg(spec, t, T, 0.0, 20 * e, 0.1)
+				P.LegFR = Q.gaitLeg(spec, t, T, 0.5, 20 * e, 0.1)
+				P.LegBL = Q.gaitLeg(spec, t, T, 0.5, 20 * e, 0.1)
+				P.Head = J(8 * e, -12 * e)
+				Q.ears(spec, P, 15 * e, 0)
+				Q.eyes(P, if t > 0.35 and t < 0.9 then 1 else 0)
+				P.Tail1 = J(-20 * e, 25 * e * math.sin(t * 20))
+				P.Tail2 = J(0, 25 * e * math.sin(t * 20 - 1))
+				return Q.plant(spec, P)
+			end,
+		}
+	end
+
+	-- Elephant trumpet: trunk swings up, ears flare, a front foot lifts.
+	function Q.Trumpet(spec)
+		local k = {
+			Trunk = { { 0, 0 }, { 0.3, 15 }, { 0.7, -125, "BackOut" }, { 1.6, -120 }, { 2.0, 0 } },
+			Head = { { 0, 0 }, { 0.7, 18 }, { 1.6, 16 }, { 2.0, 0 } },
+			Ears = { { 0, 0 }, { 0.5, 30 }, { 1.6, 30 }, { 2.0, 0 } },
+			Foot = { { 0, 0 }, { 0.5, 0 }, { 0.8, 35, "QuadOut" }, { 1.4, 35 }, { 1.7, 0, "QuadIn" }, { 2.0, 0 } },
+		}
+		return {
+			Name = "Trumpet",
+			Length = 2.0,
+			Looped = false,
+			Pose = function(t)
+				local P = {}
+				local flap = 8 * math.sin(t * 16)
+				P.Torso = J(3 * curve(t, k.Foot) / 35)
+				P.Head = J(curve(t, k.Head))
+				P.Trunk = J(curve(t, k.Trunk), 0, 0)
+				Q.ears(spec, P, 0, curve(t, k.Ears) + flap)
+				P.LegFL = J(curve(t, k.Foot), 0, 0, 0, curve(t, k.Foot) * 0.015)
+				Q.eyes(P, 0)
+				P.Tail1 = J(0, 15 * math.sin(t * 9))
+				return Q.plant(spec, P)
+			end,
+		}
+	end
+
+	-- Measurements for a kit-built quadruped (must match build/rigs/Kit.luau).
+	function Q.measure(p)
+		local b = p.body or { 2, 1.4, 3.2 }
+		local legH, legW = p.legH or 1.3, p.legW or 0.8
+		local zLeg = b[3] / 2 - legW / 2 - 0.15
+		local t1 = p.tailPitch or 45
+		local t2 = p.tail2Pitch or (t1 + 25)
+		if p.tail == "curly" then
+			t1, t2 = 20, 140
+		end
+		local spec = {
+			rootY = legH + b[2] / 2,
+			halfLen = b[3] / 2,
+			halfH = b[2] / 2,
+			hipY = legH,
+			hipZF = -zLeg,
+			hipZB = zLeg,
+			hipX = math.max(b[1] / 2 - legW / 2 - 0.12, legW / 2 + 0.08),
+			legT = legW,
+			ears = if p.ears == "floppy" or p.ears == "elephant" then "floppy" else "perky",
+			walkPeriod = 0.5 + 0.2 * legH,
+			walkSwing = 22,
+			runPeriod = 0.32 + 0.09 * legH,
+			runSwing = 38,
+			tailWag = 10,
+			idleWag = { 9, 4 },
+			walkTail = { -10, 5 },
+			runTail = { 25, 15 },
+			sitPitch = 32,
+			sitClear = 0.05,
+			sitWag = 0,
+			tailRest = { t1, t2 },
+			sitTailDirs = { { -0.5, -0.3, 0.8 }, { -0.55, 0, -0.83 } },
+			jumpHeight = 1.2 + 0.4 * legH,
+			sleepHead = { -12, -0.35 },
+			sleepTailDirs = { { -0.55, -0.45, 0.7 }, { -0.4, -0.3, -0.87 } },
+		}
+		for key, v in p.anim or {} do
+			spec[key] = v
+		end
+		return spec
+	end
+
+	-- Full animation set for an entry in Animals.luau.
+	function Q.fromParams(p)
+		local spec = Q.measure(p)
+		local anims = Q.build(spec)
+		local trick = p.trick or "Spin"
+		anims[trick] = Q[trick](spec)
+		return { Spec = spec, Anims = anims, Order = { "Idle", "Walk", "Run", "Sit", "Jump", "Sleep", trick }, Trick = trick }
+	end
+
 	function Q.build(spec)
 		return {
 			Idle = Q.Idle(spec),

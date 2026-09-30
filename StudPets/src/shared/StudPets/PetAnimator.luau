@@ -9,12 +9,20 @@
 --   anim:Play("Jump")                            -- one-shots return to Idle by themselves
 --   anim:Destroy()
 --
--- Want real Animation assets instead? Open assets/editor/*_EditorRig.rbxm in the
--- Animation Editor: every animation is in AnimSaves, ready to publish.
+-- Pet types: Cat, Dog + every entry in Animals.luau (PetAnimator.GetTypes()).
+-- Want real Animation assets instead? Open an editor rig in the Animation Editor:
+-- every animation is in AnimSaves, ready to publish.
 
 local StudPets = script.Parent
 local AnimLib = require(StudPets.AnimLib)
 local Quadruped = require(StudPets.QuadrupedAnims)(AnimLib)
+local Animals = require(StudPets.Animals)
+local Plans = {
+	Quadruped = Quadruped,
+	Flyer = require(StudPets.FlyerAnims)(AnimLib, Quadruped),
+	Swimmer = require(StudPets.SwimmerAnims)(AnimLib, Quadruped),
+	Biped = require(StudPets.BipedAnims)(AnimLib, Quadruped),
+}
 
 type PoseSet = AnimLib.PoseSet
 type Anim = AnimLib.Anim
@@ -65,11 +73,25 @@ function PetAnimator.GetSet(petType: string): PetSet
 	local set = sets[petType]
 	if not set then
 		local module = StudPets.Pets:FindFirstChild(petType)
-		assert(module and module:IsA("ModuleScript"), `StudPets: no Pets/{petType} module`)
-		set = (require(module) :: any)(AnimLib, Quadruped)
+		if module and module:IsA("ModuleScript") then
+			set = (require(module) :: any)(AnimLib, Quadruped) -- hand-built pets (Cat, Dog)
+		else
+			local entry = Animals.ByName[petType]
+			assert(entry, `StudPets: unknown pet type "{petType}"`)
+			set = Plans[entry.Plan].fromParams(entry)
+		end
 		sets[petType] = set
 	end
 	return set :: PetSet
+end
+
+-- Every pet type name, Cat and Dog first.
+function PetAnimator.GetTypes(): { string }
+	local types = { "Cat", "Dog" }
+	for _, name in Animals.Order do
+		table.insert(types, name)
+	end
+	return types
 end
 
 local function stepAll(dt: number)

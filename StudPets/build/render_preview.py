@@ -203,9 +203,10 @@ def main():
             scene.cycles.samples = 14
         objs, base = build_pet(pet)
         lo, hi = rest_bounds(pet)
-        center = ((lo[0] + hi[0]) / 2, (lo[1] + hi[1]) / 2, (hi[2]) * 0.62)
+        center = ((lo[0] + hi[0]) / 2, (lo[1] + hi[1]) / 2, (hi[2]) * 0.55)
         yaw = float(os.environ.get("PREVIEW_YAW", "-38"))
-        add_stage(scene, center, 15.5 if pet["name"] == "StudCat" else 17.5, yaw=yaw)
+        size = max(hi[2] + 1.5, hi[1] - lo[1], hi[0] - lo[0])
+        add_stage(scene, center, max(15.5, size * 2.9), yaw=yaw)
         for anim in pet["anims"]:
             frames = anim["frames"]
             if mode == "sheet":
