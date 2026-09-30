@@ -459,7 +459,7 @@ local function qa(R, set)
 		if lo < -0.1 * tol then
 			status = "SINKS"
 			warn(("%s: %s sinks %.2f below ground"):format(name, loWho, -lo))
-		elseif not AIRBORNE[name] and not hovers and hi > 0.12 * tol then
+		elseif not AIRBORNE[name] and not hovers and hi > 0.12 * tol and not (set.Spec.gait == "hop" and name == "Walk") then
 			status = "FLOATS"
 			warn(("%s: floats up to %.2f above ground"):format(name, hi))
 		end

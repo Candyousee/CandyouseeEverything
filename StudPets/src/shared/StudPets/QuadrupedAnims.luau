@@ -357,6 +357,8 @@ return function(A)
 					P.LegBR = J(88)
 					local look = curve(t, { { 0, 0 }, { 1.0, 0 }, { 1.3, 15 }, { 2.2, 15 }, { 2.6, 0 } })
 					P.Head = J(-br, look, 0)
+					P.Tail1 = J(-35)
+					P.Tail2 = J(-20)
 					Q.ears(spec, P, 2 * br, 0)
 					Q.eyes(P, Q.blink(t, { 1.9 }))
 					return Q.plant(spec, P)
@@ -692,7 +694,7 @@ return function(A)
 			hipZF = -zLeg,
 			hipZB = zLeg,
 			hipX = math.max(b[1] / 2 - legW / 2 - 0.12, legW / 2 + 0.08),
-			legT = legW,
+			legT = legW + (if p.pompoms then 0.3 else 0), -- poodle cuffs stick out past the leg
 			ears = if p.ears == "floppy" or p.ears == "elephant" then "floppy" else "perky",
 			walkPeriod = 0.5 + 0.2 * legH,
 			walkSwing = 22,

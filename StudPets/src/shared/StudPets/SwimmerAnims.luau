@@ -13,7 +13,7 @@ return function(A, Q)
 		local b = p.body or { 1.8, 1.6, 3 }
 		local base = p.hover or 1.4
 		-- tall bottom fins need extra clearance
-		local hover = base + (if p.tallFins then b[2] * 0.95 else 0)
+		local hover = base + (if p.tallFins then b[2] * (p.finH or 0.9) + 0.05 else 0)
 		local spec = {
 			rootY = hover + b[2] / 2,
 			hover = hover,

@@ -532,9 +532,105 @@ local SIZE = {
 local byName = {}
 local order = {}
 for _, entry in list do
-	entry.size = entry.size or SIZE[entry.Name] or 1
+	local size = entry.size or SIZE[entry.Name] or 1
+	-- compress the small end so bugs & tiny birds stay readable next to big pets
+	entry.size = if size < 1 then 0.45 + 0.55 * size else size
 	byName[entry.Name] = entry
 	table.insert(order, entry.Name)
+end
+
+-- Fixes from the full art review (applied on top of the entries above).
+-- colors merge key by key; `false` removes a setting.
+local W2, K2 = { 246, 244, 238 }, { 30, 30, 34 }
+local OVERRIDES = {
+	Sloth = { Plan = "Biped", body = { 1.6, 1.7, 1.3 }, head = { 1.5, 1.3, 1.2 }, legH = 0.6, legW = 0.5, face = true, mask = true, arms = "long", armLen = 1.8, armW = 0.4,
+		tail = false, ears = false, trick = "Dance", anim = { walkPeriod = 1.3 },
+		colors = { face = { 232, 216, 192 }, hand = { 70, 56, 44 }, mask = { 110, 86, 64 } } },
+	Tapir = { trunkLen = 1.4, colors = { trunkTip = { 60, 56, 60 } } },
+	Swan = { neckH = 2.4, neckW = 0.4, colors = { beakBase = K2 } },
+	Squirrel = { tailW = 0.95, tailLen = { 1.4, 1.3 }, tail2Pitch = 110, colors = { tip = { 225, 150, 90 } } },
+	Skunk = { tailRings = true, tailW = 0.8, colors = { ring = W2 } },
+	SeaTurtle = { Plan = "Swimmer", body = { 2.0, 0.8, 2.4 }, head = { 1.0, 0.8, 0.9 }, finSize = { 1.5, 0.15, 0.9 }, shell = true, hover = 1.2, trick = "Spin",
+		colors = { fin = { 110, 170, 140 } } },
+	SnowyOwl = { colors = { tail = W2, wing = W2, dark = { 190, 190, 200 } } },
+	Robin = { breast = true, colors = { accent = { 240, 100, 40 } } },
+	Seal = { muzzle = true, colors = { snout = { 206, 206, 212 } } },
+	Walrus = { muzzle = false },
+	Wasp = { body = { 0.9, 0.9, 1.6 } },
+	Raptor = { colors = { main = { 200, 150, 90 }, accent = { 240, 220, 180 }, dark = { 120, 80, 50 } } },
+	Alpaca = { neck = 2.2, earSize = 1.1, sitStyle = "kush" },
+	Llama = { neck = 2.4, sitStyle = "kush" },
+	Camel = { neck = 2.2, humpH = 1.3, sitStyle = "kush" },
+	Angelfish = { finH = 1.3 },
+	Ankylosaurus = { shellSpikes = true, clubSize = 1.4, anim = { sitPitch = 10, runSwing = 38 } },
+	Anteater = { tailW = 0.85, tailLen = { 1.3, 1.2 } },
+	Antelope = { hornLen = 1.9 },
+	Gazelle = { hornLen = 1.6, markings = "gazelle" },
+	ArcticFox = { wool = false, snout = { 0.9, 0.6, 0.9 }, earSize = 1.0, tailW = 0.85,
+		anim = { sitTailDirs = { { -0.5, -0.12, 0.85 }, { -0.55, 0.12, -0.83 } } } },
+	ArcticHare = { earSize = 1.7, gait = "hop", colors = { main = { 226, 232, 244 }, earTip = K2 } },
+	Bunny = { gait = "hop" },
+	LopBunny = { earW = 0.55, gait = "hop", colors = { ear = { 170, 120, 90 } } },
+	Jackalope = { gait = "hop" },
+	Frog = { gait = "hop" },
+	PoisonDartFrog = { gait = "hop", spotSize = 0.45 },
+	Bat = { colors = { main = { 82, 70, 94 }, wing = { 100, 84, 122 }, accent = { 170, 150, 180 } } },
+	Bee = { wingSpan = 1.6, wingChord = 1.0, colors = { wing = { 232, 242, 252 } } },
+	Bumblebee = { body = { 1.8, 1.6, 1.9 }, colors = { main = { 44, 40, 34 }, dark = { 250, 200, 60 } } },
+	Beetle = { colors = { shell = { 60, 150, 100 } } },
+	Beluga = { melon = true, tailFin = 1.4 },
+	Betta = { fanTail = true, colors = { fan = { 230, 90, 250 } } },
+	Goldfish = { tailFin = 1.0, fanTail = true, colors = { fan = { 252, 200, 90 } } },
+	Bulldog = { body = { 2.8, 1.5, 2.8 }, legH = 0.8, legW = 1.0, snout = { 1.9, 0.9, 0.4 }, markings = "patches",
+		colors = { main = { 232, 216, 196 }, dark = { 190, 130, 80 }, ear = { 190, 130, 80 } } },
+	Chameleon = { eyeRing = true, eyeSize = { 0.45, 0.45 }, casque = true, tailW = 0.45, tailLen = { 0.9, 0.8 } },
+	Crow = { colors = { wing = { 44, 50, 86 }, beak = { 96, 96, 104 } } },
+	Manatee = { muzzle = true, colors = { snout = { 176, 176, 182 } } },
+	Mandrill = { head = { 1.35, 1.25, 1.15 }, colors = { face = { 70, 140, 230 }, snout = { 220, 40, 40 }, leg = { 110, 110, 90 }, arm = { 110, 110, 90 } } },
+	Meerkat = { head = { 1.1, 1.0, 1.2 }, muzzle = true, mask = true, colors = { mask = { 70, 50, 36 } } },
+	Moose = { anim = { sleepHead = { -4, -0.05 } } },
+	Mouse = { anim = { sitTailDirs = { { -0.5, -0.05, 0.85 }, { -0.55, 0.1, -0.8 } }, sleepTailDirs = { { -0.55, -0.1, 0.8 }, { -0.4, 0.05, -0.9 } } } },
+	Okapi = { markings = "okapi" },
+	Orangutan = { armLen = 2.0, armW = 0.5, cheekPads = true, colors = { pad = { 150, 80, 40 } } },
+	Orca = { sideBelly = true },
+	Ostrich = { anim = { sleepHeadDrop = 45 } },
+	Flamingo = { anim = { sleepHeadDrop = 45 } },
+	Panther = { colors = { main = { 58, 58, 70 }, accent = { 84, 84, 98 }, snout = { 92, 92, 106 } } },
+	Pangolin = { anim = { sitPitch = 10 } },
+	Peacock = { fanEyes = true, crest = "pins", colors = { accent = { 70, 200, 190 }, eyeSpot = { 30, 60, 160 } } },
+	Pelican = { anim = { sleepHeadDrop = 5 } },
+	Piranha = { sideBelly = true },
+	Pony = { colors = { mane = { 190, 130, 70 }, tail = { 190, 130, 70 }, dark = { 150, 100, 60 }, paw = { 150, 120, 110 } } },
+	Poodle = { pompoms = true, colors = { wool = { 255, 236, 246 } } },
+	Porcupine = { bigQuills = true },
+	Pterodactyl = { beak = "long", colors = { beak = { 230, 200, 150 } }, anim = { sleepHeadDrop = 5 } },
+	Puffin = { body = { 1.3, 1.5, 1.2 }, beak = "puffin", earPatches = true, colors = { beak = { 250, 110, 40 }, band = { 120, 120, 130 }, patch = W2 } },
+	Hammerhead = { head = { 3.0, 0.6, 0.9 } },
+	Kiwi = { colors = { beak = { 230, 210, 180 } } },
+	EmperorPenguin = { earPatches = true, colors = { patch = { 250, 190, 60 }, beak = { 250, 150, 60 } } },
+	Gorilla = { body = { 2.4, 1.9, 1.6 }, armLen = 1.9, armW = 0.7, colors = { face = { 84, 84, 94 }, accent = { 84, 84, 94 }, hand = { 60, 60, 66 } } },
+	Kangaroo = { gait = "hop", ears = "tall", earSize = 1.0, muzzle = true, colors = { snout = { 214, 164, 124 } } },
+	Ferret = { body = { 1.2, 1.0, 3.4 }, tailPitch = 5, tail2Pitch = 0 },
+	Horse = { tailLen = { 1.4, 1.4 }, snout = { 1.4, 1.0, 1.1 } },
+	Elephant = { trunkLen = 2.6, colors = { trunkTip = { 130, 134, 146 } } },
+	Dragonfly = { colors = { wing = { 160, 220, 240 } } },
+	Koala = { earSize = 1.0, snout = { 0.7, 0.8, 0.35 } },
+	Goose = { neckH = 1.8, earPatches = true, colors = { main = { 150, 140, 130 }, neck = K2, head = K2, patch = W2, beak = K2, leg = K2 } },
+	Hawk = { colors = { beak = { 250, 200, 50 }, head = { 200, 160, 120 } } },
+}
+for name, ov in OVERRIDES do
+	local e = assert(byName[name], "override for unknown pet " .. name)
+	for k, v in ov do
+		if k == "colors" then
+			for ck, cv in v do
+				e.colors[ck] = cv
+			end
+		elseif v == false then
+			e[k] = nil
+		else
+			e[k] = v
+		end
+	end
 end
 
 return { ByName = byName, Order = order }

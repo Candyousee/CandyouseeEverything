@@ -108,7 +108,8 @@ function Kit.Quadruped(p, Q)
 	end
 	for i = 1, p.hump or 0 do
 		local z = if p.hump == 1 then 0 else (i - 1.5) * b[3] * 0.4
-		add({ name = name("Hump"), size = { b[1] * 0.6, 0.8, b[3] * 0.3 }, pos = { 0, top + 0.35, z }, color = col("main"), studs = true, weld = "Torso" })
+		local hh = p.humpH or 0.8
+		add({ name = name("Hump"), size = { b[1] * 0.6, hh, b[3] * 0.3 }, pos = { 0, top + hh / 2 - 0.05, z }, color = col("main"), studs = true, weld = "Torso" })
 	end
 
 	-- neck + head
@@ -426,7 +427,8 @@ function Kit.Quadruped(p, Q)
 			add({ name = name("BrowStripe"), size = { 0.11, 0.3, 0.05 }, pos = { x, headTop - 0.2 - (if i == 2 then 0.05 else 0), headFront - 0.025 }, color = col("dark"), weld = "Head" })
 		end
 	elseif mk == "spots" then
-		sideMarks(SPOTS, { 0.28, 0.28 }, col("dark"))
+		local ss = p.spotSize or 0.28
+		sideMarks(SPOTS, { ss, ss }, col("dark"))
 	elseif mk == "giraffe" then
 		sideMarks(SPOTS, { 0.45, 0.5 }, col("dark"))
 	elseif mk == "fawn" then
@@ -774,7 +776,7 @@ function Kit.Swimmer(p, S)
 	add({ name = "Tail2", size = fluke, pos = { 0, rootY, tz + fluke[3] / 2 - 0.05 }, color = fin, joint = { "Tail1", { 0, rootY, tz } } })
 	if p.fanTail then
 		for _, sgn in { -1, 1 } do
-			add({ name = name("TailFan"), size = { 0.16, fluke[2] * 0.7, fluke[3] * 1.1 }, pos = { 0, rootY + sgn * fluke[2] * 0.3, tz + fluke[3] * 0.55 }, rot = { sgn * -28, 0, 0 }, color = col("fan", "accent"), weld = "Tail2" })
+			add({ name = name("TailFan"), size = { 0.15 + (sgn + 1) * 0.02, fluke[2] * 0.7, fluke[3] * 1.1 }, pos = { 0, rootY + sgn * fluke[2] * 0.3, tz + fluke[3] * 0.55 }, rot = { sgn * -28, 0, 0 }, color = col("fan", "accent"), weld = "Tail2" })
 		end
 	end
 	local finSize = p.finSize or { 0.8, 0.15, 0.6 }
@@ -784,8 +786,9 @@ function Kit.Swimmer(p, S)
 		add({ name = "Fin" .. nm, size = finSize, pos = { side * (b[1] / 2 + finSize[1] / 2 - 0.02), py, pz }, color = fin, joint = { "Torso", { side * b[1] / 2, py, pz } } })
 	end
 	if p.tallFins then
-		add({ name = "TopFin", class = "WedgePart", size = { 0.15, b[2] * 0.9, b[3] * 0.6 }, pos = { 0, rootY + b[2] * 0.95 - 0.05, b[3] * 0.1 }, color = fin, weld = "Torso" })
-		add({ name = "BottomFin", class = "WedgePart", size = { 0.15, b[2] * 0.9, b[3] * 0.6 }, pos = { 0, rootY - b[2] * 0.95 + 0.05, b[3] * 0.1 }, rot = { 180, 180, 0 }, color = fin, weld = "Torso" })
+		local fh = b[2] * (p.finH or 0.9)
+		add({ name = "TopFin", class = "WedgePart", size = { 0.15, fh, b[3] * 0.6 }, pos = { 0, rootY + b[2] / 2 + fh / 2 - 0.05, b[3] * 0.1 }, color = fin, weld = "Torso" })
+		add({ name = "BottomFin", class = "WedgePart", size = { 0.15, fh, b[3] * 0.6 }, pos = { 0, rootY - b[2] / 2 - fh / 2 + 0.05, b[3] * 0.1 }, rot = { 180, 180, 0 }, color = fin, weld = "Torso" })
 	end
 	if p.lure then
 		add({ name = "LureStalk", size = { 0.08, 1.0, 0.08 }, pos = { 0, rootY + h[2] / 2 + 0.45, headZ - 0.1 }, rot = { -25, 0, 0 }, color = col("dark"), weld = "Head" })
@@ -913,7 +916,7 @@ function Kit.Biped(p, B)
 	end
 	if p.face then
 		add({ name = "Face", size = { hw * 0.7, h[2] * 0.7, 0.05 }, pos = { 0, headY - 0.1, headFront - 0.025 }, color = col("face", "accent"), weld = "Head" })
-		add({ name = "Muzzle", size = { hw * 0.45, h[2] * 0.35, 0.35 }, pos = { 0, headY - h[2] * 0.25, headFront - 0.17 }, color = col("snout", "accent"), weld = "Head" })
+		add({ name = "Muzzle", size = { hw * 0.45, h[2] * 0.35, 0.35 }, pos = { 0, headY - h[2] * 0.23, headFront - 0.17 }, color = col("snout", "accent"), weld = "Head" })
 		add({ name = "Nose", size = { 0.35, 0.15, 0.06 }, pos = { 0, headY - h[2] * 0.14, headFront - 0.37 }, color = col("dark"), weld = "Head" })
 	end
 	if p.jaw then
