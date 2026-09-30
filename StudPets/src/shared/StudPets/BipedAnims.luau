@@ -223,7 +223,7 @@ return function(A, Q)
 				local P = {}
 				local br = wave(t, 4)
 				local fold = if spec.foldBack then -84 else 84
-				local lift = if spec.foldBack then spec.footLen else 0
+				local lift = if spec.foldBack then spec.footLen else -0.08
 				P.Torso = J((if spec.foldBack then 6 else 2) + 0.4 * br, 0, 0, 0, drop + lift + 0.02 * br)
 				P.LegL = J(fold)
 				P.LegR = J(fold)
