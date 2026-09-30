@@ -14,7 +14,7 @@ return function(A, Q)
 		local b = p.body or { 1.4, 1.4, 1.8 }
 		local legH = if p.alwaysFly then 0 else (p.legH or 0.6)
 		local flap = p.flapPeriod or 0.4 -- must divide 4 s for seamless loops
-		local hover = p.hover or 2
+		local hover = p.hover or 1.3 -- flight height: close to the owner
 		local spec = {
 			rootY = legH + b[2] / 2 + (if p.alwaysFly then hover else 0),
 			hover = hover,
@@ -196,7 +196,7 @@ return function(A, Q)
 	-- Loop: take off (if perched), barrel roll, settle back.
 	function F.Loop(spec)
 		local k = {
-			Up = { { 0, 0 }, { 0.3, 1.2, "QuadOut" }, { 1.3, 1.2 }, { 1.7, 0, "QuadIn" }, { 2, 0 } },
+			Up = { { 0, 0 }, { 0.3, 0.8, "QuadOut" }, { 1.3, 0.8 }, { 1.7, 0, "QuadIn" }, { 2, 0 } },
 			Roll = { { 0, 0 }, { 0.35, 0 }, { 1.25, 360, "Cubic" }, { 2, 360 } },
 			Open = { { 0, 0 }, { 0.15, 1 }, { 1.6, 1 }, { 1.85, 0 } },
 		}

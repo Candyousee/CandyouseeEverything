@@ -114,7 +114,7 @@ return function(A, Q)
 				local P = {}
 				-- resting: drifts down, noses up, barely fins
 				stroke(spec, P, t, 4, 0.2)
-				P.Torso = J(10 + 3 * wave(t, 4), 0, 4 * wave(t, 4, 0.3), 0, -spec.baseHover * 0.3 + 0.08 * wave(t, 4))
+				P.Torso = J((if spec.kick == "vertical" then 24 else 10) + 3 * wave(t, 4), 0, 4 * wave(t, 4, 0.3), 0, -spec.baseHover * 0.3 + 0.08 * wave(t, 4))
 				P.Head = A.add(P.Head, J(-6))
 				eyes(P, Q.blink(t, { 2.2 }))
 				return P

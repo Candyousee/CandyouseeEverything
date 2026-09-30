@@ -227,7 +227,7 @@ return function(A, Q)
 				P.Torso = J((if spec.foldBack then 6 else 2) + 0.4 * br, 0, 0, 0, drop + lift + 0.02 * br)
 				P.LegL = J(fold)
 				P.LegR = J(fold)
-				arms(P, if spec.wings then 0 else 35, if spec.wings then 0 else 35, 2)
+				arms(P, if spec.wings then 0 else 70, if spec.wings then 0 else 70, 2) -- arms folded in
 				P.Head = J(-(spec.sleepHeadDrop or 32) - 2 * br, 12, 6)
 				P.Tail1 = J(spec.sitTail)
 				Q.eyes(P, 1)

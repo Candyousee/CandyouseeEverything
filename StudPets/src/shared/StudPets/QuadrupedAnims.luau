@@ -267,7 +267,7 @@ return function(A)
 				Looped = true,
 				Pose = function(t)
 					local P = {}
-					Q.hop(spec, P, t, T * 1.6, spec.hipY * 0.45 + 0.15)
+					Q.hop(spec, P, t, T * 1.6, spec.hipY * 0.8 + 0.35)
 					Q.eyes(P, 0)
 					return Q.plant(spec, P)
 				end,
@@ -306,7 +306,7 @@ return function(A)
 				Looped = true,
 				Pose = function(t)
 					local P = {}
-					Q.hop(spec, P, t, T * 1.4, spec.hipY * 0.9 + 0.3)
+					Q.hop(spec, P, t, T * 1.4, spec.hipY * 1.6 + 0.6)
 					Q.eyes(P, 0)
 					return Q.plant(spec, P)
 				end,
@@ -711,7 +711,7 @@ return function(A)
 			gait = p.gait,
 			sitStyle = p.sitStyle,
 			earFlap = if p.ears == "elephant" then 0.35 else 1,
-			sitPitch = if lowTail then 20 else 32,
+			sitPitch = if lowTail then 30 else 32,
 			sitClear = 0.05,
 			sitWag = 0,
 			tailRest = { t1, t2 },
@@ -719,7 +719,7 @@ return function(A)
 				elseif highTail then { { -0.1, 0.7, 0.7 }, { -0.1, 0.95, -0.3 } }
 				else { { -0.5, -0.3, 0.8 }, { -0.55, 0, -0.83 } },
 			jumpHeight = 1.2 + 0.4 * legH,
-			sleepHead = { -12, -0.35 },
+			sleepHead = if p.horns then { -4, -0.08 } else { -12, -0.35 }, -- horns must not clip the back
 			sleepTailDirs = if lowTail then { { -0.3, -0.05, 1 }, { -0.5, 0, 0.87 } }
 				elseif highTail then { { -0.2, 0.5, 0.85 }, { -0.2, 0.9, -0.4 } }
 				else { { -0.55, -0.45, 0.7 }, { -0.4, -0.3, -0.87 } },
