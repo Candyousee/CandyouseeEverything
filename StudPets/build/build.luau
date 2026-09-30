@@ -521,6 +521,10 @@ if process.args[1] == "preview" then
 				local frames = {}
 				-- looped: skip the duplicate last frame; one-shots: include it
 				local last = if anim.Looped then n - 1 else n
+				if process.env.PREVIEW_STRIP then
+					-- review strips: 5 evenly spaced poses per animation
+					n, last = if anim.Looped then 5 else 4, 4
+				end
 				for i = 0, last do
 					local world = solve(R, anim.Pose(anim.Length * i / n), CFrame.new())
 					local frame = {}

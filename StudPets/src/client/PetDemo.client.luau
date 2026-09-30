@@ -96,6 +96,7 @@ type Follower = {
 	vel: Vector3,
 	yaw: number,
 	still: number,
+	stride: number,
 }
 
 local follower: Follower? = nil
@@ -124,6 +125,8 @@ local function spawnFollower(petType: string)
 		animator = PetAnimator.new(model),
 		petType = petType,
 		rootHeight = (model:GetAttribute("RootHeight") :: number) * followScale,
+		-- stride length grows with the pet's on-screen size; cycles slow down to match
+		stride = followScale * ((model:GetAttribute("AnimScale") :: number?) or 1) / FOLLOW_SCALE,
 		pos = nil,
 		vel = Vector3.zero,
 		yaw = 0,
@@ -187,10 +190,10 @@ RunService.RenderStepped:Connect(function(dt)
 	end
 	if speed > 11 then
 		f.still = 0
-		animator:Play("Run", 0.2, math.clamp(speed / 16, 0.8, 1.7))
+		animator:Play("Run", 0.2, math.clamp(speed / (16 * f.stride), 0.6, 1.7))
 	elseif speed > 0.8 then
 		f.still = 0
-		animator:Play("Walk", 0.2, math.clamp(speed / 5, 0.6, 1.8))
+		animator:Play("Walk", 0.2, math.clamp(speed / (5 * f.stride), 0.5, 1.8))
 	else
 		f.still += dt
 		animator:Play(if f.still > SLEEP_AFTER then "Sleep" elseif f.still > SIT_AFTER then "Sit" else "Idle", 0.45)

@@ -154,6 +154,10 @@ function PetAnimator.new(model: Model, options: Options?): PetAnimator
 		end)
 	end
 
+	-- start looping animations at a random point so neighbouring pets don't move in lockstep
+	if self.Current.Looped then
+		self.Time = math.random() * self.Current.Length
+	end
 	self:Step(0)
 	return self
 end

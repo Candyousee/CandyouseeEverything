@@ -36,10 +36,29 @@ def cf_matrix(comps):
     return Matrix(((r00, r01, r02, x), (r10, r11, r12, y), (r20, r21, r22, z), (0, 0, 0, 1)))
 
 
+FAST = os.environ.get("PREVIEW_ENGINE") == "workbench"  # needs EGL_PLATFORM=surfaceless + mesa
+
+
 def reset_scene():
     bpy.ops.wm.read_factory_settings(use_empty=True)
     _materials.clear()
     scene = bpy.context.scene
+    if FAST:
+        # OpenGL preview: ~20x faster than Cycles, fine for motion review
+        scene.render.engine = "BLENDER_WORKBENCH"
+        sh = scene.display.shading
+        sh.light = "STUDIO"
+        sh.color_type = "MATERIAL"
+        sh.show_shadows = True
+        sh.show_cavity = True
+        sh.cavity_type = "WORLD"
+        scene.display.shadow_focus = 0.4
+        scene.view_settings.view_transform = "Standard"
+        scene.render.image_settings.file_format = "PNG"
+        world = bpy.data.worlds.new("World")
+        scene.world = world
+        world.color = (0.62, 0.74, 0.92)
+        return scene
     scene.render.engine = "CYCLES"
     scene.cycles.device = "CPU"
     scene.cycles.samples = 20
@@ -69,6 +88,7 @@ def material(rgb, rough=0.38, glow=False):
     mat.use_nodes = True
     bsdf = mat.node_tree.nodes["Principled BSDF"]
     bsdf.inputs["Base Color"].default_value = (*[srgb_to_linear(c) for c in rgb], 1)
+    mat.diffuse_color = (*[srgb_to_linear(c) for c in rgb], 1)  # used by the workbench engine
     bsdf.inputs["Roughness"].default_value = rough
     if glow:
         bsdf.inputs["Emission Color"].default_value = (*[srgb_to_linear(c) for c in rgb], 1)
@@ -224,7 +244,7 @@ def main():
             continue
         scene = reset_scene()
         scene.render.resolution_x, scene.render.resolution_y = (420, 360) if mode == "sheet" else (300, 260) if mode == "strip" else (360, 310)
-        if mode == "strip":
+        if mode == "strip" and not FAST:
             scene.cycles.samples = 10
         if mode == "anim":
             scene.cycles.samples = 14
