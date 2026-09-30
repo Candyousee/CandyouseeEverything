@@ -1,0 +1,36 @@
+{
+  "name": "StudPets",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+      "StudPets": {
+        "$path": "src/shared/StudPets"
+      },
+      "StudPetModels": {
+        "$className": "Folder",
+        "StudCat": { "$path": "assets/StudCat.rbxm" },
+        "StudDog": { "$path": "assets/StudDog.rbxm" }
+      }
+    },
+    "ServerStorage": {
+      "$className": "ServerStorage",
+      "StudPetEditorRigs": {
+        "$className": "Folder",
+        "StudCat_EditorRig": { "$path": "assets/editor/StudCat_EditorRig.rbxm" },
+        "StudDog_EditorRig": { "$path": "assets/editor/StudDog_EditorRig.rbxm" }
+      }
+    },
+    "Workspace": {
+      "$className": "Workspace",
+      "StudPetsDemo": { "$path": "assets/StudPetsDemo.rbxm" }
+    },
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "PetDemo": { "$path": "src/client/PetDemo.client.luau" }
+      }
+    }
+  }
+}

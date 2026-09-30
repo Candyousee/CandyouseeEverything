@@ -1,0 +1,224 @@
+--!strict
+-- Plays Stud Pet animations straight from code: no uploads, no asset IDs.
+-- Each frame it evaluates the pet's animation and writes Motor6D.Transform,
+-- with smooth crossfades between animations. Run it on the client.
+--
+--   local PetAnimator = require(ReplicatedStorage.StudPets.PetAnimator)
+--   local anim = PetAnimator.new(petModel)       -- reads the "StudPet" attribute (Cat / Dog)
+--   anim:Play("Walk", 0.2, 1.3)                  -- name, fade seconds, playback speed
+--   anim:Play("Jump")                            -- one-shots return to Idle by themselves
+--   anim:Destroy()
+--
+-- Want real Animation assets instead? Open assets/editor/*_EditorRig.rbxm in the
+-- Animation Editor: every animation is in AnimSaves, ready to publish.
+
+local StudPets = script.Parent
+local AnimLib = require(StudPets.AnimLib)
+local Quadruped = require(StudPets.QuadrupedAnims)(AnimLib)
+
+type PoseSet = AnimLib.PoseSet
+type Anim = AnimLib.Anim
+
+export type PetSet = {
+	Spec: any,
+	Anims: { [string]: Anim },
+	Order: { string },
+	Trick: string,
+}
+
+export type Options = {
+	PetType: string?,
+	Default: string?, -- animation to return to after one-shots (default "Idle")
+	AutoStep: boolean?, -- false = call :Step(dt) yourself
+	OnFinished: ((name: string) -> ())?,
+}
+
+local PetAnimator = {}
+PetAnimator.__index = PetAnimator
+
+export type PetAnimator = typeof(setmetatable(
+	{} :: {
+		Model: Model,
+		Set: PetSet,
+		Motors: { [string]: Motor6D },
+		Current: Anim,
+		Time: number,
+		Speed: number,
+		Default: string,
+		From: PoseSet?,
+		Fade: number,
+		FadeTime: number,
+		OnFinished: ((name: string) -> ())?,
+		CanScale: boolean,
+		_ancestry: RBXScriptConnection?,
+	},
+	PetAnimator
+))
+
+local CULL_DISTANCE = 250 -- stop posing pets the camera can't see well
+
+local sets: { [string]: PetSet } = {}
+local live: { [PetAnimator]: boolean } = {}
+local stepConnection: RBXScriptConnection? = nil
+
+function PetAnimator.GetSet(petType: string): PetSet
+	local set = sets[petType]
+	if not set then
+		local module = StudPets.Pets:FindFirstChild(petType)
+		assert(module and module:IsA("ModuleScript"), `StudPets: no Pets/{petType} module`)
+		set = (require(module) :: any)(AnimLib, Quadruped)
+		sets[petType] = set
+	end
+	return set :: PetSet
+end
+
+local function stepAll(dt: number)
+	local camera = workspace.CurrentCamera
+	local camPos = camera and camera.CFrame.Position
+	for animator in live do
+		local root = animator.Model.PrimaryPart
+		local far = camPos ~= nil and root ~= nil and (root.Position - camPos).Magnitude > CULL_DISTANCE
+		animator:Step(dt, far)
+	end
+end
+
+function PetAnimator.new(model: Model, options: Options?): PetAnimator
+	local opts: Options = options or {}
+	local petType = opts.PetType or model:GetAttribute("StudPet")
+	assert(type(petType) == "string", `StudPets: {model:GetFullName()} has no StudPet attribute`)
+
+	local set = PetAnimator.GetSet(petType)
+	local default = opts.Default or "Idle"
+	local self = setmetatable({
+		Model = model,
+		Set = set,
+		Motors = {},
+		Current = set.Anims[default],
+		Time = 0,
+		Speed = 1,
+		Default = default,
+		From = nil,
+		Fade = 0,
+		FadeTime = 0,
+		OnFinished = opts.OnFinished,
+		CanScale = (pcall(function()
+			return model:GetScale()
+		end)),
+		_ancestry = nil,
+	}, PetAnimator)
+	assert(self.Current, `StudPets: {petType} has no "{default}" animation`)
+
+	for _, d in model:GetDescendants() do
+		if d:IsA("Motor6D") and d.Part1 then
+			self.Motors[d.Part1.Name] = d
+		end
+	end
+
+	if opts.AutoStep ~= false then
+		live[self] = true
+		if not stepConnection then
+			local RunService = game:GetService("RunService")
+			-- Stepped runs before physics, which is when joint transforms must be set
+			stepConnection = RunService.Stepped:Connect(function(_, dt)
+				stepAll(dt)
+			end)
+		end
+		self._ancestry = model.AncestryChanged:Connect(function(_, parent)
+			if parent == nil then
+				self:Destroy()
+			end
+		end)
+	end
+
+	self:Step(0)
+	return self
+end
+
+-- Start an animation. Calling it again for the looping animation that is
+-- already playing just updates the speed, so it is safe to call every frame.
+function PetAnimator.Play(self: PetAnimator, name: string, fadeTime: number?, speed: number?)
+	local anim = self.Set.Anims[name]
+	assert(anim, `StudPets: unknown animation "{name}"`)
+	if anim == self.Current and anim.Looped then
+		self.Speed = speed or self.Speed
+		return
+	end
+	self.From = self:GetPose()
+	self.FadeTime = fadeTime or 0.2
+	self.Fade = 0
+	self.Current = anim
+	self.Time = 0
+	self.Speed = speed or 1
+end
+
+function PetAnimator.GetName(self: PetAnimator): string
+	return self.Current.Name
+end
+
+-- True while a one-shot (Jump, tricks) is still playing.
+function PetAnimator.IsBusy(self: PetAnimator): boolean
+	return not self.Current.Looped
+end
+
+function PetAnimator.GetPose(self: PetAnimator): PoseSet
+	local pose = AnimLib.sample(self.Current, self.Time)
+	local from = self.From
+	if from and self.FadeTime > 0 then
+		local a = math.clamp(self.Fade / self.FadeTime, 0, 1)
+		pose = AnimLib.blend(from, pose, a * a * (3 - 2 * a))
+	end
+	return pose
+end
+
+function PetAnimator.Step(self: PetAnimator, dt: number, skipPose: boolean?)
+	self.Time += dt * self.Speed
+	if self.From then
+		self.Fade += dt
+		if self.Fade >= self.FadeTime then
+			self.From = nil
+		end
+	end
+	local current = self.Current
+	if not current.Looped and self.Time >= current.Length then
+		self:Play(self.Default, 0.25)
+		if self.OnFinished then
+			self.OnFinished(current.Name)
+		end
+	end
+	if not skipPose then
+		self:_apply(self:GetPose())
+	end
+end
+
+function PetAnimator._apply(self: PetAnimator, pose: PoseSet)
+	-- Motor offsets scale with Model:ScaleTo(); our translations must too.
+	local s = if self.CanScale then self.Model:GetScale() else 1
+	local rad = math.rad
+	for name, motor in self.Motors do
+		local p = pose[name]
+		if p then
+			motor.Transform = CFrame.new(p[4] * s, p[5] * s, p[6] * s) * CFrame.Angles(rad(p[1]), rad(p[2]), rad(p[3]))
+		else
+			motor.Transform = CFrame.new()
+		end
+	end
+end
+
+function PetAnimator.Destroy(self: PetAnimator)
+	live[self] = nil
+	if self._ancestry then
+		self._ancestry:Disconnect()
+		self._ancestry = nil
+	end
+	for _, motor in self.Motors do
+		if motor.Parent then
+			motor.Transform = CFrame.new()
+		end
+	end
+	if next(live) == nil and stepConnection then
+		stepConnection:Disconnect()
+		stepConnection = nil
+	end
+end
+
+return PetAnimator
