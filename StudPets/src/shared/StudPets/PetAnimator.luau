@@ -159,16 +159,12 @@ function PetAnimator.new(model: Model, options: Options?): PetAnimator
 	end
 	byModel[model] = self
 
-	local function addMotor(d: Instance)
+	-- (pet models stream atomically, so every joint is here already)
+	for _, d in model:GetDescendants() do
 		if d:IsA("Motor6D") and d.Part1 then
 			self.Motors[d.Part1.Name] = d
 		end
 	end
-	for _, d in model:GetDescendants() do
-		addMotor(d)
-	end
-	-- parts that stream in later still get animated
-	table.insert(self._conns, model.DescendantAdded:Connect(addMotor))
 
 	if opts.AutoStep ~= false then
 		-- pause while the model is out of the game (parented to nil, pooled...), resume when it's back.

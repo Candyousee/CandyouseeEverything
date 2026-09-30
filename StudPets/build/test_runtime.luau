@@ -87,7 +87,7 @@ local function robloxRequire(module)
 	if cache[module] == nil then
 		local fn = luau.load(module.Source, {
 			debugName = module:GetFullName(),
-			environment = { script = module, require = robloxRequire, CFrame = roblox.CFrame, Vector3 = roblox.Vector3 },
+			environment = { script = module, require = robloxRequire, CFrame = roblox.CFrame, Vector3 = roblox.Vector3, task = require("@lune/task") },
 		})
 		cache[module] = fn()
 	end
