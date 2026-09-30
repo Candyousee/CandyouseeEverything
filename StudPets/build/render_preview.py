@@ -47,11 +47,15 @@ def reset_scene():
         # OpenGL preview: ~20x faster than Cycles, fine for motion review
         scene.render.engine = "BLENDER_WORKBENCH"
         sh = scene.display.shading
-        sh.light = "STUDIO"
+        sh.light = "FLAT"
         sh.color_type = "MATERIAL"
         sh.show_shadows = True
+        sh.shadow_intensity = 0.35
         sh.show_cavity = True
-        sh.cavity_type = "WORLD"
+        sh.cavity_type = "BOTH"
+        sh.cavity_ridge_factor = 1.0
+        sh.cavity_valley_factor = 1.6
+        sh.show_object_outline = True
         scene.display.shadow_focus = 0.4
         scene.view_settings.view_transform = "Standard"
         scene.render.image_settings.file_format = "PNG"
