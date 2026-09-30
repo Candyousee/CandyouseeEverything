@@ -5,15 +5,15 @@ play **straight from code**. There's nothing to upload, no asset IDs, and nothin
 
 | Body type | Count | Examples | Animations |
 |---|---|---|---|
-| Four-legged | 121 | dog & cat breeds, big cats, bears, farm, deer, safari, small mammals, reptiles, dinosaurs, unicorn/pegasus/griffin/kitsune | Idle, Walk, Run, Sit, Jump, Sleep + trick: Stretch / Roar / Rear / Spin / Trumpet / Bark |
-| Flyer | 34 | parrots, owls, hawks, songbirds, bugs, bats, dragons, phoenix | Idle, Walk (fly), Run (fast fly), Sit (perch), Jump (take off), Sleep + Loop |
-| Swimmer | 21 | whales, sharks, reef fish, seals, walrus, stingray | Idle, Walk (swim), Run, Sit (drift), Jump (leap), Sleep + Flip / Spin |
-| Two-legged | 24 | penguins, poultry, apes, flamingo, peacock, ostrich, T-rex & other dinos | Idle, Walk (waddle), Run, Sit, Jump, Sleep + Dance / Roar |
+| Four-legged | 122 | dog & cat breeds, big cats, bears, farm, deer, safari, small mammals, reptiles, dinosaurs, dragons, unicorn/pegasus/griffin/kitsune | Idle, Walk, Run, Sit, Jump, Sleep + trick: Stretch / Roar / Rear / Spin / Trumpet / Bark |
+| Flyer | 31 | parrots, owls, hawks, songbirds, bugs, bats, phoenix, pterodactyl | Idle, Walk (fly), Run (fast fly), Sit (perch), Jump (take off), Sleep + Loop |
+| Swimmer | 22 | whales, sharks, reef fish, seals, walrus, stingray, sea turtle | Idle, Walk (swim), Run, Sit (drift), Jump (leap), Sleep + Flip / Spin |
+| Two-legged | 25 | penguins, poultry, apes, sloth, flamingo, peacock, ostrich, T-rex & other dinos | Idle, Walk (waddle), Run, Sit, Jump, Sleep + Dance / Roar |
 
 The full list is in `src/shared/StudPets/Animals.luau`.
 
-**Sizes are real:** each pet has a size class (`SIZE` table in `Animals.luau`), from bugs at ~0.55×
-to the whale at 2.5×. The rig and all animation offsets scale together (`AnimScale` attribute), and
+**Sizes are real:** each pet has a size class (`SIZE` table in `Animals.luau`), from bugs at ~0.8×
+(the small end is compressed so tiny pets stay readable) to the whale at 2.5×. The rig and all animation offsets scale together (`AnimScale` attribute), and
 `Model:ScaleTo()` still works on top. Winged four-legged pets (dragons, pegasus, alicorn, griffin)
 have animated wings: folded at rest, flapping when running and jumping, spread when roaring or rearing.
 
@@ -48,7 +48,7 @@ The detailed table below covers the original Cat & Dog.
 - **Quickest:** open `StudPets.rbxl` in Studio and press Play. All 200 pets stand on pedestals
   cycling through their animations, and a small pet follows you around.
   - It walks, runs, sits after 5 s and falls asleep after 12 s, and it jumps when you jump.
-  - **G** makes it do its trick. **P** / **O** cycle the follower through all 200.
+  - **G** makes it do its trick. **]** / **[** cycle the follower through all 200.
 - **With Rojo:** run `rojo serve` in this folder and connect with the Rojo plugin.
 - **Just the models:** drag any file in `assets/pets/` into Studio.
   To animate them you also need the `src/shared/StudPets` modules.
@@ -65,7 +65,25 @@ pet.Parent = workspace
 local anim = PetAnimator.new(pet)
 anim:Play("Walk", 0.2, 1.3)   -- name, crossfade seconds, playback speed
 anim:Play("Jump")             -- one-shots return to Idle on their own
+anim:Play(anim.Set.Trick)     -- each pet's special trick (Stretch, Roar, Loop, Dance...)
+-- anim:Destroy()             -- stop animating (automatic when the pet is destroyed)
 ```
+
+`PetAnimator.new(model, options?)` options:
+
+| Option | Default | Meaning |
+|---|---|---|
+| `Default` | `"Idle"` | animation to return to after one-shots (Jump, tricks) |
+| `AutoStep` | `true` | `false` = call `anim:Step(dt)` yourself |
+| `OnFinished` | nil | `function(name)` called when a one-shot ends |
+| `PetType` | model's `StudPet` attribute | override the pet type |
+
+Other calls: `anim:IsBusy()` (a one-shot is playing), `anim:GetName()` (current animation),
+`PetAnimator.GetTypes()` (all 200 pet type names).
+
+- One animator per model: calling `new` again on the same model replaces the old one.
+- Parenting the model to nil pauses it, and it resumes when you parent it back (pooling is fine).
+- Models use `ModelStreamingMode = Atomic`, so they work with StreamingEnabled.
 
 - Move the pet with `pet:PivotTo(...)`. Its RootPart is anchored and every other part hangs off it with Motor6D joints.
 - All parts are CanCollide / CanQuery / CanTouch off, so they won't block players or raycasts.
@@ -88,14 +106,18 @@ That gives you normal Animation IDs for `Animator:LoadAnimation`.
 ```
 src/shared/StudPets/        runtime (ReplicatedStorage.StudPets)
   AnimLib.luau              easing, curves, blending (pure maths)
-  QuadrupedAnims.luau       shared Idle/Walk/Run/Sit/Jump/Sleep + paw planting + tail aiming
-  Pets/Cat.luau, Dog.luau   body measurements + each pet's trick
+  Animals.luau              the 198 kit pets: body measurements, colours, sizes
+  QuadrupedAnims.luau       four-legged set + paw planting + tail aiming + wings
+  FlyerAnims.luau, SwimmerAnims.luau, BipedAnims.luau   the other three sets
+  Pets/Cat.luau, Dog.luau   the two hand-built pets
   PetAnimator.luau          plays them on Motor6D.Transform with crossfades
 src/client/PetDemo.client.luau   showcase + follower demo
-build/rigs/*.luau           every block: size, colour, joint pivot
+build/rigs/Kit.luau         builds every Animals.luau pet from its measurements
+build/rigs/Cat.luau, Dog.luau    the hand-built rigs
 build/build.luau            makes the .rbxm files, bakes AnimSaves, runs QA
 build/test_runtime.luau     loads the built place and drives the real PetAnimator
 build/render_preview.py     Blender (headless) renders of the exact game poses
+build/make_gifs.py, contact_sheet.py, strip_sheet.py, review_sheets.py   preview/review sheets
 ```
 
 The game, the build, the QA and the preview renders all run the **same animation

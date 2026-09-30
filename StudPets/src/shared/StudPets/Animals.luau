@@ -507,18 +507,18 @@ local list = {
 -- Real-world size classes (1 = cat/dog). The whole rig and its animation offsets scale.
 local SIZE = {
 	-- tiny
-	Bee = 0.55, Bumblebee = 0.6, Wasp = 0.55, Firefly = 0.55, Ladybug = 0.55, Beetle = 0.6, Hummingbird = 0.6, Dragonfly = 0.7,
-	Butterfly = 0.75, Moth = 0.7, Mouse = 0.6, Hamster = 0.6, Rat = 0.7, PoisonDartFrog = 0.6, Frog = 0.7, Gecko = 0.7, Canary = 0.7,
+	Bee = 0.5, Bumblebee = 0.6, Wasp = 0.55, Firefly = 0.75, Ladybug = 0.75, Beetle = 0.8, Hummingbird = 0.75, Dragonfly = 0.7,
+	Butterfly = 0.75, Moth = 0.7, Mouse = 0.6, Hamster = 0.6, Rat = 0.7, PoisonDartFrog = 0.5, Frog = 0.7, Gecko = 0.7, Canary = 0.5,
 	Clownfish = 0.75, Goldfish = 0.7, Betta = 0.7, BlueTang = 0.8, Angelfish = 0.8, Piranha = 0.8, Chipmunk = 0.7, Squirrel = 0.8,
 	Hedgehog = 0.75, GuineaPig = 0.75, Robin = 0.8, BlueJay = 0.8, Cardinal = 0.8, Chihuahua = 0.8, Ferret = 0.85, Meerkat = 0.85,
-	Kiwi = 0.85, Axolotl = 0.8, Chameleon = 0.8, Sparrow = 0.7, Pufferfish = 0.9, Pigeon = 0.85, Crow = 0.9, Woodpecker = 0.85,
+	Kiwi = 0.85, Axolotl = 0.8, Chameleon = 0.8, Pufferfish = 0.9, Pigeon = 0.85, Crow = 0.9, Woodpecker = 0.85,
 	Bat = 0.8, Quokka = 0.9, FennecFox = 0.85, Bunny = 0.9, LopBunny = 0.9, ArcticHare = 0.9, Skunk = 0.9, Opossum = 0.9,
 	Pug = 0.9, Corgi = 0.9, Dachshund = 0.9, Duck = 0.9, Chicken = 0.9, Puffin = 0.9, Penguin = 0.95,
 	-- large
 	Lion = 1.3, Tiger = 1.35, WhiteTiger = 1.35, Jaguar = 1.15, Leopard = 1.1, Cheetah = 1.1, Panther = 1.15, Cougar = 1.1, SnowLeopard = 1.1,
 	Wolf = 1.1, FrostWolf = 1.3, Hellhound = 1.3, Hyena = 1.1, GermanShepherd = 1.05, GoldenRetriever = 1.05, Husky = 1.05, Samoyed = 1.05,
 	Bear = 1.4, PolarBear = 1.5, Panda = 1.25, Horse = 1.35, Zebra = 1.3, Donkey = 1.15, Pony = 1.05, Unicorn = 1.35, Pegasus = 1.4,
-	Alicorn = 1.4, Griffin = 1.4, Qilin = 1.3, Cow = 1.35, Bull = 1.45, Yak = 1.45, Bison = 1.5, Moose = 1.6, Reindeer = 1.25, Deer = 1.15,
+	Alicorn = 1.4, Griffin = 1.4, Qilin = 1.3, Cow = 1.35, Bull = 1.45, Yak = 1.45, Bison = 1.5, Moose = 1.6, Reindeer = 1.25, Deer = 1.15, Okapi = 1.25, Antelope = 1.1, Gazelle = 1.05, Ram = 1.15, Goat = 1.05, Pig = 1.05,
 	Camel = 1.4, Llama = 1.15, Alpaca = 1.1, Gorilla = 1.4, Orangutan = 1.2, Yeti = 1.6, Kangaroo = 1.2, Ostrich = 1.35, Crocodile = 1.4,
 	Komodo = 1.25, Tapir = 1.15, Capybara = 1.05, Anteater = 1.1, Warthog = 1.05, Eagle = 1.15, Vulture = 1.15, Pelican = 1.15,
 	EmperorPenguin = 1.15, Flamingo = 1.1, Peacock = 1.1, Swan = 1.1, Turkey = 1.05, Phoenix = 1.25, Pterodactyl = 1.4, Raptor = 1.15,
@@ -616,14 +616,13 @@ local OVERRIDES = {
 	Dolphin = { anim = { restPitch = 50, restLift = 1.45 } },
 	Hawk = { colors = { beak = { 250, 200, 50 }, head = { 200, 160, 120 } } },
 	Badger = { markings = "mask", colors = { head = W2, dark = K2 } },
-	Firefly = { size = 1.1, colors = { main = { 110, 96, 60 } } },
-	Hummingbird = { size = 1.1, colors = { wing = { 130, 220, 170 } } },
-	Ladybug = { size = 1.15, wingSpan = 0.9, wingChord = 0.5, colors = { wing = { 90, 90, 100 } } },
-	Bee = { size = 0.8, wingSpan = 1.6, wingChord = 1.0, colors = { wing = { 160, 200, 235 } } },
-	Bumblebee = { size = 0.85, body = { 1.8, 1.6, 1.9 }, colors = { main = { 44, 40, 34 }, dark = { 250, 200, 60 } } },
-	Beetle = { size = 1.15, colors = { shell = { 60, 150, 100 } } },
-	Canary = { size = 0.8 },
-	PoisonDartFrog = { size = 0.8, gait = "hop", spotSize = 0.45 },
+	Firefly = { colors = { main = { 110, 96, 60 } } },
+	Hummingbird = { colors = { wing = { 130, 220, 170 } } },
+	Ladybug = { wingSpan = 0.9, wingChord = 0.5, colors = { wing = { 90, 90, 100 } } },
+	Bee = { wingSpan = 1.6, wingChord = 1.0, colors = { wing = { 160, 200, 235 } } },
+	Bumblebee = { body = { 1.8, 1.6, 1.9 }, colors = { main = { 44, 40, 34 }, dark = { 250, 200, 60 } } },
+	Beetle = { colors = { shell = { 60, 150, 100 } } },
+	PoisonDartFrog = { gait = "hop", spotSize = 0.45 },
 }
 for name, ov in OVERRIDES do
 	local e = assert(byName[name], "override for unknown pet " .. name)

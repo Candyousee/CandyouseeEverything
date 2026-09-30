@@ -3,7 +3,7 @@
 --  * Pets marked "Showcase" cycle through every animation with a name tag.
 --  * A pet follows you and picks Idle / Walk / Run from its speed, jumps when
 --    you jump, sits after 5 s idle and falls asleep after 12 s.
---    G = trick, P / O = next / previous pet (all 50).
+--    G = trick, ] / [ = next / previous pet (all 200).
 -- The follower is local-only (other players don't see it); it's a demo of the
 -- animation system, not a networked pet system.
 
@@ -31,6 +31,7 @@ local function makeTag(adornee: BasePart, height: number): TextLabel
 	gui.Size = UDim2.fromOffset(220, 44)
 	gui.StudsOffset = Vector3.new(0, height, 0)
 	gui.MaxDistance = 45
+	gui.ResetOnSpawn = false -- survives respawns
 	local label = Instance.new("TextLabel")
 	label.BackgroundTransparency = 1
 	label.Size = UDim2.fromScale(1, 1)
@@ -58,7 +59,9 @@ local function showcase(model: Instance)
 	end
 	showcased[model] = true
 	local animator = PetAnimator.new(model)
-	local label = makeTag(root, 3.2)
+	-- tag floats just above the pet's head, whatever its size
+	local above = model:GetExtentsSize().Y - ((model:GetAttribute("RootHeight") :: number?) or 0)
+	local label = makeTag(root, math.max(above, 1) + 1.2)
 	task.spawn(function()
 		while model.Parent do
 			for _, name in animator.Set.Order do
@@ -105,6 +108,7 @@ local petIndex = 1
 
 local rayParams = RaycastParams.new()
 rayParams.FilterType = Enum.RaycastFilterType.Exclude
+local filterFor: { Instance } = {}
 
 local function spawnFollower(petType: string)
 	if follower then
@@ -140,7 +144,10 @@ local function angleLerp(a: number, b: number, t: number): number
 end
 
 local function hookHumanoid(character: Model)
-	local humanoid = character:WaitForChild("Humanoid") :: Humanoid
+	local humanoid = character:WaitForChild("Humanoid", 10) :: Humanoid?
+	if not humanoid then
+		return
+	end
 	humanoid.StateChanged:Connect(function(_, new)
 		local f = follower
 		if f and new == Enum.HumanoidStateType.Jumping then
@@ -173,7 +180,10 @@ RunService.RenderStepped:Connect(function(dt)
 	f.pos = pos
 	local speed = f.vel.Magnitude
 
-	rayParams.FilterDescendantsInstances = { character, f.model }
+	if filterFor[1] ~= character or filterFor[2] ~= f.model then
+		filterFor = { character, f.model }
+		rayParams.FilterDescendantsInstances = filterFor
+	end
 	local hit = workspace:Raycast(pos + Vector3.new(0, 6, 0), Vector3.new(0, -30, 0), rayParams)
 	local groundY = if hit then hit.Position.Y else hrp.Position.Y - 3
 
@@ -207,8 +217,9 @@ UserInputService.InputBegan:Connect(function(input, processed)
 	if input.KeyCode == Enum.KeyCode.G and follower then
 		follower.still = 0
 		follower.animator:Play(follower.animator.Set.Trick, 0.15)
-	elseif input.KeyCode == Enum.KeyCode.P or input.KeyCode == Enum.KeyCode.O then
-		local step = if input.KeyCode == Enum.KeyCode.P then 1 else -1
+	elseif input.KeyCode == Enum.KeyCode.RightBracket or input.KeyCode == Enum.KeyCode.LeftBracket then
+		-- (not O: that's Roblox's camera zoom-out key)
+		local step = if input.KeyCode == Enum.KeyCode.RightBracket then 1 else -1
 		petIndex = (petIndex - 1 + step) % #petTypes + 1
 		spawnFollower(petTypes[petIndex])
 	end
@@ -228,7 +239,7 @@ do
 	label.FontFace = Font.new("rbxasset://fonts/families/FredokaOne.json")
 	label.TextSize = 18
 	label.TextColor3 = Color3.new(1, 1, 1)
-	label.Text = "G  trick     P / O  next / previous pet"
+	label.Text = "G  trick     ]  /  [   next / previous pet"
 	Instance.new("UICorner").Parent = label
 	label.Parent = screen
 	screen.Parent = playerGui

@@ -230,6 +230,8 @@ local function makeModel(R, set, origin, editorRig)
 	model.PrimaryPart = inst.RootPart
 	model:SetAttribute("StudPet", rig.PetType)
 	model:SetAttribute("RootHeight", rig.RootHeight)
+	-- stream the whole pet in at once so every limb is there when it animates
+	model.ModelStreamingMode = Enum.ModelStreamingMode.Atomic
 	model:SetAttribute("AnimScale", rig.AnimScale or 1)
 	model:AddTag("StudPet")
 	pcall(function()

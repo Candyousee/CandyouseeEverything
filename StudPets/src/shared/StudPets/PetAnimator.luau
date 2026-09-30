@@ -4,7 +4,7 @@
 -- with smooth crossfades between animations. Run it on the client.
 --
 --   local PetAnimator = require(ReplicatedStorage.StudPets.PetAnimator)
---   local anim = PetAnimator.new(petModel)       -- reads the "StudPet" attribute (Cat / Dog)
+--   local anim = PetAnimator.new(petModel)       -- reads the model's "StudPet" attribute (pet type)
 --   anim:Play("Walk", 0.2, 1.3)                  -- name, fade seconds, playback speed
 --   anim:Play("Jump")                            -- one-shots return to Idle by themselves
 --   anim:Destroy()
@@ -59,7 +59,8 @@ export type PetAnimator = typeof(setmetatable(
 		OnFinished: ((name: string) -> ())?,
 		CanScale: boolean,
 		AnimScale: number,
-		_ancestry: RBXScriptConnection?,
+		_conns: { RBXScriptConnection },
+		_destroyed: boolean,
 	},
 	PetAnimator
 ))
@@ -68,6 +69,7 @@ local CULL_DISTANCE = 250 -- stop posing pets the camera can't see well
 
 local sets: { [string]: PetSet } = {}
 local live: { [PetAnimator]: boolean } = {}
+local byModel: { [Model]: PetAnimator } = setmetatable({}, { __mode = "kv" }) :: any
 local stepConnection: RBXScriptConnection? = nil
 
 function PetAnimator.GetSet(petType: string): PetSet
@@ -105,6 +107,23 @@ local function stepAll(dt: number)
 	end
 end
 
+local function startStepping()
+	if not stepConnection then
+		local RunService = game:GetService("RunService")
+		-- Stepped runs before physics, which is when joint transforms must be set
+		stepConnection = RunService.Stepped:Connect(function(_, dt)
+			stepAll(dt)
+		end)
+	end
+end
+
+local function stopSteppingIfIdle()
+	if next(live) == nil and stepConnection then
+		stepConnection:Disconnect()
+		stepConnection = nil
+	end
+end
+
 function PetAnimator.new(model: Model, options: Options?): PetAnimator
 	local opts: Options = options or {}
 	local petType = opts.PetType or model:GetAttribute("StudPet")
@@ -124,34 +143,50 @@ function PetAnimator.new(model: Model, options: Options?): PetAnimator
 		Fade = 0,
 		FadeTime = 0,
 		OnFinished = opts.OnFinished,
+		_conns = {},
+		_destroyed = false,
 		CanScale = (pcall(function()
 			return model:GetScale()
 		end)),
-		_ancestry = nil,
 		AnimScale = (model:GetAttribute("AnimScale") :: number?) or 1,
 	}, PetAnimator)
 	assert(self.Current, `StudPets: {petType} has no "{default}" animation`)
 
-	for _, d in model:GetDescendants() do
+	-- one animator per model: a new one replaces the old
+	local old = byModel[model]
+	if old then
+		old:Destroy()
+	end
+	byModel[model] = self
+
+	local function addMotor(d: Instance)
 		if d:IsA("Motor6D") and d.Part1 then
 			self.Motors[d.Part1.Name] = d
 		end
 	end
+	for _, d in model:GetDescendants() do
+		addMotor(d)
+	end
+	-- parts that stream in later still get animated
+	table.insert(self._conns, model.DescendantAdded:Connect(addMotor))
 
 	if opts.AutoStep ~= false then
-		live[self] = true
-		if not stepConnection then
-			local RunService = game:GetService("RunService")
-			-- Stepped runs before physics, which is when joint transforms must be set
-			stepConnection = RunService.Stepped:Connect(function(_, dt)
-				stepAll(dt)
-			end)
-		end
-		self._ancestry = model.AncestryChanged:Connect(function(_, parent)
-			if parent == nil then
-				self:Destroy()
+		-- pause while the model is out of the game (parented to nil, pooled...), resume when it's back.
+		-- Destroying the model disconnects this and lets the animator be collected.
+		local function refresh()
+			if self._destroyed then
+				return
 			end
-		end)
+			if model:IsDescendantOf(game) then
+				live[self] = true
+				startStepping()
+			else
+				live[self] = nil
+				stopSteppingIfIdle()
+			end
+		end
+		table.insert(self._conns, model.AncestryChanged:Connect(refresh))
+		refresh()
 	end
 
 	-- start looping animations at a random point so neighbouring pets don't move in lockstep
@@ -176,7 +211,8 @@ function PetAnimator.Play(self: PetAnimator, name: string, fadeTime: number?, sp
 	self.Fade = 0
 	self.Current = anim
 	self.Time = 0
-	self.Speed = speed or 1
+	-- one-shots must move forward or they would never finish
+	self.Speed = if anim.Looped then speed or 1 else math.max(speed or 1, 0.01)
 end
 
 function PetAnimator.GetName(self: PetAnimator): string
@@ -210,7 +246,8 @@ function PetAnimator.Step(self: PetAnimator, dt: number, skipPose: boolean?)
 	if not current.Looped and self.Time >= current.Length then
 		self:Play(self.Default, 0.25)
 		if self.OnFinished then
-			self.OnFinished(current.Name)
+			-- spawned so an error in user code can't stop the other pets this frame
+			task.spawn(self.OnFinished, current.Name)
 		end
 	end
 	if not skipPose then
@@ -234,20 +271,24 @@ function PetAnimator._apply(self: PetAnimator, pose: PoseSet)
 end
 
 function PetAnimator.Destroy(self: PetAnimator)
-	live[self] = nil
-	if self._ancestry then
-		self._ancestry:Disconnect()
-		self._ancestry = nil
+	if self._destroyed then
+		return
 	end
-	for _, motor in self.Motors do
-		if motor.Parent then
-			motor.Transform = CFrame.new()
+	self._destroyed = true
+	live[self] = nil
+	for _, c in self._conns do
+		c:Disconnect()
+	end
+	table.clear(self._conns)
+	if byModel[self.Model] == self then
+		byModel[self.Model] = nil
+		for _, motor in self.Motors do
+			if motor.Parent then
+				motor.Transform = CFrame.new()
+			end
 		end
 	end
-	if next(live) == nil and stepConnection then
-		stepConnection:Disconnect()
-		stepConnection = nil
-	end
+	stopSteppingIfIdle()
 end
 
 return PetAnimator
