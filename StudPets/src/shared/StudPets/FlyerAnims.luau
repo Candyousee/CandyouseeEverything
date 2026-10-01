@@ -38,10 +38,12 @@ return function(A, Q)
 
 	-- lift > 0 raises the wings; fold 1 = tucked back along the body
 	-- folded wings hang down each side and point back (plates vertical, not a flat tray)
-	local function wings(P, lift: number, fold: number)
+	local function wings(spec, P, lift: number, fold: number)
 		local open = 1 - fold
-		P.WingL = J(-90 * fold, 0, 90 * fold - lift * open)
-		P.WingR = J(-90 * fold, 0, -90 * fold + lift * open)
+		-- folded: tucked against the body, tips angled down over the tail
+		local fp = spec.foldPitch or -78
+		P.WingL = J(fp * fold, 0, 90 * fold - lift * open, 0.06 * fold)
+		P.WingR = J(fp * fold, 0, -90 * fold + lift * open, -0.06 * fold)
 	end
 
 	-- Airborne pose: `speed` 0 = hover, 1 = fast forward flight.
@@ -49,7 +51,7 @@ return function(A, Q)
 		local lift = if spec.alwaysFly then 0 else spec.hover
 		local beat = wave(t, flapPeriod)
 		P.Torso = J(-6 - 12 * speed + 3 * beat, 0, 0, 0, lift + height + 0.12 * wave(t, flapPeriod, 0.25), 0)
-		wings(P, spec.flapAmp * beat + 10, 0)
+		wings(spec, P, spec.flapAmp * beat + 10, 0)
 		P.Head = J(4 + 10 * speed - 2 * beat)
 		P.LegL = J(-55)
 		P.LegR = J(-55)
@@ -78,7 +80,7 @@ return function(A, Q)
 				else
 					local br = wave(t, 2)
 					P.Torso = J(br, 0, 0, 0, 0.03 * br)
-					wings(P, 2 * br, 1)
+					wings(spec, P, 2 * br, 1)
 					P.Tail1 = J(curve(t, { { 0, 0 }, { 2.4, 0 }, { 2.5, -15 }, { 2.7, 0 } }))
 				end
 				-- birds jerk their heads round in quick steps
@@ -104,7 +106,7 @@ return function(A, Q)
 					P.Torso = J(-4 + 5 * up, 0, 0, 0, 0.32 * up)
 					P.LegL = J(-28 * up)
 					P.LegR = J(-28 * up)
-					wings(P, 4 * up, 1)
+					wings(spec, P, 4 * up, 1)
 					P.Head = J(6 * math.sin(2 * math.pi * ph))
 					P.Tail1 = J(-12 * up)
 					eyes(P, 0)
@@ -135,7 +137,7 @@ return function(A, Q)
 			Pose = function(t)
 				local P = {}
 				fly(spec, P, t, 1, f, 0.3)
-				wings(P, (spec.flapAmp + 10) * wave(t, f) + 5, 0)
+				wings(spec, P, (spec.flapAmp + 10) * wave(t, f) + 5, 0)
 				eyes(P, 0)
 				return P
 			end,
@@ -151,14 +153,14 @@ return function(A, Q)
 				local P = {}
 				if spec.alwaysFly then
 					fly(spec, P, t, 0, spec.flap * 2, -spec.hover * 0.5)
-					wings(P, spec.flapAmp * 0.5 * wave(t, spec.flap * 2) + 10, 0)
+					wings(spec, P, spec.flapAmp * 0.5 * wave(t, spec.flap * 2) + 10, 0)
 				else
 					-- fluffed up and settled low on its feet
 					local br = wave(t, 2)
 					P.Torso = J(4, 0, 0, 0, -0.25 + 0.03 * br)
 					P.LegL = J(0, 0, 0, 0, 0.25)
 					P.LegR = J(0, 0, 0, 0, 0.25)
-					wings(P, 0, 1)
+					wings(spec, P, 0, 1)
 					P.Head = J(-6 + br, curve(t, { { 0, 0 }, { 1.5, 0 }, { 1.8, 20 }, { 3, 20 }, { 3.3, 0 } }))
 				end
 				eyes(P, Q.blink(t, { 1.2, 3.5 }))
@@ -184,7 +186,7 @@ return function(A, Q)
 					fly(spec, P, t, 0.2, spec.flap * 0.5, h)
 				else
 					P.Torso = J(-10 * open, 0, 0, 0, h)
-					wings(P, open * (spec.flapAmp * wave(t, 0.3) + 10), 1 - open)
+					wings(spec, P, open * (spec.flapAmp * wave(t, 0.3) + 10), 1 - open)
 					P.LegL = J(-40 * open)
 					P.LegR = J(-40 * open)
 					P.Head = J(10 * open)
@@ -206,13 +208,13 @@ return function(A, Q)
 				local br = wave(t, 4)
 				if spec.alwaysFly then
 					fly(spec, P, t, 0, spec.flap * 2, -spec.hover * 0.6 + 0.1 * br)
-					wings(P, spec.flapAmp * 0.35 * wave(t, spec.flap * 2) + 5, 0)
+					wings(spec, P, spec.flapAmp * 0.35 * wave(t, spec.flap * 2) + 5, 0)
 					P.Head = J(-15)
 				else
 					P.Torso = J(6, 0, 0, 0, -0.3 + 0.04 * br)
 					P.LegL = J(0, 0, 0, 0, 0.3)
 					P.LegR = J(0, 0, 0, 0, 0.3)
-					wings(P, 0, 1)
+					wings(spec, P, 0, 1)
 					P.Head = J(-(spec.sleepHeadDrop or 25) - 2 * br, 25, 8)
 				end
 				eyes(P, 1)
@@ -241,7 +243,7 @@ return function(A, Q)
 				P.LegL = J(-55 * open)
 				P.LegR = J(-55 * open)
 				if not spec.alwaysFly then
-					wings(P, open * (spec.flapAmp * wave(t, spec.flap * 0.75) + 10), 1 - open)
+					wings(spec, P, open * (spec.flapAmp * wave(t, spec.flap * 0.75) + 10), 1 - open)
 				end
 				eyes(P, if roll > 90 and roll < 300 then 1 else 0)
 				return Q.plant(spec, P)
