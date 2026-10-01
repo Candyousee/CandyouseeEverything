@@ -560,3 +560,59 @@ if process.args[1] == "eggs" then
 	fs.writeFile(process.args[2], serde.encode("json", { fps = 20, pets = pets }))
 	print("[petsystem] egg stills -> " .. process.args[2])
 end
+
+-- Showcase video data (render with build/make_system_video.py): every egg in egg space with
+-- its crack stages, the demo stands as placed in the world, and the hatch timeline per frame.
+if process.args[1] == "video" then
+	local function partOut(p: any, cf: any)
+		return {
+			name = p.Name,
+			class = p.ClassName,
+			size = { p.Size.X, p.Size.Y, p.Size.Z },
+			color = { math.round(p.Color.R * 255), math.round(p.Color.G * 255), math.round(p.Color.B * 255) },
+			neon = p.Material == Enum.Material.Neon,
+			studs = p.TopSurface == Enum.SurfaceType.Studs,
+			shape = if p:FindFirstChildOfClass("SpecialMesh") then "sphere" elseif p:IsA("Part") and p.Shape == Enum.PartType.Cylinder then "cylinder" else nil,
+			crack = p:GetAttribute("Crack"),
+			cf = { cf:GetComponents() },
+		}
+	end
+	local eggs = {}
+	for name, m in eggModels do
+		local list = {}
+		for _, p in m:GetChildren() do
+			if p:IsA("BasePart") and p.Name ~= "Root" then
+				table.insert(list, partOut(p, p.CFrame))
+			end
+		end
+		eggs[name] = { parts = list }
+	end
+	local standList, pivots = {}, {}
+	for _, stand in stands:GetChildren() do
+		local egg = stand:FindFirstChild("Egg")
+		pivots[stand.Name] = { (egg.PrimaryPart :: any).CFrame:GetComponents() }
+		for _, d in stand:GetDescendants() do
+			if d:IsA("BasePart") and d.Transparency < 1 then
+				local o = partOut(d, d.CFrame)
+				o.stand = stand.Name
+				o.isEgg = d:IsDescendantOf(egg)
+				table.insert(standList, o)
+			end
+		end
+	end
+	local drama = tonumber(process.args[3]) or 2
+	local FPS = 24
+	local T = Hatch.Timing(drama)
+	local frames = {}
+	for f = 0, math.ceil(T.length * FPS) do
+		local s = Hatch.State(f / FPS, drama, 28)
+		table.insert(frames, s)
+	end
+	fs.writeFile(process.args[2], serde.encode("json", {
+		eggs = eggs,
+		stands = standList,
+		pivots = pivots,
+		hatch = { drama = drama, fps = FPS, pop = T.pop, length = T.length, shakes = T.shakes, frames = frames },
+	}))
+	print("[petsystem] video data -> " .. process.args[2])
+end

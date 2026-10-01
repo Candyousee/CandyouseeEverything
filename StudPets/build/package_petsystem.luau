@@ -55,6 +55,75 @@ assert(next(used) == nil, "missing pet models: " .. table.concat((function()
 	return t
 end)(), ", "))
 
+-- Templates all sit at the origin, which would drop a heap of 48 pets and 6 eggs in the
+-- middle of the stands. Lay them out as a tidy showcase behind the stands instead, turned
+-- to face the spawn. Each model moves as one rigid piece (joints are Motor6Ds, so every
+-- script that uses them works the same wherever the template starts).
+do
+	local CFrame, Vector3 = roblox.CFrame, roblox.Vector3
+	local function bounds(m)
+		local lo, hi = Vector3.new(math.huge, math.huge, math.huge), Vector3.new(-math.huge, -math.huge, -math.huge)
+		for _, d in m:GetDescendants() do
+			if d:IsA("BasePart") then
+				local c, h = d.CFrame, d.Size / 2
+				for _, sx in { -1, 1 } do
+					for _, sy in { -1, 1 } do
+						for _, sz in { -1, 1 } do
+							local q = c * Vector3.new(h.X * sx, h.Y * sy, h.Z * sz)
+							lo, hi = lo:Min(q), hi:Max(q)
+						end
+					end
+				end
+			end
+		end
+		return lo, hi
+	end
+	local function move(m, xf)
+		for _, d in m:GetDescendants() do
+			if d:IsA("BasePart") then
+				d.CFrame = xf * d.CFrame
+			end
+		end
+	end
+	local items = {}
+	for _, e in toRS.StudPetSystemEggs:GetChildren() do
+		table.insert(items, e)
+	end
+	local petList = pets:GetChildren()
+	table.sort(petList, function(a, b)
+		return a.Name < b.Name
+	end)
+	for _, pm in petList do
+		table.insert(items, pm)
+	end
+	local ROW, GAP = 64, 2.5
+	local rows, row, w = {}, {}, 0
+	for _, m in items do
+		move(m, CFrame.Angles(0, math.pi, 0)) -- face +Z (the spawn side of the stands)
+		local lo, hi = bounds(m)
+		local mw = hi.X - lo.X
+		if #row > 0 and (w + mw > ROW or (m.Parent == pets and row[1].Parent ~= pets)) then
+			table.insert(rows, { items = row, w = w - GAP })
+			row, w = {}, 0
+		end
+		table.insert(row, m)
+		w += mw + GAP
+	end
+	table.insert(rows, { items = row, w = w - GAP })
+	local z = -6
+	for _, r in rows do
+		local x = -r.w / 2
+		local depth = 0
+		for _, m in r.items do
+			local lo, hi = bounds(m)
+			move(m, CFrame.new(x - lo.X, -lo.Y, z - hi.Z))
+			x += hi.X - lo.X + GAP
+			depth = math.max(depth, hi.Z - lo.Z)
+		end
+		z -= depth + 4
+	end
+end
+
 local toSSS = folder("2_PutInServerScriptService")
 local server = assert(sss:FindFirstChild("StudPetSystem")):Clone()
 server.Disabled = true
