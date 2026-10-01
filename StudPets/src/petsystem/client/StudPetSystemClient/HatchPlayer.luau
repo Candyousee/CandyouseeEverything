@@ -151,22 +151,48 @@ local function makeSlot(folder, eggName, result, index)
 		Enabled = true,
 	})
 
-	-- light rays behind (rare+)
+	-- sunburst behind the egg/pet (rare+): tapered rays, each two mirrored wedges
 	slot.rays = {}
 	if slot.drama >= 1 then
-		for k = 1, 10 do
-			local ray = part({ Name = "Ray", Material = Enum.Material.Neon, Size = Vector3.new(0.35, 9, 0.05), Transparency = 1 })
-			ray.Parent = folder
-			slot.rays[k] = ray
+		for k = 1, 12 do
+			local pair = {}
+			for side = 1, 2 do
+				local w = Instance.new("WedgePart")
+				w.Anchored, w.CanCollide, w.CanQuery, w.CanTouch, w.CastShadow = true, false, false, false, false
+				w.Material = Enum.Material.Neon
+				w.Transparency = 1
+				w.Parent = folder
+				pair[side] = w
+			end
+			slot.rays[k] = pair
 		end
 	end
 
-	-- shockwave ring segments
-	slot.ring = {}
-	for k = 1, 22 do
-		local seg = part({ Name = "Ring", Material = Enum.Material.Neon, Size = Vector3.new(0.6, 0.18, 0.05), Transparency = 1 })
+	-- two shockwave rings (segments): a fast bright one and a slower soft one
+	slot.ring, slot.ring2 = {}, {}
+	for k = 1, 32 do
+		local seg = part({ Name = "Ring", Material = Enum.Material.Neon, Size = Vector3.new(0.6, 0.32, 0.05), Transparency = 1 })
 		seg.Parent = folder
 		slot.ring[k] = seg
+		local seg2 = part({ Name = "Ring2", Material = Enum.Material.Neon, Size = Vector3.new(0.6, 0.16, 0.05), Transparency = 1 })
+		seg2.Parent = folder
+		slot.ring2[k] = seg2
+	end
+
+	-- flash ball at the moment of the pop
+	local ball = part({ Name = "FlashBall", Material = Enum.Material.Neon, Size = Vector3.new(1, 1, 1), Transparency = 1, Shape = Enum.PartType.Ball })
+	ball.Parent = folder
+	slot.ball = ball
+
+	-- confetti (rare+)
+	slot.confetti = {}
+	if slot.drama >= 1 then
+		local palette = { Color3.fromRGB(255, 90, 90), Color3.fromRGB(255, 210, 60), Color3.fromRGB(90, 220, 120), Color3.fromRGB(80, 170, 255), Color3.fromRGB(200, 110, 255), Color3.new(1, 1, 1) }
+		for k = 1, 30 + 15 * slot.drama do
+			local c = part({ Name = "Confetti", Material = Enum.Material.SmoothPlastic, Size = Vector3.new(0.28, 0.14, 0.03), Transparency = 1, Color = palette[(k % #palette) + 1] })
+			c.Parent = folder
+			slot.confetti[k] = c
+		end
 	end
 
 	-- shell shards (pool)
@@ -284,27 +310,77 @@ local function update(slot, t, stageCF, camPos)
 	slot.burst.Color = ColorSequence.new(Color3.new(1, 1, 1), color)
 	slot.aura.Color = ColorSequence.new(color)
 
-	-- rays: fan of neon blades behind, slowly turning
-	for k, ray in slot.rays do
-		local a = (k / #slot.rays) * math.pi * 2 + t * 0.7
-		ray.CFrame = stageCF * CFrame.new(0, 0.3, -2.5) * CFrame.Angles(0, 0, a) * CFrame.new(0, 4.6, 0)
-		ray.Color = color
-		ray.Transparency = 1 - 0.55 * s.rays * (1 - s.fade)
+	-- sunburst: tapered rays BEHIND the egg (+Z is away from the camera), slowly turning
+	local L = 7.5 + slot.drama
+	for k, pair in slot.rays do
+		local a = (k / #slot.rays) * math.pi * 2 + t * 0.35
+		local u = stageCF:VectorToWorldSpace(Vector3.new(math.cos(a), math.sin(a), 0))
+		local pv = stageCF:VectorToWorldSpace(Vector3.new(-math.sin(a), math.cos(a), 0))
+		local tip = (stageCF * CFrame.new(0, 0.3, 3)).Position
+		local w = 0.55 + 0.15 * slot.drama
+		local alpha = 0.5 * s.rays * (1 - s.fade)
+		local col = if k % 2 == 0 then color else color:Lerp(Color3.new(1, 1, 1), 0.6)
+		for side, wedge in pair do
+			local across = if side == 1 then pv else -pv
+			wedge.Size = Vector3.new(0.05, w, L)
+			wedge.CFrame = CFrame.fromMatrix(tip + u * (L / 2) + across * (w / 2), across:Cross(u), across, u)
+			wedge.Color = col
+			wedge.Transparency = 1 - alpha
+		end
 	end
 
-	-- shockwave ring (faces the camera)
-	if s.ring then
-		local r, alpha = s.ring[1], s.ring[2]
-		for k, seg in slot.ring do
-			local a = (k / #slot.ring) * math.pi * 2
-			seg.Size = Vector3.new(r * 2 * math.pi / #slot.ring * 1.05, 0.22, 0.05)
-			seg.CFrame = stageCF * CFrame.new(0, 0.2, 0) * CFrame.Angles(0, 0, a) * CFrame.new(0, r, 0)
-			seg.Color = color
-			seg.Transparency = 1 - alpha
+	-- shockwave rings (face the camera)
+	local function ringAt(segs, r, alpha, thick)
+		for k, seg in segs do
+			local a = (k / #segs) * math.pi * 2
+			if alpha > 0.01 then
+				seg.Size = Vector3.new(r * 2 * math.pi / #segs * 1.08, thick, 0.05)
+				seg.CFrame = stageCF * CFrame.new(0, 0.2, 0) * CFrame.Angles(0, 0, a) * CFrame.new(0, r, 0)
+				seg.Color = color
+				seg.Transparency = 1 - alpha
+			else
+				seg.Transparency = 1
+			end
 		end
+	end
+	if s.ring then
+		ringAt(slot.ring, s.ring[1], s.ring[2], 0.32 * s.ring[2] + 0.06)
+		local p2 = t - slot.timing.pop - 0.08
+		local r2 = 0.8 + (3.5 + slot.drama) * math.sqrt(math.clamp(p2 / 0.7, 0, 1))
+		ringAt(slot.ring2, r2, if p2 > 0 then 0.6 * (1 - math.clamp(p2 / 0.7, 0, 1)) else 0, 0.16)
 	else
-		for _, seg in slot.ring do
-			seg.Transparency = 1
+		ringAt(slot.ring, 0, 0, 0)
+		ringAt(slot.ring2, 0, 0, 0)
+	end
+
+	-- flash ball: swells and fades right at the pop
+	local pp = t - slot.timing.pop
+	if pp >= 0 and pp < 0.32 then
+		local k = pp / 0.32
+		local d = 1.5 + 4.5 * math.sqrt(k) + slot.drama * 0.6
+		slot.ball.Size = Vector3.new(d, d, d)
+		slot.ball.CFrame = stageCF * CFrame.new(0, 0.2, 0)
+		slot.ball.Color = Color3.new(1, 1, 1):Lerp(color, k)
+		slot.ball.Transparency = 0.15 + 0.85 * k
+	else
+		slot.ball.Transparency = 1
+	end
+
+	-- confetti: bursts up and out, then flutters down
+	for k, c in slot.confetti do
+		local life = 2.4
+		if pp > 0 and pp < life then
+			local r1, r2, r3 = math.noise(k, 1.3), math.noise(k, 2.7), math.noise(k, 5.1)
+			local ang = (k / #slot.confetti) * math.pi * 2 + r1 * 3
+			local spd = 5 + 3 * (r2 + 0.5)
+			local up = math.min(pp, 0.45)
+			local x = math.cos(ang) * spd * math.min(pp, 0.5) * 1.6 + math.sin(pp * 6 + k) * 0.35
+			local y = 0.5 + (7 + 3 * r3) * up - 2.4 * math.max(0, pp - 0.45)
+			local z = -math.abs(math.sin(ang)) * 1.5 * math.min(pp, 0.5)
+			c.CFrame = stageCF * CFrame.new(x, y, z) * CFrame.Angles(pp * (7 + k % 5), pp * (5 + k % 3), pp * 3)
+			c.Transparency = math.clamp((pp - life + 0.5) / 0.5, 0, 1)
+		else
+			c.Transparency = 1
 		end
 	end
 
@@ -347,8 +423,13 @@ function HatchPlayer.Play(eggName: string, results: { any })
 	HatchPlayer.Busy = true
 	local camera = workspace.CurrentCamera
 	local oldType = camera.CameraType
-	local baseCF = camera.CFrame
-	camera.CameraType = Enum.CameraType.Scriptable
+	local oldCF = camera.CFrame
+	local oldFov = camera.FieldOfView
+
+	-- the hatch plays on its own little stage high above the map, so nothing in the
+	-- world clutters it; the camera cuts there behind a quick fade to black
+	local STAGE = CFrame.new(0, 4000, 0)
+	local baseCF = CFrame.lookAt((STAGE * CFrame.new(0, 1.1, 0)).Position + Vector3.new(0, 0, 1) * 0, STAGE.Position)
 
 	-- the stage sits between the camera and your avatar: hide the avatar, freeze movement,
 	-- and hide other prompts until the cinematic ends
@@ -373,11 +454,6 @@ function HatchPlayer.Play(eggName: string, results: { any })
 	folder.Name = "StudHatchStage"
 	folder.Parent = workspace
 
-	-- dark backdrop behind the stage dims the world
-	local back = part({ Name = "Backdrop", Size = Vector3.new(400, 400, 0.2), Color = Color3.fromRGB(12, 12, 24), Material = Enum.Material.SmoothPlastic, Transparency = 1 })
-	back.CFrame = baseCF * CFrame.new(0, 0, -30)
-	back.Parent = folder
-
 	-- screen flash
 	local gui = Instance.new("ScreenGui")
 	gui.Name = "StudHatchFlash"
@@ -401,15 +477,55 @@ function HatchPlayer.Play(eggName: string, results: { any })
 	hint.Text = "Click to skip"
 	hint.TextTransparency = 1
 	hint.Parent = gui
+	local black = Instance.new("Frame")
+	black.Size = UDim2.fromScale(1, 1)
+	black.BackgroundColor3 = Color3.new(0, 0, 0)
+	black.BackgroundTransparency = 1
+	black.BorderSizePixel = 0
+	black.ZIndex = 5
+	black.Parent = gui
 	gui.Parent = player:WaitForChild("PlayerGui")
 
+	-- fade to black, then cut to the stage
+	for k = 1, 8 do
+		black.BackgroundTransparency = 1 - k / 8
+		task.wait(1 / 60)
+	end
+
 	local n = #results
-	local spacing = if n > 1 then 5.2 else 0
-	local dist = if n > 1 then 13 else 10
+	local spacing = if n > 1 then 5.4 else 0
+	local dist = if n > 1 then 14 else 10.5
+	baseCF = CFrame.lookAt((STAGE * CFrame.new(0, 1.3, dist)).Position, (STAGE * CFrame.new(0, 0.2, 0)).Position)
+	camera.CameraType = Enum.CameraType.Scriptable
+	camera.CFrame = baseCF
+
+	-- the set: a deep backdrop, a soft halo behind the egg, and a glowing pedestal per egg
+	local backdrop = part({ Name = "Backdrop", Size = Vector3.new(500, 500, 1), Color = Color3.fromRGB(14, 16, 34), Material = Enum.Material.SmoothPlastic })
+	backdrop.CFrame = STAGE * CFrame.new(0, 0, -16)
+	backdrop.Parent = folder
+	local floor = part({ Name = "Floor", Size = Vector3.new(500, 1, 500), Color = Color3.fromRGB(22, 24, 46), Material = Enum.Material.SmoothPlastic })
+	floor.CFrame = STAGE * CFrame.new(0, -3.4, 0)
+	floor.Parent = folder
+	local halos = {}
+	for k, r in { 13, 8.5, 5 } do
+		local h = part({ Name = "Halo", Shape = Enum.PartType.Cylinder, Material = Enum.Material.Neon, Size = Vector3.new(0.05, r, r), Transparency = 0.94 - k * 0.04 })
+		h.CFrame = STAGE * CFrame.new(0, 0.4, -6 + k * 0.05) * CFrame.Angles(0, math.rad(90), 0)
+		h.Parent = folder
+		halos[k] = h
+	end
+	local pedestals = {}
 	local slots = {}
 	for i, r in results do
 		slots[i] = makeSlot(folder, eggName, r, i)
 		slots[i].offset = (i - (n + 1) / 2) * spacing
+		local x = slots[i].offset
+		local top = part({ Name = "Pedestal", Shape = Enum.PartType.Cylinder, Material = Enum.Material.SmoothPlastic, Color = Color3.fromRGB(40, 42, 70), Size = Vector3.new(0.6, 3.6, 3.6) })
+		top.CFrame = STAGE * CFrame.new(x, -2.75, 0) * CFrame.Angles(0, 0, math.rad(90))
+		top.Parent = folder
+		local rim = part({ Name = "PedestalRim", Shape = Enum.PartType.Cylinder, Material = Enum.Material.Neon, Size = Vector3.new(0.2, 3.9, 3.9) })
+		rim.CFrame = STAGE * CFrame.new(x, -2.55, 0) * CFrame.Angles(0, 0, math.rad(90))
+		rim.Parent = folder
+		pedestals[i] = rim
 	end
 	local length = 0
 	for _, s in slots do
@@ -439,24 +555,43 @@ function HatchPlayer.Play(eggName: string, results: { any })
 		end
 		local camPos = baseCF.Position
 		local shake, flashA, dim = 0, 0, 0
-		for _, slot in slots do
-			local stageCF = CFrame.lookAt((baseCF * CFrame.new(slot.offset, -0.6, -dist)).Position, camPos)
+		local punch, charge = 0, 0
+		for i, slot in slots do
+			local stageCF = CFrame.lookAt((STAGE * CFrame.new(slot.offset, 0, 0)).Position, Vector3.new(camPos.X, (STAGE * CFrame.new(0, 0, 0)).Position.Y, camPos.Z))
 			-- cues (sounds, particle bursts) at their exact times
 			while slot.events[slot.nextEvent] and slot.events[slot.nextEvent][1] <= t do
 				local ev = slot.events[slot.nextEvent]
 				cue(slot, ev[2], ev[3])
 				slot.nextEvent += 1
 			end
-			local s = update(slot, math.min(t, slot.timing.length), stageCF, camPos)
+			local tt = math.min(t, slot.timing.length)
+			local s = update(slot, tt, stageCF, camPos)
 			shake = math.max(shake, s.shake)
 			flashA = math.max(flashA, s.flash)
 			dim = math.max(dim, s.dim)
+			local color = rarityColor(slot.rarity, t)
+			pedestals[i].Color = color:Lerp(Color3.new(1, 1, 1), 0.15)
+			-- zoom in during the charge, punch out on the pop, settle back
+			local T = slot.timing
+			charge = math.max(charge, math.clamp((tt - T.shakes[1]) / (T.pop - T.shakes[1]), 0, 1))
+			local pp = tt - T.pop
+			if pp > 0 then
+				punch = math.max(punch, math.exp(-pp / 0.18) * (6 + 2 * slot.drama))
+			end
+			if i == 1 then
+				for _, h in halos do
+					h.Color = color
+				end
+			end
 		end
-		back.Transparency = 1 - 0.6 * dim
 		flash.BackgroundTransparency = 1 - flashA
+		-- fade back out of black at the start, into black at the end
+		black.BackgroundTransparency = math.clamp(t / 0.3, 0, 1) * (1 - math.clamp((t - length + 0.3) / 0.3, 0, 1))
 		hint.TextTransparency = if skipTo == nil and t > 2.5 and t < length - 0.6 then 0.3 else 1
 		local nx = math.noise(t * 25, 1.7) * shake
 		local ny = math.noise(t * 25, 9.3) * shake
+		local popped = punch > 0.01 or t > slots[1].timing.pop
+		camera.FieldOfView = oldFov - (if popped then 0 else 9 * charge * charge) + punch
 		camera.CFrame = baseCF * CFrame.new(nx, ny, 0)
 		if t >= length then
 			done = true
@@ -480,9 +615,17 @@ function HatchPlayer.Play(eggName: string, results: { any })
 		end
 	end
 	folder:Destroy()
-	gui:Destroy()
-	camera.CFrame = baseCF
+	camera.CFrame = oldCF
+	camera.FieldOfView = oldFov
 	camera.CameraType = if oldType == Enum.CameraType.Scriptable then Enum.CameraType.Custom else oldType
+	-- fade back in from black over the world
+	task.spawn(function()
+		for k = 1, 12 do
+			black.BackgroundTransparency = k / 12
+			task.wait(1 / 60)
+		end
+		gui:Destroy()
+	end)
 	for d, v in hidden do
 		if d.Parent then
 			d.LocalTransparencyModifier = v

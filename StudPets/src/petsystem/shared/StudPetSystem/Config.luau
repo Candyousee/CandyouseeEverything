@@ -31,6 +31,7 @@ Config.Rarities = {
 Config.Eggs = {
 	{
 		Name = "Farm Egg",
+		Theme = "spots", -- shell decoration: spots / leaves / rosettes / waves / spikes / royal
 		Price = 100,
 		Colors = { Shell = { 250, 246, 232 }, Spots = { 196, 150, 96 } },
 		Pets = {
@@ -46,8 +47,9 @@ Config.Eggs = {
 	},
 	{
 		Name = "Forest Egg",
+		Theme = "leaves", -- shell decoration: spots / leaves / rosettes / waves / spikes / royal
 		Price = 600,
-		Colors = { Shell = { 120, 180, 90 }, Spots = { 70, 110, 50 } },
+		Colors = { Shell = { 150, 205, 110 }, Spots = { 60, 140, 60 } },
 		Pets = {
 			{ Pet = "Squirrel", Rarity = "Common", Weight = 30 },
 			{ Pet = "Bunny", Rarity = "Common", Weight = 28 },
@@ -61,8 +63,9 @@ Config.Eggs = {
 	},
 	{
 		Name = "Safari Egg",
+		Theme = "rosettes", -- shell decoration: spots / leaves / rosettes / waves / spikes / royal
 		Price = 3000,
-		Colors = { Shell = { 240, 200, 110 }, Spots = { 150, 100, 50 } },
+		Colors = { Shell = { 245, 205, 115 }, Spots = { 80, 50, 30 } },
 		Pets = {
 			{ Pet = "Meerkat", Rarity = "Common", Weight = 30 },
 			{ Pet = "Zebra", Rarity = "Common", Weight = 28 },
@@ -76,6 +79,7 @@ Config.Eggs = {
 	},
 	{
 		Name = "Ocean Egg",
+		Theme = "waves", -- shell decoration: spots / leaves / rosettes / waves / spikes / royal
 		Price = 15000,
 		Colors = { Shell = { 90, 170, 240 }, Spots = { 40, 100, 180 } },
 		Pets = {
@@ -91,8 +95,9 @@ Config.Eggs = {
 	},
 	{
 		Name = "Dino Egg",
+		Theme = "spikes", -- shell decoration: spots / leaves / rosettes / waves / spikes / royal
 		Price = 75000,
-		Colors = { Shell = { 230, 130, 60 }, Spots = { 120, 70, 40 } },
+		Colors = { Shell = { 120, 175, 90 }, Spots = { 70, 110, 55 } },
 		Pets = {
 			{ Pet = "Raptor", Rarity = "Common", Weight = 30 },
 			{ Pet = "Parasaurolophus", Rarity = "Common", Weight = 28 },
@@ -106,8 +111,9 @@ Config.Eggs = {
 	},
 	{
 		Name = "Mythic Egg",
+		Theme = "royal", -- shell decoration: spots / leaves / rosettes / waves / spikes / royal
 		Price = 400000,
-		Colors = { Shell = { 120, 70, 200 }, Spots = { 255, 200, 60 } },
+		Colors = { Shell = { 110, 60, 190 }, Spots = { 255, 200, 60 }, Gem = { 90, 230, 255 } },
 		Pets = {
 			{ Pet = "Jackalope", Rarity = "Common", Weight = 30 },
 			{ Pet = "Pegasus", Rarity = "Common", Weight = 28 },

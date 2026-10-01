@@ -105,7 +105,17 @@ def part_mesh(part):
     sx, sy, sz = part["size"]
     hx, hy, hz = sx / 2, sy / 2, sz / 2
     bm = bmesh.new()
-    if part["class"] == "WedgePart":
+    shape = part.get("shape")
+    if shape == "sphere":
+        # SpecialMesh Sphere: an ellipsoid filling the part's box
+        bmesh.ops.create_uvsphere(bm, u_segments=28, v_segments=18, radius=0.5,
+                                  matrix=Matrix.Diagonal((sx, sy, sz, 1)))
+    elif shape == "cylinder":
+        # Roblox cylinder: axis along X, length = size X, diameter = min(Y, Z)
+        d = min(sy, sz)
+        m = Matrix.Rotation(math.radians(90), 4, "Y") @ Matrix.Diagonal((d, d, 1, 1))
+        bmesh.ops.create_cone(bm, cap_ends=True, segments=32, radius1=0.5, radius2=0.5, depth=sx, matrix=Matrix.Rotation(math.radians(90), 4, "Y") @ Matrix.Diagonal((d, d, 1, 1)))
+    elif part["class"] == "WedgePart":
         # Roblox wedge: full-height face at the back (+Z), slope running down to the front.
         v = [bm.verts.new(p) for p in (
             (-hx, -hy, -hz), (hx, -hy, -hz), (hx, -hy, hz), (-hx, -hy, hz),
@@ -115,7 +125,7 @@ def part_mesh(part):
             bm.faces.new([v[i] for i in f])
     else:
         bmesh.ops.create_cube(bm, size=1.0, matrix=Matrix.Diagonal((sx, sy, sz, 1)))
-        if part["studs"]:
+        if part.get("studs"):
             nx, nz = int(sx + 1e-3), int(sz + 1e-3)
             for i in range(nx):
                 for k in range(nz):
