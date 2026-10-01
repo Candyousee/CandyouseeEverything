@@ -1,5 +1,5 @@
 -- Plays the egg-hatch cinematic on the client from HatchSequence (the pure timeline):
--- egg + cracks + rarity glow + light rays + burst particles + shockwave + shell shards +
+-- egg + glowing crack bricks + rarity glow + burst particles + shockwave + shell shards +
 -- screen flash + camera shake + sounds, then the pet pops out and does its trick.
 --
 --   HatchPlayer.Play(eggName, results)  -- results = {{Pet, Rarity}, ...} (1 or 3); yields until done
@@ -148,23 +148,6 @@ local function makeSlot(folder, eggName, result, index)
 		Enabled = true,
 	})
 
-	-- sunburst behind the egg/pet (rare+): tapered rays, each two mirrored wedges
-	slot.rays = {}
-	if slot.drama >= 1 then
-		for k = 1, 8 do
-			local pair = {}
-			for side = 1, 2 do
-				local w = Instance.new("WedgePart")
-				w.Anchored, w.CanCollide, w.CanQuery, w.CanTouch, w.CastShadow = true, false, false, false, false
-				w.Material = Enum.Material.Neon
-				w.Transparency = 1
-				w.Parent = folder
-				pair[side] = w
-			end
-			slot.rays[k] = pair
-		end
-	end
-
 	-- two shockwave rings (segments): a fast bright one and a slower soft one
 	slot.ring, slot.ring2 = {}, {}
 	for k = 1, 32 do
@@ -182,10 +165,14 @@ local function makeSlot(folder, eggName, result, index)
 	slot.ball = ball
 
 	-- confetti (rare+)
+	-- confetti in the rarity's own colours (rainbow for Secret)
 	slot.confetti = {}
-	if slot.drama >= 1 then
-		local palette = { Color3.fromRGB(255, 90, 90), Color3.fromRGB(255, 210, 60), Color3.fromRGB(90, 220, 120), Color3.fromRGB(80, 170, 255), Color3.fromRGB(200, 110, 255), Color3.new(1, 1, 1) }
-		for k = 1, 30 + 15 * slot.drama do
+	do
+		local base = rgb(rarity.Color)
+		local palette = if rarity.Rainbow
+			then { Color3.fromRGB(255, 90, 90), Color3.fromRGB(255, 210, 60), Color3.fromRGB(90, 220, 120), Color3.fromRGB(80, 170, 255), Color3.fromRGB(200, 110, 255), Color3.new(1, 1, 1) }
+			else { base, base:Lerp(Color3.new(1, 1, 1), 0.45), base:Lerp(Color3.new(0, 0, 0), 0.25), base:Lerp(Color3.new(1, 1, 1), 0.8) }
+		for k = 1, 22 + 14 * slot.drama do
 			local c = part({ Name = "Confetti", Material = Enum.Material.SmoothPlastic, Size = Vector3.new(0.28, 0.14, 0.03), Transparency = 1, Color = palette[(k % #palette) + 1] })
 			c.Parent = folder
 			slot.confetti[k] = c
@@ -339,26 +326,6 @@ local function update(slot, t, stageCF, camPos)
 	slot.fx.CFrame = stageCF * CFrame.new(0, 0.2, 0)
 	slot.burst.Color = ColorSequence.new(Color3.new(1, 1, 1), color)
 	slot.aura.Color = ColorSequence.new(color)
-
-	-- sunburst: tapered rays BEHIND the egg (+Z is away from the camera), slowly turning
-	-- shorter and fainter, and smaller still when three eggs share the stage
-	local L = (3.6 + 0.8 * slot.drama) * (if slot.crowded then 0.7 else 1)
-	for k, pair in slot.rays do
-		local a = (k / #slot.rays) * math.pi * 2 + t * 0.35
-		local u = stageCF:VectorToWorldSpace(Vector3.new(math.cos(a), math.sin(a), 0))
-		local pv = stageCF:VectorToWorldSpace(Vector3.new(-math.sin(a), math.cos(a), 0))
-		local tip = (stageCF * CFrame.new(0, 0.3, 3)).Position
-		local w = 0.35 + 0.1 * slot.drama
-		local alpha = 0.3 * s.rays * (1 - s.fade)
-		local col = if k % 2 == 0 then color:Lerp(Color3.new(1, 1, 1), 0.25) else color:Lerp(Color3.new(1, 1, 1), 0.7)
-		for side, wedge in pair do
-			local across = if side == 1 then pv else -pv
-			wedge.Size = Vector3.new(0.05, w, L)
-			wedge.CFrame = CFrame.fromMatrix(tip + u * (L / 2) + across * (w / 2), across:Cross(u), across, u)
-			wedge.Color = col
-			wedge.Transparency = 1 - alpha
-		end
-	end
 
 	-- shockwave rings (face the camera)
 	local function ringAt(segs, r, alpha, thick)
@@ -541,13 +508,6 @@ function HatchPlayer.Play(eggName: string, results: { any })
 	local floor = part({ Name = "Floor", Size = Vector3.new(500, 1, 500), Color = Color3.fromRGB(22, 24, 46), Material = Enum.Material.SmoothPlastic })
 	floor.CFrame = STAGE * CFrame.new(0, -3.4, 0)
 	floor.Parent = folder
-	local halos = {}
-	for k, r in { 9, 6, 3.6 } do
-		local h = part({ Name = "Halo", Shape = Enum.PartType.Cylinder, Material = Enum.Material.Neon, Size = Vector3.new(0.05, r, r), Transparency = 0.96 - k * 0.03 })
-		h.CFrame = STAGE * CFrame.new(0, 0.4, -6 + k * 0.05) * CFrame.Angles(0, math.rad(90), 0)
-		h.Parent = folder
-		halos[k] = h
-	end
 	local pedestals = {}
 	local slots = {}
 	for i, r in results do
@@ -616,11 +576,6 @@ function HatchPlayer.Play(eggName: string, results: { any })
 			local pp = tt - T.pop
 			if pp > 0 then
 				punch = math.max(punch, math.exp(-pp / 0.18) * (6 + 2 * slot.drama))
-			end
-			if i == 1 then
-				for _, h in halos do
-					h.Color = color
-				end
 			end
 		end
 		flash.BackgroundTransparency = 1 - flashA
