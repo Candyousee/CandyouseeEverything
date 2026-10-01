@@ -13,154 +13,215 @@ local Hatch = require("../src/petsystem/shared/StudPetSystem/HatchSequence")
 
 local K = { 40, 34, 30 }
 
--- Stud eggs v3: every tier is a ring of small bricks around a core, and the egg's pattern
--- is just which colour each brick is - so decorations are flush with the shell (nothing
--- floats or clips), the crack lines are bricks that light up, and only a few pieces sit
--- on top of the egg.
-local PROFILES = {
-	default = { { 1.4, 0.35 }, { 2.0, 0.4 }, { 2.45, 0.45 }, { 2.7, 0.5 }, { 2.8, 0.5 }, { 2.7, 0.45 }, { 2.45, 0.4 }, { 2.05, 0.4 }, { 1.5, 0.35 }, { 0.9, 0.25 } },
-	round = { { 1.6, 0.35 }, { 2.3, 0.4 }, { 2.75, 0.45 }, { 3.0, 0.5 }, { 3.05, 0.5 }, { 2.9, 0.45 }, { 2.6, 0.4 }, { 2.15, 0.4 }, { 1.55, 0.35 }, { 0.9, 0.25 } },
-	tall = { { 1.3, 0.35 }, { 1.9, 0.4 }, { 2.3, 0.45 }, { 2.55, 0.5 }, { 2.6, 0.5 }, { 2.5, 0.5 }, { 2.3, 0.45 }, { 2.0, 0.45 }, { 1.6, 0.4 }, { 1.1, 0.35 }, { 0.6, 0.25 } },
-	wide = { { 1.7, 0.35 }, { 2.4, 0.4 }, { 2.85, 0.45 }, { 3.1, 0.5 }, { 3.1, 0.5 }, { 2.95, 0.45 }, { 2.6, 0.4 }, { 2.1, 0.4 }, { 1.5, 0.3 }, { 0.85, 0.25 } },
+-- Stud eggs v4: a round brick egg built from small bricks (layers of voxels), with each
+-- egg's pattern hand-drawn as pixel art on a 32-column x 13-row wrap-around map.
+-- Column 16 is the front centre; row 1 is the top layer.
+local LAYER_H = 0.3
+local CELLW = 0.3
+local NLAYERS = 13
+local EGG_H = NLAYERS * LAYER_H
+
+-- egg radius at height y (y = 0 at the centre): rounder bottom, longer pointier top
+local function radiusAt(y)
+	local c = -0.3
+	local a = if y < c then 1.65 else 2.25
+	local k = (y - c) / a
+	if math.abs(k) >= 1 then
+		return 0.15
+	end
+	return 1.45 * math.sqrt(1 - k * k)
+end
+
+local function blank()
+	local m = {}
+	for r = 1, NLAYERS do
+		m[r] = string.rep(".", 32)
+	end
+	return m
+end
+-- write `rows` (strings, spaces = leave as is) into the map at row r, column c (wrapping)
+local function stamp(m, r, c, rows)
+	for dr, line in rows do
+		local row = r + dr - 1
+		if row >= 1 and row <= NLAYERS then
+			local chars = string.split(m[row], "")
+			for dc = 1, #line do
+				local ch = string.sub(line, dc, dc)
+				if ch ~= " " then
+					chars[((c + dc - 2) % 32) + 1] = ch
+				end
+			end
+			m[row] = table.concat(chars)
+		end
+	end
+end
+local function fillRow(m, r, ch)
+	m[r] = string.rep(ch, 32)
+end
+
+-- the six designs. palette: char -> {r,g,b} (or {r,g,b, neon = true}); "." = base shell
+local DESIGNS = {}
+
+DESIGNS.spots = function()
+	local m = blank()
+	-- big cow patches
+	stamp(m, 2, 5, { " bb", "bbb", " b" })
+	stamp(m, 3, 13, { "  bb", " bbbb", "bbbb", " bb" })
+	stamp(m, 3, 23, { "bb", "bbb" })
+	stamp(m, 7, 10, { " bb", "bbbb", " bb" })
+	stamp(m, 8, 2, { "bbb", "bbbb", " bb" })
+	stamp(m, 7, 26, { " bb", "bbbb", "bbb" })
+	stamp(m, 10, 19, { "bb", "bbb" })
+	stamp(m, 1, 13, { "b" })
+	-- straw nest round the bottom
+	fillRow(m, 13, "y")
+	stamp(m, 12, 1, { "y.y.Y.y.y.Y.y.y.Y.y.y.Y.y.y.Y.y." })
+	return m, {
+		["."] = { 250, 247, 236 },
+		b = { 42, 40, 46 },
+		y = { 230, 196, 90 },
+		Y = { 200, 160, 70 },
+	}
+end
+
+DESIGNS.leaves = function()
+	local m = blank()
+	-- a vine spiralling round with leaves, a flower on the front
+	local vine = { { 4, 1 }, { 4, 2 }, { 5, 3 }, { 5, 4 }, { 6, 5 }, { 6, 6 }, { 7, 7 }, { 7, 8 }, { 8, 9 }, { 8, 10 }, { 9, 11 }, { 9, 12 }, { 10, 13 }, { 10, 14 }, { 10, 15 }, { 10, 16 }, { 10, 17 }, { 9, 18 }, { 9, 19 }, { 8, 20 }, { 8, 21 }, { 7, 22 }, { 7, 23 }, { 6, 24 }, { 6, 25 }, { 5, 26 }, { 5, 27 }, { 4, 28 }, { 4, 29 }, { 4, 30 }, { 4, 31 }, { 4, 32 } }
+	for _, v in vine do
+		stamp(m, v[1], v[2], { "v", "v" })
+	end
+	for _, l in { { 2, 3 }, { 5, 7 }, { 8, 12 }, { 12, 16 }, { 8, 21 }, { 5, 26 }, { 2, 30 }, { 7, 4 }, { 11, 9 }, { 7, 24 }, { 11, 20 } } do
+		stamp(m, l[1], l[2], { "ll", "l" })
+	end
+	stamp(m, 5, 15, { " p ", "pyp", " p " })
+	stamp(m, 6, 20, { "P", "" })
+	fillRow(m, 12, "m")
+	fillRow(m, 13, "M")
+	stamp(m, 11, 1, { "m..m...m..m...m..m...m..m...m..." })
+	return m, {
+		["."] = { 140, 200, 100 },
+		v = { 50, 120, 50 },
+		l = { 90, 170, 70 },
+		p = { 255, 130, 185 },
+		P = { 255, 230, 90 },
+		y = { 255, 225, 80 },
+		m = { 100, 160, 75 },
+		M = { 80, 130, 60 },
+	}
+end
+
+DESIGNS.rosettes = function()
+	local m = blank()
+	local rosette = { " dd ", "dood", " dd " }
+	local small = { "dd", "do" }
+	for _, p in { { 2, 6 }, { 2, 21 }, { 4, 13 }, { 5, 1 }, { 5, 27 }, { 7, 8 }, { 7, 19 }, { 9, 14 }, { 10, 3 }, { 10, 25 } } do
+		stamp(m, p[1], p[2], rosette)
+	end
+	for _, p in { { 1, 15 }, { 3, 30 }, { 6, 16 }, { 8, 30 }, { 11, 10 }, { 12, 19 }, { 4, 23 } } do
+		stamp(m, p[1], p[2], small)
+	end
+	return m, {
+		["."] = { 245, 200, 105 },
+		d = { 70, 45, 30 },
+		o = { 215, 130, 50 },
+	}
+end
+
+DESIGNS.waves = function()
+	local m = blank()
+	-- sky-blue top with bubbles, wave crests, a foam line, deep water with a starfish + seaweed
+	for _, b in { { 2, 6 }, { 3, 13 }, { 2, 20 }, { 4, 26 }, { 3, 2 }, { 1, 16 } } do
+		stamp(m, b[1], b[2], { "w" })
+	end
+	stamp(m, 5, 1, { "..ww..ww..ww..ww..ww..ww..ww..ww" })
+	stamp(m, 6, 1, { ".wwwwwwwwwwwwwwwwwwwwwwwwwwwwwww" })
+	stamp(m, 6, 1, { "ww" })
+	fillRow(m, 7, "f")
+	for r = 8, 13 do
+		fillRow(m, r, if r % 2 == 0 then "b" else "B")
+	end
+	stamp(m, 9, 14, { "  s  ", "sssss", " s s ", "s   s" })
+	for _, c in { 4, 8, 24, 28 } do
+		stamp(m, 10, c, { "g", "g", "g", "g" })
+		stamp(m, 9, c + 1, { "g" })
+	end
+	return m, {
+		["."] = { 120, 190, 245 },
+		w = { 235, 248, 255 },
+		f = { 255, 255, 255 },
+		b = { 40, 105, 190 },
+		B = { 35, 92, 170 },
+		s = { 255, 140, 80 },
+		g = { 70, 170, 110 },
+	}
+end
+
+DESIGNS.spikes = function()
+	local m = blank()
+	-- cream belly on the front, dark spots, a stripe of darker scales across the back
+	stamp(m, 4, 13, { " ccccc ", "ccccccc", "ccccccc", "ccccccc", "ccccccc", "ccccccc", " ccccc ", "  ccc  " })
+	for _, p in { { 3, 5 }, { 6, 2 }, { 9, 6 }, { 3, 25 }, { 6, 28 }, { 9, 24 }, { 2, 17 }, { 11, 9 }, { 11, 22 } } do
+		stamp(m, p[1], p[2], { "ss", "sd" })
+	end
+	for r = 2, 12 do
+		stamp(m, r, 31, { "k" })
+		stamp(m, r, 32, { "k" })
+		stamp(m, r, 1, { "k" })
+	end
+	return m, {
+		["."] = { 235, 140, 60 },
+		c = { 255, 228, 170 },
+		s = { 125, 70, 40 },
+		d = { 95, 50, 30 },
+		k = { 190, 100, 45 },
+	}
+end
+
+DESIGNS.royal = function()
+	local m = blank()
+	-- purple with a gold cross-band, glowing gems, and twinkling stars
+	fillRow(m, 7, "g")
+	fillRow(m, 8, "G")
+	for _, c in { 16, 8, 24, 32 } do
+		for r = 2, 12 do
+			stamp(m, r, c, { "g" })
+		end
+		stamp(m, 7, c - 1, { "geg" })
+		stamp(m, 8, c - 1, { "GeG" })
+	end
+	for _, s in { { 3, 4 }, { 4, 12 }, { 2, 20 }, { 4, 27 }, { 10, 6 }, { 11, 13 }, { 10, 21 }, { 11, 29 } } do
+		stamp(m, s[1], s[2], { "*" })
+	end
+	return m, {
+		["."] = { 120, 70, 205 },
+		g = { 255, 205, 70 },
+		G = { 225, 170, 45 },
+		e = { 90, 235, 255, neon = true },
+		["*"] = { 255, 248, 210, neon = true },
+	}
+end
+
+-- crack paths on the front: {row, column, stage}; they glow in the rarity colour as the egg shakes
+local CRACK_CELLS = {
+	{ 6, 12, 1 }, { 5, 13, 1 }, { 6, 14, 1 }, { 5, 15, 1 }, { 6, 16, 1 },
+	{ 6, 16, 2 }, { 5, 17, 2 }, { 6, 18, 2 }, { 5, 19, 2 }, { 6, 20, 2 }, { 7, 21, 2 },
+	{ 7, 16, 3 }, { 8, 15, 3 }, { 9, 16, 3 }, { 10, 15, 3 }, { 9, 14, 3 },
 }
-local THEME_PROFILE = { spots = "default", leaves = "default", rosettes = "default", waves = "round", spikes = "wide", royal = "tall" }
-local SHELL_DEPTH = 0.22 -- thickness of the brick ring around each tier's core
-local CELL = 0.36 -- target brick width along a face
 
-local function shade(c, k)
-	return { math.clamp(math.floor(c[1] * k), 0, 255), math.clamp(math.floor(c[2] * k), 0, 255), math.clamp(math.floor(c[3] * k), 0, 255) }
+local function tiers(_egg)
+	return nil, EGG_H
 end
 
-local function tiers(egg)
-	local prof = PROFILES[THEME_PROFILE[egg.Theme or "spots"] or "default"]
-	local H = 0
-	for _, t in prof do
-		H += t[2]
-	end
-	local out, y = {}, -H / 2
-	for _, t in prof do
-		table.insert(out, { w = t[1], h = t[2], y = y + t[2] / 2 })
-		y += t[2]
-	end
-	return out, H
-end
-
-local EGG_H = select(2, tiers({ Theme = "spots" }))
-
--- wrap-around distance on the egg's surface, q = 0..1 around (0 = front centre)
-local PERIM = 9.0
-local function sdist(q1, y1, q2, y2)
-	local dq = math.abs(q1 - q2)
-	dq = math.min(dq, 1 - dq) * PERIM
-	return math.sqrt(dq * dq + (y1 - y2) * (y1 - y2))
-end
-
--- the pattern: colour (+ neon) of the brick at surface position (q, y), tier i
-local function patternColor(egg, q, y, i, nT, face, u)
-	local C = egg.Colors
-	local shell, spots = C.Shell, C.Spots
-	local base = shade(shell, 0.86 + 0.24 * (i - 1) / (nT - 1))
-	local theme = egg.Theme or "spots"
-	if theme == "spots" then
-		for _, s in { { 0.02, 0.35, 0.55 }, { 0.13, -0.45, 0.45 }, { 0.9, -0.3, 0.5 }, { 0.3, 0.6, 0.5 }, { 0.45, -0.2, 0.55 }, { 0.62, 0.45, 0.5 }, { 0.75, -0.65, 0.45 }, { 0.85, 0.9, 0.35 } } do
-			if sdist(q, y, s[1], s[2]) < s[3] then
-				return spots
-			end
-		end
-	elseif theme == "leaves" then
-		-- a vine zig-zagging round the middle
-		local band = -0.55 + 1.0 * math.abs(((q * 8) % 2) - 1)
-		if math.abs(y - band) < 0.26 then
-			return spots
-		end
-		if math.abs(y - band) < 0.42 then
-			return shade(C.Shell, 0.92)
-		end
-		if sdist(q, y, 0.04, 0.85) < 0.12 then
-			return { 255, 225, 80 }
-		end
-		if sdist(q, y, 0.04, 0.85) < 0.36 then
-			return { 255, 130, 180 }
-		end
-		if y < -1.25 then
-			return shade(spots, 1.15)
-		end
-	elseif theme == "rosettes" then
-		for _, r in { { 0.0, 0.0 }, { 0.12, 0.75 }, { 0.88, 0.7 }, { 0.15, -0.8 }, { 0.85, -0.75 }, { 0.3, 0.1 }, { 0.7, 0.05 }, { 0.45, 0.8 }, { 0.55, -0.7 }, { 0.42, -0.25 }, { 0.58, 0.4 } } do
-			local d = sdist(q, y, r[1], r[2])
-			if d < 0.2 then
-				return { 230, 145, 55 }
-			elseif d < 0.45 then
-				return spots
-			end
-		end
-	elseif theme == "waves" then
-		-- deep water below, a white foam line, wave crests rising into the sky-blue top
-		if i <= 3 then
-			return shade(spots, 0.9 + 0.1 * i)
-		elseif i == 4 then
-			return { 245, 252, 255 }
-		elseif i == 5 then
-			local k = math.floor((u + 1) * 3 + face * 7) % 3
-			if k == 0 then
-				return { 245, 252, 255 }
-			end
-		end
-		for _, b in { { 0.05, 0.75 }, { 0.92, 1.0 }, { 0.3, 0.9 }, { 0.6, 0.7 }, { 0.75, 1.2 }, { 0.12, 1.25 } } do
-			if sdist(q, y, b[1], b[2]) < 0.16 then
-				return { 220, 245, 255 }
-			end
-		end
-		-- a starfish on the front, made of bricks
-		local sx, sy = (((q + 0.5) % 1) - 0.5) * PERIM - 0.55, y - 0.55
-		local d = math.sqrt(sx * sx + sy * sy)
-		local a = math.atan2(sy, sx)
-		local arm = math.abs(math.sin(a * 2.5 + 0.3))
-		if d < 0.12 + 0.28 * arm then
-			return { 255, 140, 80 }
-		end
-	elseif theme == "spikes" then
-		-- pale belly on the front, dark spots elsewhere
-		if face == 0 and math.abs(u) < 0.5 and y < 0.55 and y > -1.3 then
-			return shade({ 255, 225, 170 }, 0.9 + 0.15 * (i - 1) / (nT - 1))
-		end
-		for _, s in { { 0.14, 0.75, 0.3 }, { 0.86, 0.7, 0.3 }, { 0.16, -0.35, 0.28 }, { 0.84, -0.4, 0.28 }, { 0.25, 0.25, 0.35 }, { 0.75, 0.2, 0.35 }, { 0.32, -0.75, 0.3 }, { 0.68, -0.8, 0.3 }, { 0.5, 0.1, 0.4 }, { 0.42, 0.9, 0.25 }, { 0.58, 1.0, 0.25 }, { 0.05, 1.25, 0.22 } } do
-			if sdist(q, y, s[1], s[2]) < s[3] then
-				return spots
-			end
-		end
-	elseif theme == "royal" then
-		if i == 5 then
-			if math.abs(u) < 0.2 then
-				return C.Gem or { 90, 230, 255 }, true
-			end
-			return spots
-		end
-		if i == 4 or i == 6 then
-			if math.abs(u) < 0.2 then
-				return shade(spots, 0.8)
-			end
-		end
-		for _, s in { { 0.1, 0.9 }, { 0.35, 1.1 }, { 0.6, 0.8 }, { 0.85, 1.05 }, { 0.2, -0.8 }, { 0.7, -0.9 }, { 0.95, -0.6 }, { 0.45, -1.0 } } do
-			if sdist(q, y, s[1], s[2]) < 0.13 then
-				return { 255, 250, 215 }, true
-			end
-		end
-	end
-	return base
-end
-
--- crack paths on the front face: {tier, u} pairs per crack (u = -1..1 across the face)
-local CRACKS = {
-	{ { 5, -0.75 }, { 6, -0.55 }, { 6, -0.3 }, { 5, -0.15 }, { 5, 0.05 }, { 6, 0.2 } },
-	{ { 6, 0.2 }, { 6, 0.4 }, { 5, 0.55 }, { 5, 0.75 }, { 6, 0.9 } },
-	{ { 5, 0.05 }, { 4, 0.1 }, { 4, 0.3 }, { 3, 0.4 }, { 3, 0.2 }, { 2, 0.1 } },
-}
-
+-- part list in egg space: {name, size, cf, color, neon?, crack?, class?, studs?}
 local function eggParts(egg: any)
-	local C = egg.Colors
-	local T, H = tiers(egg)
-	local nT = #T
+	local design = DESIGNS[egg.Theme or "spots"] or DESIGNS.spots
+	local map, palette = design()
+	local crackAt: { [string]: number } = {}
+	for _, c in CRACK_CELLS do
+		local key = c[1] .. ":" .. c[2]
+		crackAt[key] = crackAt[key] or c[3]
+	end
 	local parts = {}
 	local n = 0
 	local function add(p)
@@ -169,37 +230,43 @@ local function eggParts(egg: any)
 		table.insert(parts, p)
 		return p
 	end
-	-- which (tier, face 0, cell) belongs to which crack
-	local crackCell: { [string]: number } = {}
-	for ci, path in CRACKS do
-		for _, c in path do
-			local key = c[1] .. ":" .. c[2]
-			crackCell[key] = crackCell[key] or ci
+
+	-- voxel occupancy per layer
+	local layers = {}
+	for L = 1, NLAYERS do
+		local y = EGG_H / 2 - (L - 0.5) * LAYER_H -- layer 1 at the top
+		local r = radiusAt(y) + 0.06
+		local cells = {}
+		local N = math.ceil(r / CELLW) + 1
+		for ix = -N, N do
+			for iz = -N, N do
+				local x, z = (ix + 0.5) * CELLW, (iz + 0.5) * CELLW
+				if x * x + z * z <= r * r then
+					cells[ix .. ":" .. iz] = true
+				end
+			end
 		end
+		layers[L] = { y = y, cells = cells, N = N }
+	end
+	local function filled(L, ix, iz)
+		local l = layers[L]
+		return l ~= nil and l.cells[ix .. ":" .. iz] == true
 	end
 
-	for i, t in T do
-		local d = math.min(SHELL_DEPTH, t.w * 0.2)
-		local inner = t.w - 2 * d
-		local shellBase = shade(C.Shell, 0.86 + 0.24 * (i - 1) / (nT - 1))
-		add({ name = "Core", size = { inner, t.h, inner }, cf = CFrame.new(0, t.y, 0), color = shellBase, studs = true })
-		-- four faces: front/back strips span the full width, left/right fit between them
-		for face = 0, 3 do
-			local len = if face % 2 == 0 then t.w else inner
-			local cells = math.max(2, math.floor(len / CELL + 0.5))
-			local cw = len / cells
-			local rot = CFrame.Angles(0, face * math.pi / 2, 0)
-			-- build cells, then merge runs of the same colour into one brick
+	for L, layer in layers do
+		local shadeK = 0.9 + 0.16 * (1 - (L - 1) / (NLAYERS - 1))
+		for iz = -layer.N, layer.N do
+			-- one row along x; colour each visible cell from the map, merge runs of one colour
 			local run = nil
 			local function flush()
 				if run then
-					local mid = (run.u0 + run.u1) / 2
-					local w = run.u1 - run.u0
+					local x0, x1 = run.i0 * CELLW, (run.i1 + 1) * CELLW
+					local col = run.color
 					add({
 						name = if run.crack then "Crack" .. run.crack .. "_" else "Brick",
-						size = { w, t.h, d },
-						cf = rot * CFrame.new(mid, t.y, -t.w / 2 + d / 2),
-						color = run.color,
+						size = { x1 - x0, LAYER_H, CELLW },
+						cf = CFrame.new((x0 + x1) / 2, layer.y, (iz + 0.5) * CELLW),
+						color = col,
 						neon = run.neon,
 						crack = run.crack,
 						studs = true,
@@ -207,58 +274,82 @@ local function eggParts(egg: any)
 					run = nil
 				end
 			end
-			for c = 1, cells do
-				local x0 = -len / 2 + (c - 1) * cw
-				local x1 = x0 + cw
-				local u = (x0 + x1) / len -- -1..1 across the face
-				-- position around the egg: front centre 0, going round to the left
-				local q = ((face + 0.5 + ((x0 + x1) / 2) / len) / 4 - 0.125) % 1
-				q = (face / 4 + ((x0 + x1) / 2) / len / 4) % 1
-				local color, neon = patternColor(egg, q, t.y, i, nT, face, u)
-				local crack = nil
-				if face == 0 then
-					for _, path in CRACKS do
-						for _, cc in path do
-							if cc[1] == i and math.abs(cc[2] - u) < cw / len then
-								crack = crackCell[cc[1] .. ":" .. cc[2]]
-							end
-						end
+			for ix = -layer.N, layer.N do
+				if not layer.cells[ix .. ":" .. iz] then
+					flush()
+					continue
+				end
+				local exposed = not (filled(L, ix + 1, iz) and filled(L, ix - 1, iz) and filled(L, ix, iz + 1) and filled(L, ix, iz - 1) and filled(L - 1, ix, iz) and filled(L + 1, ix, iz))
+				local color, neon, crack = nil, nil, nil
+				if exposed then
+					local x, z = (ix + 0.5) * CELLW, (iz + 0.5) * CELLW
+					local q = (math.atan2(x, -z) / (2 * math.pi)) % 1 -- 0 = front centre
+					local colIdx = (math.floor(((q + 0.5) % 1) * 32) % 32) + 1
+					local ch = string.sub(map[L], colIdx, colIdx)
+					local pc = palette[ch] or palette["."]
+					color = { math.clamp(math.floor(pc[1] * shadeK), 0, 255), math.clamp(math.floor(pc[2] * shadeK), 0, 255), math.clamp(math.floor(pc[3] * shadeK), 0, 255) }
+					if pc.neon then
+						color = { pc[1], pc[2], pc[3] }
+					end
+					neon = pc.neon == true
+					-- crack cells: front-facing bricks only
+					if z < -0.3 and crackAt[L .. ":" .. colIdx] then
+						crack = crackAt[L .. ":" .. colIdx]
 					end
 				end
-				local key = table.concat(color, ",") .. (if neon then "n" else "")
-				if run and not crack and not run.crack and run.key == key then
-					run.u1 = x1
+				local key = if color then table.concat(color, ",") .. (if neon then "n" else "") else nil
+				if run and not crack and not run.crack and (key == nil or run.key == nil or run.key == key) then
+					run.i1 = ix
+					if key and not run.key then
+						run.key, run.color, run.neon = key, color, neon
+					end
 				else
 					flush()
-					run = { u0 = x0, u1 = x1, color = color, neon = neon, key = key, crack = crack }
+					run = { i0 = ix, i1 = ix, key = key, color = color or palette["."], neon = neon, crack = crack }
 				end
 			end
 			flush()
 		end
 	end
 
-	-- the few pieces that sit on top of the egg
-	local topT = T[nT]
-	local top = topT.y + topT.h / 2
+	-- toppers (sit on the top layer)
+	local top = EGG_H / 2
 	local theme = egg.Theme or "spots"
-	if theme == "leaves" then
+	local function block(name, size, cf, color, extra)
+		local p = { name = name, size = size, cf = cf, color = color }
+		for k, v in extra or {} do
+			p[k] = v
+		end
+		return add(p)
+	end
+	if theme == "spots" then
+		-- a little red farm bow on top
+		block("Bow", { 0.5, 0.3, 0.25 }, CFrame.new(-0.28, top + 0.15, 0) * CFrame.Angles(0, 0, math.rad(-15)), { 220, 60, 60 })
+		block("Bow", { 0.5, 0.3, 0.25 }, CFrame.new(0.28, top + 0.15, 0) * CFrame.Angles(0, 0, math.rad(15)), { 220, 60, 60 })
+		block("BowKnot", { 0.22, 0.25, 0.27 }, CFrame.new(0, top + 0.15, 0), { 190, 45, 45 })
+	elseif theme == "leaves" then
+		block("Stem", { 0.2, 0.4, 0.2 }, CFrame.new(0, top + 0.2, 0), { 110, 80, 50 })
 		for k = 0, 4 do
 			local a = k * math.pi * 2 / 5
-			add({ name = "TopLeaf", class = "WedgePart", size = { 0.14, 0.85, 0.55 }, cf = CFrame.new(math.sin(a) * 0.22, top + 0.38, -math.cos(a) * 0.22) * CFrame.Angles(0, -a, 0) * CFrame.Angles(math.rad(-35), 0, 0), color = if k % 2 == 0 then C.Spots else shade(C.Spots, 1.3) })
+			block("TopLeaf", { 0.16, 0.9, 0.6 }, CFrame.new(math.sin(a) * 0.3, top + 0.42, -math.cos(a) * 0.3) * CFrame.Angles(0, -a, 0) * CFrame.Angles(math.rad(-40), 0, 0), if k % 2 == 0 then { 60, 150, 60 } else { 100, 190, 80 }, { class = "WedgePart" })
 		end
-		add({ name = "Stem", size = { 0.2, 0.3, 0.2 }, cf = CFrame.new(0, top + 0.15, 0), color = { 110, 80, 50 } })
-	elseif theme == "royal" then
-		for k = 0, 3 do
-			local a = k * math.pi / 2
-			add({ name = "Crown", class = "WedgePart", size = { 0.5, 0.38, 0.12 }, cf = CFrame.new(math.sin(a) * 0.24, top + 0.19, -math.cos(a) * 0.24) * CFrame.Angles(0, -a, 0) * CFrame.Angles(0, math.pi / 2, 0), color = C.Spots })
-		end
-		add({ name = "CrownGem", size = { 0.24, 0.24, 0.24 }, cf = CFrame.new(0, top + 0.16, 0), color = C.Gem or { 90, 230, 255 }, neon = true })
+	elseif theme == "waves" then
+		-- coral on top
+		block("Coral", { 0.2, 0.6, 0.2 }, CFrame.new(0, top + 0.3, 0), { 255, 110, 130 })
+		block("Coral", { 0.18, 0.4, 0.18 }, CFrame.new(-0.18, top + 0.42, 0) * CFrame.Angles(0, 0, math.rad(35)), { 255, 110, 130 })
+		block("Coral", { 0.18, 0.35, 0.18 }, CFrame.new(0.17, top + 0.38, 0.05) * CFrame.Angles(0, 0, math.rad(-35)), { 255, 140, 150 })
 	elseif theme == "spikes" then
 		for k = -1, 1 do
-			add({ name = "Plate", class = "WedgePart", size = { 0.16, 0.42 - math.abs(k) * 0.12, 0.3 }, cf = CFrame.new(0, top + 0.2 - math.abs(k) * 0.06, k * 0.27) * CFrame.Angles(0, if k < 0 then math.pi else 0, 0), color = { 250, 236, 200 } })
+			block("Plate", { 0.18, 0.5 - math.abs(k) * 0.15, 0.36 }, CFrame.new(0, top + 0.24 - math.abs(k) * 0.07, k * 0.3) * CFrame.Angles(0, if k < 0 then math.pi else 0, 0), { 255, 232, 190 }, { class = "WedgePart" })
 		end
+	elseif theme == "royal" then
+		block("CrownBand", { 0.75, 0.2, 0.75 }, CFrame.new(0, top + 0.1, 0), { 255, 205, 70 })
+		for k = 0, 3 do
+			local a = k * math.pi / 2 + math.pi / 4
+			block("CrownPoint", { 0.14, 0.4, 0.3 }, CFrame.new(math.sin(a) * 0.28, top + 0.4, -math.cos(a) * 0.28) * CFrame.Angles(0, -a, 0), { 255, 205, 70 }, { class = "WedgePart" })
+		end
+		block("CrownGem", { 0.22, 0.22, 0.22 }, CFrame.new(0, top + 0.32, 0), { 90, 235, 255 }, { neon = true })
 	end
-	local _ = H
 	return parts
 end
 

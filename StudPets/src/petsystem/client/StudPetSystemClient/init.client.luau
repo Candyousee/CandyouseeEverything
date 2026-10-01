@@ -423,7 +423,11 @@ local function setupStand(stand: Instance)
 			local t = math.random() * 3
 			while eggModel.Parent do
 				t += task.wait()
-				eggModel:PivotTo(base * CFrame.new(0, 0.25 * math.sin(t * 2), 0) * CFrame.Angles(0, t * 0.6, 0))
+				-- only animate eggs you're near (each one is ~170 bricks)
+				local cam = workspace.CurrentCamera
+				if cam and (cam.CFrame.Position - base.Position).Magnitude < 90 then
+					eggModel:PivotTo(base * CFrame.new(0, 0.25 * math.sin(t * 2), 0) * CFrame.Angles(0, t * 0.6, 0))
+				end
 			end
 		end)
 	end

@@ -284,10 +284,28 @@ local function update(slot, t, stageCF, camPos)
 		* CFrame.new(s.eggPos[1], s.eggPos[2], s.eggPos[3])
 		* CFrame.Angles(math.rad(s.eggRot[1]), math.rad(s.eggRot[2]), math.rad(s.eggRot[3]))
 	if s.eggVisible then
-		for _, e in slot.parts do
+		-- ~170 bricks per egg: move them in one bulk call, resize only when the scale changes
+		local resize = math.abs((slot.lastScale or -1) - s.eggScale) > 0.002
+		if resize then
+			slot.lastScale = s.eggScale
+		end
+		local list, cfs = slot.bulkParts, slot.bulkCFs
+		if not list then
+			list, cfs = {}, {}
+			for k, e in slot.parts do
+				list[k] = e.part
+			end
+			slot.bulkParts, slot.bulkCFs = list, cfs
+		end
+		for k, e in slot.parts do
 			local rel = e.rel
-			e.part.CFrame = eggCF * CFrame.new(rel.Position * s.eggScale) * rel.Rotation
-			e.part.Size = e.size * s.eggScale
+			cfs[k] = eggCF * CFrame.new(rel.Position * s.eggScale) * rel.Rotation
+			if resize then
+				e.part.Size = e.size * s.eggScale
+			end
+		end
+		workspace:BulkMoveTo(list, cfs, Enum.BulkMoveMode.FireCFrameChanged)
+		for _, e in slot.parts do
 			if e.crack then
 				-- crack bricks are shell until they split open, then glow in the rarity colour
 				local open = e.crack <= s.cracks
