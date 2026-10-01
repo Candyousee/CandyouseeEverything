@@ -235,7 +235,8 @@ def shot_hatch(sys_data, pets, out_dir, start):
     pet_fit = 3.6 / pet.extent
     pfps = pets_fps
     cam = add_camera(scene)
-    base_cam = look_at((0, 1.3, 10.5), (0, 0.2, 0))
+    # aimed a little lower than in game so the name label under the pedestal stays in frame
+    base_cam = look_at((0, 1.0, 10.5), (0, -0.8, 0))
     oldfov = 46  # tighter than the in-game 70 so the egg fills the video frame
     rng = random.Random(5)
     burst = []
@@ -314,7 +315,7 @@ def shot_hatch(sys_data, pets, out_dir, start):
         centre = project(scene, cam, (0, 0.2, 0))
         right = project(scene, cam, (1, 0.2, 0))
         pps = abs(right[0] - centre[0])  # pixels per stud at the egg
-        fx = {"shot": 2, "t": t, "c": centre[:2], "pps": pps, "flash": s["flash"], "glow": glow, "items": []}
+        fx = {"shot": 2, "t": t, "egg": s["eggVisible"], "c": centre[:2], "pps": pps, "flash": s["flash"], "glow": glow, "items": []}
         fx["black"] = 1 - min(1, t / 0.3) * (1 - max(0, min(1, (t - length + 0.3) / 0.3)))
         if 0 <= pp < 0.32:
             k = pp / 0.32
@@ -327,7 +328,7 @@ def shot_hatch(sys_data, pets, out_dir, start):
             fx["items"].append({"kind": "ring", "x": centre[0], "y": centre[1], "r": r * pps, "w": (0.16 * ring[1] + 0.05) * pps, "col": GOLD, "a": ring[1] * 0.7})
         # sparkle burst at the pop, aura while charging and after the reveal
         if f > 0 and frames[f - 1]["eggVisible"] and not s["eggVisible"]:
-            for _ in range(45 + 25 * drama):
+            for _ in range(30 + 12 * drama):
                 v = Vector((rng.gauss(0, 1), rng.gauss(0, 1), rng.gauss(0, 1))).normalized() * rng.uniform(14, 26)
                 burst.append((t, v, rng.uniform(0.5, 1.1), rng.uniform(0, 6.28)))
         charging = t >= pop - (0.3 + 0.35 * drama) - 0.16 and pp < 0
@@ -343,7 +344,7 @@ def shot_hatch(sys_data, pets, out_dir, start):
                 size = 0.9 + (0.6 - 0.9) * (u / 0.5) if u < 0.5 else 0.6 * (1 - (u - 0.5) / 0.5)
                 alpha = 1 - (0.2 * u / 0.7 if u < 0.7 else 0.2 + 0.8 * (u - 0.7) / 0.3)
                 x, y, _ = project(scene, cam, (p.x, 0.2 + p.y, p.z))
-                fx["items"].append({"kind": "spark", "x": x, "y": y, "r": size * pps * 0.5, "col": lerp3((255, 255, 255), GOLD, u), "a": alpha, "rot": rot + a * 3})
+                fx["items"].append({"kind": "spark", "x": x, "y": y, "r": size * pps * 0.3, "col": lerp3((255, 255, 255), GOLD, u), "a": alpha * 0.8, "rot": rot + a * 3})
         for t0, v, life, rot in aura:
             a = t - t0
             if 0 <= a < life:
@@ -351,8 +352,8 @@ def shot_hatch(sys_data, pets, out_dir, start):
                 u = a / life
                 size = 0.45 * (u / 0.3) if u < 0.3 else 0.45 * (1 - (u - 0.3) / 0.7)
                 x, y, _ = project(scene, cam, (p.x, 0.2 + p.y, p.z))
-                fx["items"].append({"kind": "spark", "x": x, "y": y, "r": size * pps * 0.5, "col": GOLD, "a": 1.0, "rot": rot})
-        lx, ly, _ = project(scene, cam, (0, 0.2 - 4.35, 0))
+                fx["items"].append({"kind": "spark", "x": x, "y": y, "r": size * pps * 0.35, "col": GOLD, "a": 0.8, "rot": rot})
+        lx, ly, _ = project(scene, cam, (0, 0.2 - 4.0, 0))
         fx["label"] = {"x": lx, "y": ly, "pps": pps, "a": s["banner"], "name": "Kitsune", "rarity": "LEGENDARY", "col": GOLD}
         render(scene, out_dir, start + f, fx)
     return n

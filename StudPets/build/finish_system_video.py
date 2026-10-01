@@ -119,7 +119,8 @@ def main():
             img = text(img, "6 stud eggs  ·  48 animated pets  ·  drag & drop", 32 * g, H * 0.07 + 100 * g, a)
             img = Image.alpha_composite(img, Image.new("RGBA", img.size, (0, 0, 0, int(255 * max(0, (t - 2.25) / 0.25)))))
         elif fx["shot"] == 2:
-            img = bloom(img, 0.55 + 0.4 * fx["glow"])
+            if fx.get("egg"):
+                img = bloom(img, 0.5 * fx["glow"])  # the egg's glow only (a white pet would blow out)
             light = glow_layer(img.size, fx["items"]).filter(ImageFilter.GaussianBlur(1.2 * g))
             img = ImageChops.add(img.convert("RGB"), light).convert("RGBA")
             img = pet_label(img, fx["label"])
