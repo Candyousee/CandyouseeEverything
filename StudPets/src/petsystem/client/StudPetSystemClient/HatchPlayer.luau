@@ -560,7 +560,9 @@ function HatchPlayer.Play(eggName: string, results: { any })
 		top.Parent = folder
 		-- a thin soft glowing edge (not a bright disc)
 		local rim = part({ Name = "PedestalRim", Shape = Enum.PartType.Cylinder, Material = Enum.Material.Neon, Size = Vector3.new(0.12, 3.75, 3.75), Transparency = 0.45 })
-		rim.CFrame = STAGE * CFrame.new(x, -2.55, 0) * CFrame.Angles(0, 0, math.rad(90))
+		-- sits clearly inside the pedestal's height (top at -2.56 vs pedestal top -2.45) so the
+		-- two surfaces never share a plane (no z-fighting / flicker)
+		rim.CFrame = STAGE * CFrame.new(x, -2.62, 0) * CFrame.Angles(0, 0, math.rad(90))
 		rim.Parent = folder
 		pedestals[i] = rim
 	end
