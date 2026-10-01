@@ -364,35 +364,37 @@ local function update(slot, t, stageCF, camPos)
 		slot.ball.Transparency = 1
 	end
 
-	-- confetti: bursts up and out, then keeps falling and fluttering until it reaches the
-	-- floor, where it fades out (never hangs in the air)
+	-- confetti: bursts up and out, then flutters down. Every piece is fully gone 1.5 s after
+	-- it launches (well before the shortest hatch ends), so nothing can be left hanging in
+	-- the air when a hatch reaches its end - even when one egg of a triple hatch finishes
+	-- before the others.
+	local CONFETTI_LIFE = 1.5
 	for k, c in slot.confetti do
 		local h1 = (k * 0.6180339) % 1
 		local h2 = (k * 0.4142135 + 0.3) % 1
 		local h3 = (k * 0.7320508 + 0.7) % 1
 		local q = pp - h3 * 0.2 -- small stagger
-		if q > 0 then
+		if q > 0 and q < CONFETTI_LIFE then
 			local ang = h1 * math.pi * 2
-			local spread = 2.2 + 2.8 * h2
-			local vy = 6 + 3 * h3
-			local apex = vy / 12
+			local spread = 2.2 + 2.6 * h2
+			local vy = 7 + 2.5 * h3
+			local g = 16
+			local apex = vy / g
 			local y
 			if q < apex then
-				y = 0.4 + vy * q - 6 * q * q -- rising, slowing down
+				y = 0.4 + vy * q - 0.5 * g * q * q -- rising, slowing down
 			else
-				y = 0.4 + vy * apex - 6 * apex * apex - (2.6 + 1.2 * h2) * (q - apex) -- steady flutter-fall
+				y = 0.4 + 0.5 * vy * apex - (4 + 1.5 * h2) * (q - apex) -- flutter-fall
 			end
-			local out = spread * (1 - math.exp(-q * 2.5))
-			local sway = math.sin(q * (4 + 3 * h1) + k) * 0.35 * math.min(1, q)
+			local out = spread * (1 - math.exp(-q * 3))
+			local sway = math.sin(q * (5 + 3 * h1) + k) * 0.35 * math.min(1, q * 2)
 			local x = math.cos(ang) * out + sway
 			local z = math.sin(ang) * out * 0.45
 			local floorY = -2.9
-			if y > floorY then
-				c.CFrame = stageCF * CFrame.new(x, y, z) * CFrame.Angles(q * (6 + k % 5), q * (4 + k % 3), q * (3 + k % 4))
-				c.Transparency = math.clamp((floorY + 0.8 - y) / 0.8, 0, 1) -- fade just before the floor
-			else
-				c.Transparency = 1
-			end
+			local fadeFloor = math.clamp((floorY + 0.8 - y) / 0.8, 0, 1)
+			local fadeAge = math.clamp((q - (CONFETTI_LIFE - 0.35)) / 0.35, 0, 1)
+			c.CFrame = stageCF * CFrame.new(x, math.max(y, floorY), z) * CFrame.Angles(q * (6 + k % 5), q * (4 + k % 3), q * (3 + k % 4))
+			c.Transparency = math.max(fadeFloor, fadeAge)
 		else
 			c.Transparency = 1
 		end
