@@ -1,0 +1,32 @@
+{
+  "name": "StudPetSystem",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+      "StudPets": { "$path": "src/shared/StudPets" },
+      "StudPetModels": { "$path": "assets/pets" },
+      "StudPetSystem": { "$path": "src/petsystem/shared/StudPetSystem" },
+      "StudPetSystemEggs": { "$path": "assets/eggs" }
+    },
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+      "StudPetSystem": { "$path": "src/petsystem/server/StudPetSystem.server.luau" }
+    },
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "StudPetSystemClient": { "$path": "src/petsystem/client/StudPetSystemClient" }
+      }
+    },
+    "Workspace": {
+      "$className": "Workspace",
+      "PetSystemDemo": { "$path": "assets/PetSystemDemo.rbxm" }
+    },
+    "Lighting": {
+      "$className": "Lighting",
+      "$properties": { "ClockTime": 14 }
+    }
+  }
+}
