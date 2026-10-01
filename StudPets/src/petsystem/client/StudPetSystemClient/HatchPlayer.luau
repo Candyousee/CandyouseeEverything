@@ -218,7 +218,7 @@ local function makeSlot(folder, eggName, result, index)
 	-- name + rarity label under the pet
 	local gui = Instance.new("BillboardGui")
 	gui.Size = UDim2.fromScale(7, 2.2)
-	gui.StudsOffset = Vector3.new(0, -3.1, 0)
+	gui.StudsOffset = Vector3.new(0, -4.35, 0) -- below the pedestal, clear of the glowing rim
 	gui.AlwaysOnTop = true
 	gui.LightInfluence = 0
 	gui.Adornee = fx
@@ -558,7 +558,8 @@ function HatchPlayer.Play(eggName: string, results: { any })
 		local top = part({ Name = "Pedestal", Shape = Enum.PartType.Cylinder, Material = Enum.Material.SmoothPlastic, Color = Color3.fromRGB(40, 42, 70), Size = Vector3.new(0.6, 3.6, 3.6) })
 		top.CFrame = STAGE * CFrame.new(x, -2.75, 0) * CFrame.Angles(0, 0, math.rad(90))
 		top.Parent = folder
-		local rim = part({ Name = "PedestalRim", Shape = Enum.PartType.Cylinder, Material = Enum.Material.Neon, Size = Vector3.new(0.2, 3.9, 3.9) })
+		-- a thin soft glowing edge (not a bright disc)
+		local rim = part({ Name = "PedestalRim", Shape = Enum.PartType.Cylinder, Material = Enum.Material.Neon, Size = Vector3.new(0.12, 3.75, 3.75), Transparency = 0.45 })
 		rim.CFrame = STAGE * CFrame.new(x, -2.55, 0) * CFrame.Angles(0, 0, math.rad(90))
 		rim.Parent = folder
 		pedestals[i] = rim
@@ -606,7 +607,7 @@ function HatchPlayer.Play(eggName: string, results: { any })
 			flashA = math.max(flashA, s.flash)
 			dim = math.max(dim, s.dim)
 			local color = rarityColor(slot.rarity, t)
-			pedestals[i].Color = color:Lerp(Color3.new(1, 1, 1), 0.15)
+			pedestals[i].Color = color
 			-- zoom in during the charge, punch out on the pop, settle back
 			local T = slot.timing
 			charge = math.max(charge, math.clamp((tt - T.shakes[1]) / (T.pop - T.shakes[1]), 0, 1))
