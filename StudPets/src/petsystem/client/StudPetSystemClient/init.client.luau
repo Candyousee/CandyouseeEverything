@@ -176,7 +176,7 @@ aspect.AspectRatio = 640 / 440
 aspect.Parent = panel
 panel.Size = UDim2.new(0.9, 0, 0.9, 0)
 
-local title = label(panel, { Position = UDim2.fromOffset(18, 10), Size = UDim2.new(0.5, 0, 0, 38), TextXAlignment = Enum.TextXAlignment.Left, Text = "Pets" })
+local title = label(panel, { Position = UDim2.fromOffset(18, 10), Size = UDim2.new(1, -360, 0, 38), TextXAlignment = Enum.TextXAlignment.Left, Text = "Pets" })
 local close = button(panel, "X", Color3.fromRGB(230, 80, 80), { AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -12, 0, 10), Size = UDim2.fromOffset(40, 40) })
 local equipBest = button(panel, "Equip Best", Color3.fromRGB(80, 190, 110), { Position = UDim2.new(1, -330, 0, 10), Size = UDim2.fromOffset(130, 40) })
 local delButton = button(panel, "Delete", Color3.fromRGB(200, 90, 90), { Position = UDim2.new(1, -192, 0, 10), Size = UDim2.fromOffset(130, 40) })
@@ -328,21 +328,29 @@ end)
 ---------------------------------------------------------------------------
 -- Eggs: prompts + odds board on every tagged stand
 ---------------------------------------------------------------------------
+local hatching = false
 local function hatch(eggName: string, count: number)
-	if HatchPlayer.Busy then
+	-- one purchase at a time: set before the server round trip so E then R can't buy twice
+	if hatching or HatchPlayer.Busy then
 		return
 	end
-	local res = Remotes.Hatch:InvokeServer(eggName, count)
-	if not res or not res.ok then
+	hatching = true
+	local ok, res = pcall(Remotes.Hatch.InvokeServer, Remotes.Hatch, eggName, count)
+	if not ok or not res or not res.ok then
 		Sounds.Play("Denied")
-		showToast(if res and res.err then res.err else "Can't hatch right now")
+		showToast(if ok and res and res.err then res.err else "Can't hatch right now")
+		hatching = false
 		return
 	end
 	Sounds.Play("Purchase")
 	toggleInventory(false)
 	hud.Enabled = false
-	HatchPlayer.Play(eggName, res.results)
+	local played, err = pcall(HatchPlayer.Play, eggName, res.results)
+	if not played then
+		warn("[StudPetSystem] hatch cinematic failed:", err)
+	end
 	hud.Enabled = true
+	hatching = false
 end
 
 local function setupStand(stand: Instance)
@@ -405,7 +413,8 @@ local function setupStand(stand: Instance)
 		label(bg, { Position = UDim2.fromOffset(12, y), Size = UDim2.new(0.62, -12, 0, 21), Text = pretty(c.Pet), TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = rgb(rarity.Color), TextStrokeTransparency = 0.5 })
 		label(bg, { Position = UDim2.new(0.62, 0, 0, y), Size = UDim2.new(0.38, -12, 0, 21), Text = Odds.Format(c.Chance), TextXAlignment = Enum.TextXAlignment.Right, TextStrokeTransparency = 0.5 })
 	end
-	board.Parent = playerGui
+	-- parented to the egg so it streams in/out with the stand (no duplicates)
+	board.Parent = anchor
 
 	-- idle bob on the display egg
 	if eggModel then

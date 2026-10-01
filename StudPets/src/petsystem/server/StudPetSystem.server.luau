@@ -12,7 +12,6 @@
 local DataStoreService = game:GetService("DataStoreService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
 
 local System = ReplicatedStorage:WaitForChild("StudPetSystem")
 local Config = require(System:WaitForChild("Config"))
@@ -84,6 +83,18 @@ end
 local data: { [Player]: Data } = {}
 local loaded: { [Player]: boolean } = {}
 local lastHatch: { [Player]: number } = {}
+local lastAction: { [Player]: number } = {}
+local savedOnClose: { [Player]: boolean } = {}
+
+-- ignore spammed equip/delete requests
+local function throttled(player: Player): boolean
+	local now = os.clock()
+	if now - (lastAction[player] or 0) < 0.15 then
+		return true
+	end
+	lastAction[player] = now
+	return false
+end
 local rng = Random.new()
 
 local function key(player: Player): string
@@ -110,6 +121,7 @@ end
 
 local function load(player: Player)
 	local saved: any = nil
+	local loadedOk = store == nil
 	if store then
 		for attempt = 1, 3 do
 			local ok, result = pcall(function()
@@ -117,13 +129,21 @@ local function load(player: Player)
 			end)
 			if ok then
 				saved = result
+				loadedOk = true
 				break
 			end
 			warn(("[StudPetSystem] load failed for %s (try %d): %s"):format(player.Name, attempt, tostring(result)))
-			task.wait(attempt)
+			if attempt < 3 then
+				task.wait(attempt)
+			end
 		end
 	end
 	if not player.Parent then
+		return
+	end
+	if not loadedOk then
+		-- never play on fresh data: the next save would overwrite their real progress
+		player:Kick("Your pets couldn't be loaded right now. Please rejoin in a moment.")
 		return
 	end
 	local d: Data = {
@@ -204,7 +224,7 @@ end
 
 EquipRemote.OnServerEvent:Connect(function(player: Player, id: any, equip: any)
 	local d = data[player]
-	if not d or type(id) ~= "string" or not findPet(d, id) then
+	if throttled(player) or not d or type(id) ~= "string" or not findPet(d, id) then
 		return
 	end
 	local at = table.find(d.Equipped, id)
@@ -218,7 +238,7 @@ end)
 
 DeleteRemote.OnServerEvent:Connect(function(player: Player, ids: any)
 	local d = data[player]
-	if not d or type(ids) ~= "table" then
+	if throttled(player) or not d or type(ids) ~= "table" or #ids > Config.MaxInventory then
 		return
 	end
 	for _, id in ids do
@@ -238,7 +258,7 @@ end)
 
 EquipBestRemote.OnServerEvent:Connect(function(player: Player)
 	local d = data[player]
-	if not d then
+	if throttled(player) or not d then
 		return
 	end
 	local sorted = table.clone(d.Pets)
@@ -260,19 +280,35 @@ for _, p in Players:GetPlayers() do
 	task.spawn(load, p)
 end
 Players.PlayerRemoving:Connect(function(player)
-	save(player)
+	if not savedOnClose[player] then
+		save(player)
+	end
 	data[player] = nil
 	loaded[player] = nil
 	lastHatch[player] = nil
+	lastAction[player] = nil
+	savedOnClose[player] = nil
 end)
 game:BindToClose(function()
-	if RunService:IsStudio() and not store then
+	if not store then
 		return
 	end
+	-- save everyone once and wait for those saves to finish (Roblox allows ~30 s)
+	local pending = 0
 	for _, p in Players:GetPlayers() do
-		task.spawn(save, p)
+		if loaded[p] then
+			pending += 1
+			savedOnClose[p] = true
+			task.spawn(function()
+				save(p)
+				pending -= 1
+			end)
+		end
 	end
-	task.wait(2)
+	local waited = 0
+	while pending > 0 and waited < 25 do
+		waited += task.wait(0.2)
+	end
 end)
 
 -- autosave + demo income

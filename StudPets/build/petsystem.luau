@@ -184,6 +184,8 @@ for i, egg in Config.Eggs do
 	e.Parent = stand
 	stand.PrimaryPart = stand:FindFirstChild("Base") :: any
 	stand:SetAttribute("StudEggStand", egg.Name)
+	-- stream the whole stand at once so the client always finds its egg
+	stand.ModelStreamingMode = Enum.ModelStreamingMode.Atomic
 	stand:AddTag("StudEggStand")
 	stand.Parent = stands
 end

@@ -5,6 +5,7 @@
 --   HatchPlayer.Play(eggName, results)  -- results = {{Pet, Rarity}, ...} (1 or 3); yields until done
 
 local Players = game:GetService("Players")
+local ProximityPromptService = game:GetService("ProximityPromptService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -185,10 +186,9 @@ local function makeSlot(folder, eggName, result, index)
 		local extents = pet:GetExtentsSize()
 		slot.petFit = 3.6 / math.max(extents.X, extents.Y, extents.Z)
 		slot.petCenter = pet:GetPivot():ToObjectSpace(CFrame.new(pet:GetBoundingBox().Position)).Position
-		pet:ScaleTo(0.05)
-		pet:PivotTo(CFrame.new(0, -1000, 0))
-		pet.Parent = folder
+		-- stays out of the world (and never shrinks to a sliver) until it pops out
 		slot.pet = pet
+		slot.petFolder = folder
 		slot.anim = PetAnimator.new(pet)
 	end
 
@@ -223,7 +223,7 @@ local function makeSlot(folder, eggName, result, index)
 	return slot
 end
 
-local function cue(slot, name, idx, stageCF)
+local function cue(slot, name, idx)
 	if name == "EggAppear" then
 		Sounds.Play("EggAppear")
 	elseif name == "Shake" then
@@ -323,13 +323,13 @@ local function update(slot, t, stageCF, camPos)
 
 	-- pet
 	if slot.pet then
-		local scale = math.max(0.05, slot.petFit * s.petScale)
-		if math.abs(slot.pet:GetScale() - scale) > 1e-3 then
+		local shown = s.petScale > 0.15
+		slot.pet.Parent = if shown then slot.petFolder else nil
+		local scale = slot.petFit * math.max(0.15, s.petScale)
+		if shown and math.abs(slot.pet:GetScale() - scale) > 1e-3 then
 			slot.pet:ScaleTo(scale)
 		end
-		-- tucked away until it pops out
-		local hidden = if s.petScale < 0.03 then -500 else 0
-		local pos = (stageCF * CFrame.new(0, s.petY - 0.2 + hidden, 0)).Position
+		local pos = (stageCF * CFrame.new(0, s.petY - 0.2, 0)).Position
 		local face = CFrame.lookAt(pos, Vector3.new(camPos.X, pos.Y, camPos.Z)) * CFrame.Angles(0, math.rad(s.petYaw), 0)
 		slot.pet:PivotTo(face * CFrame.new(-slot.petCenter * scale))
 	end
@@ -349,6 +349,25 @@ function HatchPlayer.Play(eggName: string, results: { any })
 	local oldType = camera.CameraType
 	local baseCF = camera.CFrame
 	camera.CameraType = Enum.CameraType.Scriptable
+
+	-- the stage sits between the camera and your avatar: hide the avatar, freeze movement,
+	-- and hide other prompts until the cinematic ends
+	local hidden = {}
+	if player.Character then
+		for _, d in player.Character:GetDescendants() do
+			if d:IsA("BasePart") or d:IsA("Decal") then
+				hidden[d] = d.LocalTransparencyModifier
+				d.LocalTransparencyModifier = 1
+			end
+		end
+	end
+	local controls = nil
+	pcall(function()
+		controls = require(player:WaitForChild("PlayerScripts"):WaitForChild("PlayerModule", 2)):GetControls()
+		controls:Disable()
+	end)
+	local oldPrompts = ProximityPromptService.MaxPromptsVisible
+	ProximityPromptService.MaxPromptsVisible = 0
 
 	local folder = Instance.new("Folder")
 	folder.Name = "StudHatchStage"
@@ -413,7 +432,7 @@ function HatchPlayer.Play(eggName: string, results: { any })
 
 	local done = false
 	local conn
-	conn = RunService.RenderStepped:Connect(function(dt)
+	local function frame(dt)
 		t += dt
 		if skipTo and t < skipTo then
 			t = skipTo
@@ -425,7 +444,7 @@ function HatchPlayer.Play(eggName: string, results: { any })
 			-- cues (sounds, particle bursts) at their exact times
 			while slot.events[slot.nextEvent] and slot.events[slot.nextEvent][1] <= t do
 				local ev = slot.events[slot.nextEvent]
-				cue(slot, ev[2], ev[3], stageCF)
+				cue(slot, ev[2], ev[3])
 				slot.nextEvent += 1
 			end
 			local s = update(slot, math.min(t, slot.timing.length), stageCF, camPos)
@@ -440,6 +459,13 @@ function HatchPlayer.Play(eggName: string, results: { any })
 		local ny = math.noise(t * 25, 9.3) * shake
 		camera.CFrame = baseCF * CFrame.new(nx, ny, 0)
 		if t >= length then
+			done = true
+		end
+	end
+	conn = RunService.RenderStepped:Connect(function(dt)
+		local ok, err = pcall(frame, dt)
+		if not ok then
+			warn("[StudPetSystem] hatch frame error:", err)
 			done = true
 		end
 	end)
@@ -457,6 +483,15 @@ function HatchPlayer.Play(eggName: string, results: { any })
 	gui:Destroy()
 	camera.CFrame = baseCF
 	camera.CameraType = if oldType == Enum.CameraType.Scriptable then Enum.CameraType.Custom else oldType
+	for d, v in hidden do
+		if d.Parent then
+			d.LocalTransparencyModifier = v
+		end
+	end
+	if controls then
+		controls:Enable()
+	end
+	ProximityPromptService.MaxPromptsVisible = oldPrompts
 	HatchPlayer.Busy = false
 end
 

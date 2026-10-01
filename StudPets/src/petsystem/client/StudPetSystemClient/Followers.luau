@@ -104,8 +104,14 @@ local function step(dt: number)
 		local character = player.Character
 		local hrp = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
 		if not hrp or not character then
+			-- dead / respawning: hide the pets instead of freezing them in place
+			for _, p in o.pets do
+				p.model.Parent = nil
+				p.pos = nil
+			end
 			continue
 		end
+		rayParams.FilterDescendantsInstances = { folder, character }
 		local far = cam and (hrp.Position - cam.CFrame.Position).Magnitude > DRAW_DISTANCE
 		for i, p in o.pets do
 			p.model.Parent = if far then nil else folder
@@ -125,7 +131,6 @@ local function step(dt: number)
 			pos += p.vel * dt
 			p.pos = pos
 			local speed = p.vel.Magnitude
-			rayParams.FilterDescendantsInstances = { folder, character }
 			local hit = workspace:Raycast(pos + Vector3.new(0, 6, 0), Vector3.new(0, -30, 0), rayParams)
 			local groundY = if hit then hit.Position.Y else hrp.Position.Y - 3
 			local faceYaw = if speed > 0.8 then math.atan2(-p.vel.X, -p.vel.Z) else select(2, hrp.CFrame:ToOrientation())
