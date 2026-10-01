@@ -19,6 +19,7 @@ return function(A, Q)
 			rootY = legH + b[2] / 2 + (if p.alwaysFly then hover else 0),
 			hover = hover,
 			alwaysFly = p.alwaysFly == true,
+			gait = if p.alwaysFly then nil else "hop", -- perching birds hop along the ground to walk
 			noPlant = p.alwaysFly == true,
 			flap = flap,
 			flapAmp = p.flapAmp or 45,
@@ -69,6 +70,9 @@ return function(A, Q)
 				local P = {}
 				local look = curve(t, { { 0, 0 }, { 0.8, 0 }, { 1.1, 35 }, { 1.9, 35 }, { 2.2, -25 }, { 3.2, -25 }, { 3.6, 0 } })
 				if spec.alwaysFly then
+					look *= 0.4 -- hovering pets keep facing forward
+				end
+				if spec.alwaysFly then
 					fly(spec, P, t, 0, spec.flap, 0)
 					P.Torso[2] = 8 * wave(t, 4)
 				else
@@ -86,6 +90,28 @@ return function(A, Q)
 	end
 
 	function F.Walk(spec)
+		if not spec.alwaysFly then
+			-- perching birds walk with little two-footed hops, wings folded
+			local T = 0.5
+			return {
+				Name = "Walk",
+				Length = T,
+				Looped = true,
+				Pose = function(t)
+					local P = {}
+					local ph = (t % T) / T
+					local up = math.sin(math.pi * ph)
+					P.Torso = J(-4 + 5 * up, 0, 0, 0, 0.32 * up)
+					P.LegL = J(-28 * up)
+					P.LegR = J(-28 * up)
+					wings(P, 4 * up, 1)
+					P.Head = J(6 * math.sin(2 * math.pi * ph))
+					P.Tail1 = J(-12 * up)
+					eyes(P, 0)
+					return P
+				end,
+			}
+		end
 		local T = spec.flap * math.max(1, math.round(0.8 / spec.flap))
 		return {
 			Name = "Walk",

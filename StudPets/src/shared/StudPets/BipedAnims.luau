@@ -166,7 +166,13 @@ return function(A, Q)
 				local fold = if spec.foldBack then -84 else 84
 				-- folded back, the feet (which stick out forward) point down: sit a little higher
 				local lift = if spec.foldBack then spec.footLen else 0
-				P.Torso = J((if spec.foldBack then 4 else -6) + br, 0, 0, 0, drop + lift + 0.03 * br)
+				-- tailed dinos sit up, chest raised, tail on the floor
+				local pitch = if spec.foldBack then (if spec.wings then 4 else 14) else -6
+				if spec.foldBack and not spec.wings then
+					-- raising the chest swings the folded legs down: lift to keep the feet on the floor
+					lift += (spec.legList[1][3] + spec.hipY) * math.sin(math.rad(pitch - 4))
+				end
+				P.Torso = J(pitch + br, 0, 0, 0, drop + lift + 0.03 * br)
 				P.LegL = J(fold)
 				P.LegR = J(fold)
 				if spec.wings then
@@ -223,12 +229,14 @@ return function(A, Q)
 				local P = {}
 				local br = wave(t, 4)
 				local fold = if spec.foldBack then -84 else 84
-				local lift = if spec.foldBack then spec.footLen else -0.08
-				P.Torso = J((if spec.foldBack then 6 else 2) + 0.4 * br, 0, 0, 0, drop + lift + 0.02 * br)
+				-- the forward slump and side lean push the out-stretched feet down: sit up a touch
+				local lift = if spec.foldBack then spec.footLen else spec.hipY * math.sin(math.rad(10)) + spec.hipX * math.sin(math.rad(6)) - 0.02 + (spec.sleepLift or 0)
+				-- upright animals slump forward and to one side when asleep
+				P.Torso = J((if spec.foldBack then 6 else -8) + 0.4 * br, 0, if spec.foldBack then 0 else 6, 0, drop + lift + 0.02 * br)
 				P.LegL = J(fold)
 				P.LegR = J(fold)
 				arms(P, if spec.wings then 0 else 20, if spec.wings then 0 else 20, 2) -- arms resting by the body
-				P.Head = J(-(spec.sleepHeadDrop or 32) - 2 * br, 12, 6)
+				P.Head = J(-(spec.sleepHeadDrop or (if spec.foldBack then 32 else 22)) - 2 * br, 12, 6)
 				P.Tail1 = J(spec.sitTail)
 				Q.eyes(P, 1)
 				return P
