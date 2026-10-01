@@ -106,7 +106,10 @@ def part_mesh(part):
     hx, hy, hz = sx / 2, sy / 2, sz / 2
     bm = bmesh.new()
     shape = part.get("shape")
-    if shape == "sphere":
+    if shape == "ball":
+        d = min(sx, sy, sz)
+        bmesh.ops.create_uvsphere(bm, u_segments=24, v_segments=14, radius=d / 2)
+    elif shape == "sphere":
         # SpecialMesh Sphere: an ellipsoid filling the part's box
         bmesh.ops.create_uvsphere(bm, u_segments=28, v_segments=18, radius=0.5,
                                   matrix=Matrix.Diagonal((sx, sy, sz, 1)))

@@ -21,8 +21,9 @@ local function hsv(h, s, v)
 	return { math.round(c.R * 255), math.round(c.G * 255), math.round(c.B * 255) }
 end
 
--- A stud coil in handle space: grip at the origin, a brick spring rising out of the hand.
--- {name, size, cf, color, neon?, shape?}
+-- A classic coil in handle space: a rubber grip in your fist, a smooth shiny spring standing
+-- straight up out of it (+Y is up once the tool's Grip is applied).
+-- {name, size, cf, color, neon?, shape?, shine?}
 local function coilParts(gear)
 	local parts = {}
 	local function add(name, size, cf, color, extra)
@@ -32,34 +33,38 @@ local function coilParts(gear)
 		end
 		table.insert(parts, p)
 	end
-	local dark = { 46, 48, 62 }
+	local UP = CFrame.Angles(0, 0, math.rad(90)) -- a cylinder's axis is X: turn it upright
+	local grip, metal = { 52, 54, 64 }, { 175, 180, 190 }
 	local accent = gear.Accent or gear.Color
-	add("Grip", { 0.5, 1.0, 0.5 }, CFrame.new(0, 0, 0), dark)
-	add("Collar", { 0.85, 0.22, 0.85 }, CFrame.new(0, 0.6, 0), accent)
-	-- the spring: bricks laid along a helix, tilted with its pitch
-	local TURNS, PER, R = 5.5, 12, 0.46
-	local y0, y1 = 0.78, 3.15
-	local n = math.floor(TURNS * PER)
-	local seg = 2 * math.pi * R / PER
-	local rise = (y1 - y0) / n
-	local tilt = math.atan2(rise, seg)
-	for i = 0, n - 1 do
-		local a = i / PER * 2 * math.pi
-		local y = y0 + i * rise
-		local turn = math.floor(i / PER)
-		local color
-		if gear.Rainbow then
-			color = hsv(i / n, 0.75, 1)
-		elseif gear.Name == "Fusion Coil" then
-			color = if turn % 2 == 0 then gear.Color else accent
-		else
-			color = if turn % 2 == 0 then gear.Color else lighten(gear.Color, 0.25)
-		end
-		local cf = CFrame.new(R * math.cos(a), y, R * math.sin(a)) * CFrame.Angles(0, -a - math.pi / 2, 0) * CFrame.Angles(0, 0, tilt)
-		add("Spring" .. i, { seg * 1.18, 0.2, 0.2 }, cf, color)
+	add("Grip", { 1.1, 0.42, 0.42 }, CFrame.new(0, 0, 0) * UP, grip, { shape = "cylinder" })
+	for k = -1, 1 do
+		add("GripRing" .. k, { 0.1, 0.46, 0.46 }, CFrame.new(0, k * 0.3, 0) * UP, { 35, 36, 44 }, { shape = "cylinder" })
 	end
-	add("Cap", { 0.75, 0.22, 0.75 }, CFrame.new(0, y1 + 0.2, 0), accent)
-	add("Gem", { 0.34, 0.34, 0.34 }, CFrame.new(0, y1 + 0.47, 0) * CFrame.Angles(0, math.rad(45), 0), if gear.Rainbow then { 255, 255, 255 } else gear.Color, { neon = true })
+	add("Pommel", { 0.14, 0.5, 0.5 }, CFrame.new(0, -0.6, 0) * UP, metal, { shape = "cylinder", shine = true })
+	add("Base", { 0.18, 1.06, 1.06 }, CFrame.new(0, 0.62, 0) * UP, metal, { shape = "cylinder", shine = true })
+	-- the spring: a round tube following a helix, from short cylinder segments
+	local TURNS, PER, R, TUBE = 6, 18, 0.43, 0.17
+	local y0, y1 = 0.78, 3.05
+	local n = TURNS * PER
+	local rise = (y1 - y0) / n
+	local step = 2 * math.pi * R / PER
+	local pitch = math.atan2(rise, step)
+	local len = math.sqrt(step * step + rise * rise) * 1.12
+	for i = 0, n - 1 do
+		local a = (i + 0.5) / PER * 2 * math.pi
+		local y = y0 + (i + 0.5) * rise
+		local color = gear.Color
+		if gear.Rainbow then
+			color = hsv(i / n, 0.8, 1)
+		elseif gear.Name == "Fusion Coil" then
+			color = if math.floor(i / PER) % 2 == 0 then gear.Color else accent
+		end
+		-- segment axis (X) along the helix tangent
+		local cf = CFrame.new(R * math.cos(a), y, R * math.sin(a)) * CFrame.Angles(0, -a - math.pi / 2, 0) * CFrame.Angles(0, 0, pitch)
+		add("Spring" .. i, { len, TUBE, TUBE }, cf, color, { shape = "cylinder", shine = true })
+	end
+	add("Top", { 0.16, 1.0, 1.0 }, CFrame.new(0, y1 + 0.12, 0) * UP, metal, { shape = "cylinder", shine = true })
+	add("Tip", { 0.34, 0.34, 0.34 }, CFrame.new(0, y1 + 0.32, 0), if gear.Rainbow then { 255, 255, 255 } else accent, { shape = "ball", neon = true })
 	return parts
 end
 
@@ -77,40 +82,21 @@ local function parts()
 	return list, add
 end
 
--- A stud balloon on a string: a brick ball high over your hand.
+-- A classic balloon: a shiny round balloon high over your hand on a string.
 local function balloonParts(gear)
 	local list, add = parts()
-	local white = { 245, 245, 245 }
-	add("Grip", { 0.35, 0.7, 0.35 }, CFrame.new(0, 0, 0), { 46, 48, 62 })
-	add("String", { 0.07, 3.0, 0.07 }, CFrame.new(0, 1.85, 0), white)
-	add("Knot", { 0.32, 0.26, 0.32 }, CFrame.new(0, 3.42, 0), gear.Color)
-	-- hollow voxel ball, slightly taller than wide, with a shine
-	local CELL, RX, RY = 0.44, 1.2, 1.38
-	local cy = 3.55 + RY
-	local n = 0
-	for ix = -3, 3 do
-		for iy = -4, 4 do
-			for iz = -3, 3 do
-				local x, y, z = ix * CELL, iy * CELL, iz * CELL
-				local d = math.sqrt((x / RX) ^ 2 + (y / RY) ^ 2 + (z / RX) ^ 2)
-				if d <= 1 and d > 1 - CELL / RX * 1.15 then
-					n += 1
-					local shine = ix <= -1 and iy >= 1 and iz <= -1 and d > 0.82
-					add("Ball" .. n, { CELL, CELL, CELL }, CFrame.new(x, cy + y, z), if shine then lighten(gear.Color, 0.55) else gear.Color)
-				end
-			end
-		end
-	end
+	add("Grip", { 0.3, 0.3, 0.3 }, CFrame.new(0, 0, 0), { 245, 245, 245 }, { shape = "ball" })
+	add("String", { 3.4, 0.06, 0.06 }, CFrame.new(0, 1.75, 0) * CFrame.Angles(0, 0, math.rad(90)), { 245, 245, 245 }, { shape = "cylinder" })
+	add("Knot", { 0.3, 0.3, 0.3 }, CFrame.new(0, 3.5, 0), gear.Color, { shape = "ball" })
+	add("Balloon", { 2.3, 2.7, 2.3 }, CFrame.new(0, 4.95, 0), gear.Color, { shape = "sphere", shine = true })
+	add("Shine", { 0.45, 0.7, 0.3 }, CFrame.new(-0.55, 5.55, -0.95) * CFrame.Angles(0, math.rad(-30), math.rad(-25)), lighten(gear.Color, 0.7), { shape = "sphere" })
 	return list
 end
 
--- Jetpack: a little throttle in your hand; the pack itself is worn (jetpackWear).
-local function jetpackParts(gear)
+-- Jetpack: nothing in your hand (an invisible handle); the pack itself is worn (jetpackWear).
+local function jetpackParts(_gear)
 	local list, add = parts()
-	local dark = { 46, 48, 62 }
-	add("Grip", { 0.45, 1.0, 0.45 }, CFrame.new(0, 0, 0), dark)
-	add("Head", { 0.7, 0.4, 0.7 }, CFrame.new(0, 0.66, 0), gear.Color)
-	add("Button", { 0.3, 0.18, 0.3 }, CFrame.new(0, 0.95, 0), gear.Accent, { neon = true })
+	add("Grip", { 0.2, 0.2, 0.2 }, CFrame.new(0, 0, 0), { 46, 48, 62 }, { invisible = true })
 	return list
 end
 
@@ -123,9 +109,10 @@ local function jetpackWear(gear)
 	for side = -1, 1, 2 do
 		local x = side * 0.48
 		local vertical = CFrame.Angles(0, 0, math.rad(90))
-		add("Tank" .. side, { 1.9, 0.8, 0.8 }, CFrame.new(x, 0.05, 0.72) * vertical, metal, { shape = "cylinder" })
+		add("Tank" .. side, { 1.9, 0.8, 0.8 }, CFrame.new(x, 0.05, 0.72) * vertical, metal, { shape = "cylinder", shine = true })
 		add("Band" .. side, { 0.22, 0.86, 0.86 }, CFrame.new(x, 0.45, 0.72) * vertical, gear.Accent, { shape = "cylinder" })
-		add("Top" .. side, { 0.25, 0.6, 0.6 }, CFrame.new(x, 1.08, 0.72) * vertical, dark, { shape = "cylinder" })
+		add("Dome" .. side, { 0.8, 0.8, 0.8 }, CFrame.new(x, 1.0, 0.72), metal, { shape = "ball", shine = true })
+		add("Fin" .. side, { 0.12, 0.9, 0.55 }, CFrame.new(x + side * 0.46, -0.55, 0.72), gear.Accent)
 		local nozzle = add("Nozzle" .. side, { 0.4, 0.55, 0.55 }, CFrame.new(x, -1.08, 0.72) * vertical, dark, { shape = "cylinder" })
 		nozzle.flame = true
 	end
@@ -191,6 +178,15 @@ local function makePart(p, anchored)
 	part.CastShadow = true
 	if p.shape == "cylinder" then
 		part.Shape = Enum.PartType.Cylinder
+	elseif p.shape == "ball" then
+		part.Shape = Enum.PartType.Ball
+	elseif p.shape == "sphere" then
+		local mesh = Instance.new("SpecialMesh") -- a ball stretched to fill the part's box
+		mesh.MeshType = Enum.MeshType.Sphere
+		mesh.Parent = part
+	end
+	if p.shine then
+		part.Reflectance = 0.18
 	end
 	if p.invisible then
 		part.Transparency = 1
@@ -209,6 +205,8 @@ local function makeTool(gear)
 	tool.RequiresHandle = true
 	tool.CanBeDropped = false
 	tool.ManualActivationOnly = gear.Grapple == nil -- only the grapple uses clicks
+	-- built with +Y up and -Z forward; this Grip makes the hand hold it that way round
+	tool.Grip = CFrame.Angles(math.pi, 0, 0)
 	local bits = {}
 	if gear.Speed then
 		table.insert(bits, ("%d%% faster"):format(math.round((gear.Speed - 1) * 100)))
