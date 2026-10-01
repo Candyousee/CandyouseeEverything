@@ -364,57 +364,39 @@ local function update(slot, t, stageCF, camPos)
 		slot.ball.Transparency = 1
 	end
 
-	-- confetti: bursts up and out, then flutters down
+	-- confetti: bursts up and out, then keeps falling and fluttering until it reaches the
+	-- floor, where it fades out (never hangs in the air)
 	for k, c in slot.confetti do
-		local life = 2.4
-		if pp > 0 and pp < life then
-			-- each piece gets its own direction, height, delay and flutter
-			local h1 = (k * 0.6180339) % 1
-			local h2 = (k * 0.4142135 + 0.3) % 1
-			local h3 = (k * 0.7320508 + 0.7) % 1
-			local q = math.max(0, pp - h3 * 0.25)
+		local h1 = (k * 0.6180339) % 1
+		local h2 = (k * 0.4142135 + 0.3) % 1
+		local h3 = (k * 0.7320508 + 0.7) % 1
+		local q = pp - h3 * 0.2 -- small stagger
+		if q > 0 then
 			local ang = h1 * math.pi * 2
-			local out = (2.5 + 3 * h2) * (1 - math.exp(-q * 3))
-			local x = math.cos(ang) * out + math.sin(q * 5 + k) * 0.3
-			local y = 0.3 + (2.5 + 3.5 * h3) * (1 - math.exp(-q * 4)) - 1.6 * q * q
-			local z = math.sin(ang) * out * 0.5
-			c.CFrame = stageCF * CFrame.new(x, y, z) * CFrame.Angles(pp * (7 + k % 5), pp * (5 + k % 3), pp * 3)
-			c.Transparency = math.clamp((pp - life + 0.5) / 0.5, 0, 1)
+			local spread = 2.2 + 2.8 * h2
+			local vy = 6 + 3 * h3
+			local apex = vy / 12
+			local y
+			if q < apex then
+				y = 0.4 + vy * q - 6 * q * q -- rising, slowing down
+			else
+				y = 0.4 + vy * apex - 6 * apex * apex - (2.6 + 1.2 * h2) * (q - apex) -- steady flutter-fall
+			end
+			local out = spread * (1 - math.exp(-q * 2.5))
+			local sway = math.sin(q * (4 + 3 * h1) + k) * 0.35 * math.min(1, q)
+			local x = math.cos(ang) * out + sway
+			local z = math.sin(ang) * out * 0.45
+			local floorY = -2.9
+			if y > floorY then
+				c.CFrame = stageCF * CFrame.new(x, y, z) * CFrame.Angles(q * (6 + k % 5), q * (4 + k % 3), q * (3 + k % 4))
+				c.Transparency = math.clamp((floorY + 0.8 - y) / 0.8, 0, 1) -- fade just before the floor
+			else
+				c.Transparency = 1
+			end
 		else
 			c.Transparency = 1
 		end
 	end
-
-	-- shards
-	for k, sh in slot.shards do
-		local d = s.shards[k]
-		if d then
-			sh.Size = Vector3.new(d.size, d.size, 0.16)
-			sh.CFrame = stageCF * CFrame.new(d.pos[1], d.pos[2], d.pos[3]) * CFrame.Angles(math.rad(d.rot[1]), math.rad(d.rot[2]), math.rad(d.rot[3]))
-			sh.Color = if d.color == 2 then slot.spotColor else slot.shellColor
-			sh.Transparency = 1 - d.alpha
-		else
-			sh.Transparency = 1
-		end
-	end
-
-	-- pet
-	if slot.pet then
-		local shown = s.petScale > 0.15
-		slot.pet.Parent = if shown then slot.petFolder else nil
-		local scale = slot.petFit * math.max(0.15, s.petScale)
-		if shown and math.abs(slot.pet:GetScale() - scale) > 1e-3 then
-			slot.pet:ScaleTo(scale)
-		end
-		local pos = (stageCF * CFrame.new(0, s.petY - 0.2, 0)).Position
-		local face = CFrame.lookAt(pos, Vector3.new(camPos.X, pos.Y, camPos.Z)) * CFrame.Angles(0, math.rad(s.petYaw), 0)
-		slot.pet:PivotTo(face * CFrame.new(-slot.petCenter * scale))
-	end
-	slot.label.Enabled = s.banner > 0.01
-	slot.labelName.TextTransparency = 1 - s.banner
-	slot.labelRarity.TextTransparency = 1 - s.banner
-	slot.labelRarity.TextColor3 = color
-	slot.labelPill.BackgroundTransparency = 1 - 0.55 * s.banner
 	return s
 end
 
