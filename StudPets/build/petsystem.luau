@@ -13,8 +13,10 @@ local Hatch = require("../src/petsystem/shared/StudPetSystem/HatchSequence")
 
 local K = { 40, 34, 30 }
 
--- Stud eggs: stacked tiers with studs on every ledge. Each egg has its own silhouette
--- (tier profile), colour shading and themed block decorations.
+-- Stud eggs v3: every tier is a ring of small bricks around a core, and the egg's pattern
+-- is just which colour each brick is - so decorations are flush with the shell (nothing
+-- floats or clips), the crack lines are bricks that light up, and only a few pieces sit
+-- on top of the egg.
 local PROFILES = {
 	default = { { 1.4, 0.35 }, { 2.0, 0.4 }, { 2.45, 0.45 }, { 2.7, 0.5 }, { 2.8, 0.5 }, { 2.7, 0.45 }, { 2.45, 0.4 }, { 2.05, 0.4 }, { 1.5, 0.35 }, { 0.9, 0.25 } },
 	round = { { 1.6, 0.35 }, { 2.3, 0.4 }, { 2.75, 0.45 }, { 3.0, 0.5 }, { 3.05, 0.5 }, { 2.9, 0.45 }, { 2.6, 0.4 }, { 2.15, 0.4 }, { 1.55, 0.35 }, { 0.9, 0.25 } },
@@ -22,12 +24,13 @@ local PROFILES = {
 	wide = { { 1.7, 0.35 }, { 2.4, 0.4 }, { 2.85, 0.45 }, { 3.1, 0.5 }, { 3.1, 0.5 }, { 2.95, 0.45 }, { 2.6, 0.4 }, { 2.1, 0.4 }, { 1.5, 0.3 }, { 0.85, 0.25 } },
 }
 local THEME_PROFILE = { spots = "default", leaves = "default", rosettes = "default", waves = "round", spikes = "wide", royal = "tall" }
+local SHELL_DEPTH = 0.22 -- thickness of the brick ring around each tier's core
+local CELL = 0.36 -- target brick width along a face
 
 local function shade(c, k)
 	return { math.clamp(math.floor(c[1] * k), 0, 255), math.clamp(math.floor(c[2] * k), 0, 255), math.clamp(math.floor(c[3] * k), 0, 255) }
 end
 
--- tier layout for an egg: list of {w, h, y} (y = centre), centred on y = 0
 local function tiers(egg)
 	local prof = PROFILES[THEME_PROFILE[egg.Theme or "spots"] or "default"]
 	local H = 0
@@ -44,11 +47,120 @@ end
 
 local EGG_H = select(2, tiers({ Theme = "spots" }))
 
--- part list in egg space: {name, size, cf, color, studs?, class?, neon?, crack?}
-local function eggParts(egg: any)
+-- wrap-around distance on the egg's surface, q = 0..1 around (0 = front centre)
+local PERIM = 9.0
+local function sdist(q1, y1, q2, y2)
+	local dq = math.abs(q1 - q2)
+	dq = math.min(dq, 1 - dq) * PERIM
+	return math.sqrt(dq * dq + (y1 - y2) * (y1 - y2))
+end
+
+-- the pattern: colour (+ neon) of the brick at surface position (q, y), tier i
+local function patternColor(egg, q, y, i, nT, face, u)
 	local C = egg.Colors
 	local shell, spots = C.Shell, C.Spots
+	local base = shade(shell, 0.86 + 0.24 * (i - 1) / (nT - 1))
+	local theme = egg.Theme or "spots"
+	if theme == "spots" then
+		for _, s in { { 0.02, 0.35, 0.55 }, { 0.13, -0.45, 0.45 }, { 0.9, -0.3, 0.5 }, { 0.3, 0.6, 0.5 }, { 0.45, -0.2, 0.55 }, { 0.62, 0.45, 0.5 }, { 0.75, -0.65, 0.45 }, { 0.85, 0.9, 0.35 } } do
+			if sdist(q, y, s[1], s[2]) < s[3] then
+				return spots
+			end
+		end
+	elseif theme == "leaves" then
+		-- a vine zig-zagging round the middle
+		local band = -0.55 + 1.0 * math.abs(((q * 8) % 2) - 1)
+		if math.abs(y - band) < 0.26 then
+			return spots
+		end
+		if math.abs(y - band) < 0.42 then
+			return shade(C.Shell, 0.92)
+		end
+		if sdist(q, y, 0.04, 0.85) < 0.12 then
+			return { 255, 225, 80 }
+		end
+		if sdist(q, y, 0.04, 0.85) < 0.36 then
+			return { 255, 130, 180 }
+		end
+		if y < -1.25 then
+			return shade(spots, 1.15)
+		end
+	elseif theme == "rosettes" then
+		for _, r in { { 0.0, 0.0 }, { 0.12, 0.75 }, { 0.88, 0.7 }, { 0.15, -0.8 }, { 0.85, -0.75 }, { 0.3, 0.1 }, { 0.7, 0.05 }, { 0.45, 0.8 }, { 0.55, -0.7 }, { 0.42, -0.25 }, { 0.58, 0.4 } } do
+			local d = sdist(q, y, r[1], r[2])
+			if d < 0.2 then
+				return { 230, 145, 55 }
+			elseif d < 0.45 then
+				return spots
+			end
+		end
+	elseif theme == "waves" then
+		-- deep water below, a white foam line, wave crests rising into the sky-blue top
+		if i <= 3 then
+			return shade(spots, 0.9 + 0.1 * i)
+		elseif i == 4 then
+			return { 245, 252, 255 }
+		elseif i == 5 then
+			local k = math.floor((u + 1) * 3 + face * 7) % 3
+			if k == 0 then
+				return { 245, 252, 255 }
+			end
+		end
+		for _, b in { { 0.05, 0.75 }, { 0.92, 1.0 }, { 0.3, 0.9 }, { 0.6, 0.7 }, { 0.75, 1.2 }, { 0.12, 1.25 } } do
+			if sdist(q, y, b[1], b[2]) < 0.16 then
+				return { 220, 245, 255 }
+			end
+		end
+		-- a starfish on the front, made of bricks
+		local sx, sy = (((q + 0.5) % 1) - 0.5) * PERIM - 0.55, y - 0.55
+		local d = math.sqrt(sx * sx + sy * sy)
+		local a = math.atan2(sy, sx)
+		local arm = math.abs(math.sin(a * 2.5 + 0.3))
+		if d < 0.12 + 0.28 * arm then
+			return { 255, 140, 80 }
+		end
+	elseif theme == "spikes" then
+		-- pale belly on the front, dark spots elsewhere
+		if face == 0 and math.abs(u) < 0.5 and y < 0.55 and y > -1.3 then
+			return shade({ 255, 225, 170 }, 0.9 + 0.15 * (i - 1) / (nT - 1))
+		end
+		for _, s in { { 0.14, 0.75, 0.3 }, { 0.86, 0.7, 0.3 }, { 0.16, -0.35, 0.28 }, { 0.84, -0.4, 0.28 }, { 0.25, 0.25, 0.35 }, { 0.75, 0.2, 0.35 }, { 0.32, -0.75, 0.3 }, { 0.68, -0.8, 0.3 }, { 0.5, 0.1, 0.4 }, { 0.42, 0.9, 0.25 }, { 0.58, 1.0, 0.25 }, { 0.05, 1.25, 0.22 } } do
+			if sdist(q, y, s[1], s[2]) < s[3] then
+				return spots
+			end
+		end
+	elseif theme == "royal" then
+		if i == 5 then
+			if math.abs(u) < 0.2 then
+				return C.Gem or { 90, 230, 255 }, true
+			end
+			return spots
+		end
+		if i == 4 or i == 6 then
+			if math.abs(u) < 0.2 then
+				return shade(spots, 0.8)
+			end
+		end
+		for _, s in { { 0.1, 0.9 }, { 0.35, 1.1 }, { 0.6, 0.8 }, { 0.85, 1.05 }, { 0.2, -0.8 }, { 0.7, -0.9 }, { 0.95, -0.6 }, { 0.45, -1.0 } } do
+			if sdist(q, y, s[1], s[2]) < 0.13 then
+				return { 255, 250, 215 }, true
+			end
+		end
+	end
+	return base
+end
+
+-- crack paths on the front face: {tier, u} pairs per crack (u = -1..1 across the face)
+local CRACKS = {
+	{ { 5, -0.75 }, { 6, -0.55 }, { 6, -0.3 }, { 5, -0.15 }, { 5, 0.05 }, { 6, 0.2 } },
+	{ { 6, 0.2 }, { 6, 0.4 }, { 5, 0.55 }, { 5, 0.75 }, { 6, 0.9 } },
+	{ { 5, 0.05 }, { 4, 0.1 }, { 4, 0.3 }, { 3, 0.4 }, { 3, 0.2 }, { 2, 0.1 } },
+}
+
+local function eggParts(egg: any)
+	local C = egg.Colors
 	local T, H = tiers(egg)
+	local nT = #T
 	local parts = {}
 	local n = 0
 	local function add(p)
@@ -57,139 +169,93 @@ local function eggParts(egg: any)
 		table.insert(parts, p)
 		return p
 	end
-	-- the shell: darker at the bottom, lighter at the top, studs on every ledge
-	for i, t in T do
-		local k = 0.86 + 0.24 * (i - 1) / (#T - 1)
-		add({ name = "Tier", size = { t.w, t.h, t.w }, cf = CFrame.new(0, t.y, 0), color = shade(shell, k), studs = true })
-	end
-	-- a flat tile on one face of a tier. face 0 = front (-Z), 1 = left, 2 = back, 3 = right;
-	-- u = -1..1 across the face; dy = offset from the tier centre
-	local function tile(face, ti, u, w, h, color, proud, dy, extra)
-		local t = T[ti]
-		local half = t.w / 2
-		local pr = proud or 0.08
-		local cf = CFrame.Angles(0, face * math.pi / 2, 0) * CFrame.new(u * (half - w / 2 - 0.02), t.y + (dy or 0), -half - pr / 2 + 0.01)
-		local p = { name = "Deco", size = { w, h, pr }, cf = cf, color = color }
-		for key, v in extra or {} do
-			p[key] = v
+	-- which (tier, face 0, cell) belongs to which crack
+	local crackCell: { [string]: number } = {}
+	for ci, path in CRACKS do
+		for _, c in path do
+			local key = c[1] .. ":" .. c[2]
+			crackCell[key] = crackCell[key] or ci
 		end
-		return add(p)
-	end
-	local theme = egg.Theme or "spots"
-	if theme == "spots" then
-		-- farm: big two-tone brown spots all round + grass tufts at the base
-		local S = { { 0, 5, -0.55, 0.75 }, { 0, 3, 0.45, 0.6 }, { 0, 7, 0.2, 0.5 }, { 1, 4, 0.1, 0.8 }, { 1, 7, -0.4, 0.5 }, { 2, 5, 0.3, 0.75 }, { 2, 3, -0.5, 0.5 }, { 3, 4, -0.2, 0.7 }, { 3, 6, 0.45, 0.55 } }
-		for _, sp in S do
-			local t = T[sp[2]]
-			local sz = math.min(sp[4], t.h * 1.6)
-			-- an irregular blob: two overlapping tiles
-			tile(sp[1], sp[2], sp[3], sz, math.min(sz, t.h + 0.2), spots, 0.1)
-			tile(sp[1], sp[2], sp[3] + (if sp[3] > 0 then -0.18 else 0.18), sz * 0.6, math.min(sz, t.h + 0.2) * 0.6, spots, 0.12, (if sp[2] % 2 == 0 then 0.18 else -0.18))
-		end
-		for face = 0, 3 do
-			for k = -1, 1 do
-				add({ name = "Grass", class = "WedgePart", size = { 0.18, 0.45, 0.3 }, cf = CFrame.Angles(0, face * math.pi / 2 + k * 0.35, 0) * CFrame.new(k * 0.35, T[1].y + 0.05, -T[2].w / 2 - 0.05), color = { 110, 190, 80 } })
-			end
-		end
-	elseif theme == "leaves" then
-		-- forest: a zig-zag vine band, a little flower on the front, a crown of leaves on top
-		for face = 0, 3 do
-			for k = -2, 2 do
-				local ti = if k % 2 == 0 then 4 else 5
-				tile(face, ti, k * 0.42, 0.42, T[ti].h - 0.06, spots, 0.08)
-			end
-		end
-		tile(0, 7, -0.3, 0.32, 0.32, { 255, 140, 190 }, 0.1)
-		tile(0, 7, -0.3, 0.14, 0.14, { 255, 230, 90 }, 0.16)
-		local top = T[#T].y + T[#T].h / 2
-		for k = 0, 4 do
-			local a = k * math.pi * 2 / 5
-			add({ name = "TopLeaf", class = "WedgePart", size = { 0.14, 0.95, 0.7 }, cf = CFrame.new(math.sin(a) * 0.38, top + 0.32, -math.cos(a) * 0.38) * CFrame.Angles(0, -a, 0) * CFrame.Angles(math.rad(-45), 0, 0), color = if k % 2 == 0 then spots else shade(spots, 1.3) })
-		end
-	elseif theme == "rosettes" then
-		-- safari: leopard rosettes - a dark ring with a warm centre
-		local R = { { 0, 3, -0.4 }, { 0, 5, 0.35 }, { 0, 7, -0.25 }, { 1, 4, 0.3 }, { 1, 6, -0.4 }, { 2, 3, 0.2 }, { 2, 5, -0.35 }, { 2, 7, 0.3 }, { 3, 4, -0.3 }, { 3, 6, 0.4 } }
-		for _, r in R do
-			local t = T[r[2]]
-			local sz = math.min(0.6, t.h + 0.15)
-			tile(r[1], r[2], r[3], sz, sz, spots, 0.09)
-			tile(r[1], r[2], r[3], sz * 0.5, sz * 0.5, { 225, 140, 50 }, 0.14)
-		end
-	elseif theme == "waves" then
-		-- ocean: a white wave crest band, darker deep-water bottom, a starfish, bubbles
-		for face = 0, 3 do
-			for k = -3, 3 do
-				local up = (k % 2 == 0)
-				tile(face, 5, k * 0.36, 0.34, if up then 0.62 else 0.42, { 245, 252, 255 }, 0.08, if up then 0.08 else -0.02)
-			end
-			for k = -2, 2 do
-				tile(face, 3, k * 0.45, 0.4, T[3].h - 0.08, shade(spots, 1), 0.07)
-			end
-			tile(face, 8, 0.35, 0.18, 0.18, { 210, 240, 255 }, 0.08, 0.05)
-			tile(face, 9, -0.2, 0.14, 0.14, { 210, 240, 255 }, 0.08)
-		end
-		for k = 0, 4 do
-			add({ name = "Star", size = { 0.14, 0.38, 0.08 }, cf = CFrame.new(-0.45, T[7].y, -T[7].w / 2 - 0.05) * CFrame.Angles(0, 0, math.rad(72 * k)) * CFrame.new(0, 0.15, 0), color = { 255, 140, 80 } })
-		end
-	elseif theme == "spikes" then
-		-- dino: bony spikes out of both sides and a crest on top, dark stripes, pale belly
-		for i = 3, #T - 1 do
-			local t = T[i]
-			local sz = 0.4 + 0.18 * math.sin(math.pi * (i - 3) / (#T - 4))
-			for _, side in { -1, 1 } do
-				add({ name = "Spike", class = "WedgePart", size = { 0.22, sz, sz }, cf = CFrame.new(side * (t.w / 2 + sz * 0.3), t.y + 0.05, 0.25) * CFrame.Angles(0, side * math.pi / 2, 0), color = { 250, 236, 200 } })
-			end
-		end
-		local top = T[#T].y + T[#T].h / 2
-		for k = -1, 1 do
-			add({ name = "Crest", class = "WedgePart", size = { 0.2, 0.55 - math.abs(k) * 0.15, 0.5 }, cf = CFrame.new(k * 0.3, top + 0.2, 0) * CFrame.Angles(0, math.pi / 2, 0), color = { 250, 236, 200 } })
-		end
-		for face = 0, 3 do
-			for k = -1, 1 do
-				tile(face, 5 + (k + 1) % 2, k * 0.6, 0.24, 0.85, spots, 0.08)
-			end
-		end
-		tile(0, 3, 0, 1.1, T[3].h - 0.05, shade(shell, 1.3), 0.06)
-		tile(0, 4, 0, 1.3, T[4].h - 0.05, shade(shell, 1.3), 0.06)
-	elseif theme == "royal" then
-		-- mythic: a gold band with glowing gems, gold crown, star sparkles
-		local band = 5
-		for face = 0, 3 do
-			tile(face, band, 0, T[band].w - 0.04, T[band].h - 0.04, spots, 0.07)
-			tile(face, band, 0, 0.3, 0.3, C.Gem or { 90, 230, 255 }, 0.14, 0, { neon = true })
-			tile(face, 8, (face % 2) * 0.5 - 0.25, 0.14, 0.14, { 255, 250, 210 }, 0.08, 0, { neon = true })
-			tile(face, 3, 0.4 - (face % 2) * 0.8, 0.12, 0.12, { 255, 250, 210 }, 0.08, 0, { neon = true })
-		end
-		local top = T[#T].y + T[#T].h / 2
-		for k = 0, 4 do
-			local a = k * math.pi * 2 / 5
-			add({ name = "Crown", class = "WedgePart", size = { 0.12, 0.42, 0.24 }, cf = CFrame.new(math.sin(a) * 0.36, top + 0.2, -math.cos(a) * 0.36) * CFrame.Angles(0, -a, 0), color = spots })
-		end
-		add({ name = "CrownGem", size = { 0.22, 0.22, 0.22 }, cf = CFrame.new(0, top + 0.15, 0), color = C.Gem or { 90, 230, 255 }, neon = true })
 	end
 
-	-- crack lines on the front (-Z, faces the camera): three connected zig-zags revealed one
-	-- per shake. Neon so the rarity glow shines through them.
-	local function faceZ(y)
-		for _, t in T do
-			if y <= t.y + t.h / 2 then
-				return -t.w / 2
+	for i, t in T do
+		local d = math.min(SHELL_DEPTH, t.w * 0.2)
+		local inner = t.w - 2 * d
+		local shellBase = shade(C.Shell, 0.86 + 0.24 * (i - 1) / (nT - 1))
+		add({ name = "Core", size = { inner, t.h, inner }, cf = CFrame.new(0, t.y, 0), color = shellBase, studs = true })
+		-- four faces: front/back strips span the full width, left/right fit between them
+		for face = 0, 3 do
+			local len = if face % 2 == 0 then t.w else inner
+			local cells = math.max(2, math.floor(len / CELL + 0.5))
+			local cw = len / cells
+			local rot = CFrame.Angles(0, face * math.pi / 2, 0)
+			-- build cells, then merge runs of the same colour into one brick
+			local run = nil
+			local function flush()
+				if run then
+					local mid = (run.u0 + run.u1) / 2
+					local w = run.u1 - run.u0
+					add({
+						name = if run.crack then "Crack" .. run.crack .. "_" else "Brick",
+						size = { w, t.h, d },
+						cf = rot * CFrame.new(mid, t.y, -t.w / 2 + d / 2),
+						color = run.color,
+						neon = run.neon,
+						crack = run.crack,
+						studs = true,
+					})
+					run = nil
+				end
 			end
+			for c = 1, cells do
+				local x0 = -len / 2 + (c - 1) * cw
+				local x1 = x0 + cw
+				local u = (x0 + x1) / len -- -1..1 across the face
+				-- position around the egg: front centre 0, going round to the left
+				local q = ((face + 0.5 + ((x0 + x1) / 2) / len) / 4 - 0.125) % 1
+				q = (face / 4 + ((x0 + x1) / 2) / len / 4) % 1
+				local color, neon = patternColor(egg, q, t.y, i, nT, face, u)
+				local crack = nil
+				if face == 0 then
+					for _, path in CRACKS do
+						for _, cc in path do
+							if cc[1] == i and math.abs(cc[2] - u) < cw / len then
+								crack = crackCell[cc[1] .. ":" .. cc[2]]
+							end
+						end
+					end
+				end
+				local key = table.concat(color, ",") .. (if neon then "n" else "")
+				if run and not crack and not run.crack and run.key == key then
+					run.u1 = x1
+				else
+					flush()
+					run = { u0 = x0, u1 = x1, color = color, neon = neon, key = key, crack = crack }
+				end
+			end
+			flush()
 		end
-		return -T[#T].w / 2
 	end
-	local CRACKS = {
-		{ { -0.95, 0.15 }, { -0.55, 0.45 }, { -0.2, 0.1 }, { 0.15, 0.4 } },
-		{ { 0.15, 0.4 }, { 0.45, 0.05 }, { 0.8, 0.35 }, { 1.05, 0.05 } },
-		{ { -0.2, 0.1 }, { -0.05, -0.3 }, { 0.3, -0.6 }, { 0.05, -0.95 } },
-	}
-	for ci, pts in CRACKS do
-		for j = 1, #pts - 1 do
-			local a, b = pts[j], pts[j + 1]
-			local mx, my = (a[1] + b[1]) / 2, (a[2] + b[2]) / 2
-			local len = math.sqrt((b[1] - a[1]) ^ 2 + (b[2] - a[2]) ^ 2) + 0.1
-			local ang = math.atan2(b[2] - a[2], b[1] - a[1])
-			table.insert(parts, { name = ("Crack%d_%d"):format(ci, j), size = { len, 0.12, 0.08 }, cf = CFrame.new(mx, my, faceZ(my) - 0.12) * CFrame.Angles(0, 0, ang), color = { 255, 250, 220 }, crack = ci, neon = true })
+
+	-- the few pieces that sit on top of the egg
+	local topT = T[nT]
+	local top = topT.y + topT.h / 2
+	local theme = egg.Theme or "spots"
+	if theme == "leaves" then
+		for k = 0, 4 do
+			local a = k * math.pi * 2 / 5
+			add({ name = "TopLeaf", class = "WedgePart", size = { 0.14, 0.85, 0.55 }, cf = CFrame.new(math.sin(a) * 0.22, top + 0.38, -math.cos(a) * 0.22) * CFrame.Angles(0, -a, 0) * CFrame.Angles(math.rad(-35), 0, 0), color = if k % 2 == 0 then C.Spots else shade(C.Spots, 1.3) })
+		end
+		add({ name = "Stem", size = { 0.2, 0.3, 0.2 }, cf = CFrame.new(0, top + 0.15, 0), color = { 110, 80, 50 } })
+	elseif theme == "royal" then
+		for k = 0, 3 do
+			local a = k * math.pi / 2
+			add({ name = "Crown", class = "WedgePart", size = { 0.5, 0.38, 0.12 }, cf = CFrame.new(math.sin(a) * 0.24, top + 0.19, -math.cos(a) * 0.24) * CFrame.Angles(0, -a, 0) * CFrame.Angles(0, math.pi / 2, 0), color = C.Spots })
+		end
+		add({ name = "CrownGem", size = { 0.24, 0.24, 0.24 }, cf = CFrame.new(0, top + 0.16, 0), color = C.Gem or { 90, 230, 255 }, neon = true })
+	elseif theme == "spikes" then
+		for k = -1, 1 do
+			add({ name = "Plate", class = "WedgePart", size = { 0.16, 0.42 - math.abs(k) * 0.12, 0.3 }, cf = CFrame.new(0, top + 0.2 - math.abs(k) * 0.06, k * 0.27) * CFrame.Angles(0, if k < 0 then math.pi else 0, 0), color = { 250, 236, 200 } })
 		end
 	end
 	local _ = H
@@ -235,7 +301,7 @@ local function makeEgg(egg)
 			part.Shape = Enum.PartType.Cylinder
 		end
 		if p.crack then
-			part.Transparency = 1
+			-- a normal shell brick until its crack opens, then it glows in the rarity colour
 			part:SetAttribute("Crack", p.crack)
 		end
 		part.Parent = model
@@ -356,7 +422,7 @@ if process.args[1] == "preview" then
 			* CFrame.new(s.eggPos[1], s.eggPos[2], s.eggPos[3])
 			* CFrame.Angles(math.rad(s.eggRot[1]), math.rad(s.eggRot[2]), math.rad(s.eggRot[3]))
 		for _, p in ep do
-			local visible = s.eggVisible and (not p.crack or p.crack <= s.cracks)
+			local visible = s.eggVisible
 			if visible then
 				local c = p.cf
 				put(eggCF * CFrame.new(c.Position * s.eggScale) * (c - c.Position))
@@ -391,7 +457,7 @@ if process.args[1] == "eggs" then
 	for _, egg in Config.Eggs do
 		local parts, frame = {}, {}
 		for _, p in eggParts(egg) do
-			if not p.crack or process.args[3] == "cracked" then
+			if true then
 				table.insert(parts, { name = p.name, class = p.class or "Part", size = p.size, color = p.color, studs = p.studs == true, neon = p.neon == true, shape = p.shape })
 				for _, c in { (CFrame.new(0, EGG_H / 2 + 0.25, 0) * p.cf):GetComponents() } do
 					table.insert(frame, c)

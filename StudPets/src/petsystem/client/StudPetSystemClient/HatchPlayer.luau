@@ -91,10 +91,7 @@ local function makeSlot(folder, eggName, result, index)
 	local root = model.PrimaryPart
 	for _, p in model:GetDescendants() do
 		if p:IsA("BasePart") and p ~= root then
-			table.insert(slot.parts, { part = p, rel = root.CFrame:ToObjectSpace(p.CFrame), size = p.Size, crack = p:GetAttribute("Crack") })
-			if p:GetAttribute("Crack") then
-				p.Color = rgb(rarity.Color)
-			end
+			table.insert(slot.parts, { part = p, rel = root.CFrame:ToObjectSpace(p.CFrame), size = p.Size, crack = p:GetAttribute("Crack"), color = p.Color, material = p.Material })
 		end
 	end
 	model.Parent = folder
@@ -292,8 +289,10 @@ local function update(slot, t, stageCF, camPos)
 			e.part.CFrame = eggCF * CFrame.new(rel.Position * s.eggScale) * rel.Rotation
 			e.part.Size = e.size * s.eggScale
 			if e.crack then
-				e.part.Transparency = if e.crack <= s.cracks then 0 else 1
-				e.part.Color = color
+				-- crack bricks are shell until they split open, then glow in the rarity colour
+				local open = e.crack <= s.cracks
+				e.part.Material = if open then Enum.Material.Neon else e.material
+				e.part.Color = if open then color else e.color
 			end
 		end
 		slot.egg.PrimaryPart.CFrame = eggCF
