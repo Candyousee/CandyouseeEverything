@@ -176,7 +176,7 @@ aspect.AspectRatio = 640 / 440
 aspect.Parent = panel
 panel.Size = UDim2.new(0.9, 0, 0.9, 0)
 
-local title = label(panel, { Position = UDim2.fromOffset(18, 10), Size = UDim2.new(1, -360, 0, 38), TextXAlignment = Enum.TextXAlignment.Left, Text = "Pets" })
+local title = label(panel, { Position = UDim2.fromOffset(22, 12), Size = UDim2.new(1, -360, 0, 38), TextXAlignment = Enum.TextXAlignment.Left, Text = "Pets" })
 local close = button(panel, "X", Color3.fromRGB(230, 80, 80), { AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -12, 0, 10), Size = UDim2.fromOffset(40, 40) })
 local equipBest = button(panel, "Equip Best", Color3.fromRGB(80, 190, 110), { Position = UDim2.new(1, -330, 0, 10), Size = UDim2.fromOffset(130, 40) })
 local delButton = button(panel, "Delete", Color3.fromRGB(200, 90, 90), { Position = UDim2.new(1, -192, 0, 10), Size = UDim2.fromOffset(130, 40) })
@@ -189,6 +189,11 @@ grid.ScrollBarThickness = 8
 grid.AutomaticCanvasSize = Enum.AutomaticSize.Y
 grid.CanvasSize = UDim2.new()
 grid.Parent = panel
+-- room for the cards' outside borders, which the scroll area would otherwise clip
+local gridPad = Instance.new("UIPadding")
+gridPad.PaddingTop, gridPad.PaddingLeft = UDim.new(0, 6), UDim.new(0, 6)
+gridPad.PaddingRight, gridPad.PaddingBottom = UDim.new(0, 14), UDim.new(0, 6)
+gridPad.Parent = grid
 local layout = Instance.new("UIGridLayout")
 layout.CellSize = UDim2.fromOffset(110, 132)
 layout.CellPadding = UDim2.fromOffset(8, 8)
