@@ -121,21 +121,24 @@ Config.Eggs = {
 	},
 }
 
--- Sound IDs (Roblox's free licensed sounds from the Creator Store, or your own).
--- 0 = no sound. Volume is 0..1.
+-- Sounds. Id is a Roblox audio asset ID (number) or a built-in "rbxasset://" path.
+-- The defaults are sounds that ship inside every Roblox client, so they work in any game
+-- with no uploads. Swap in nicer ones from the Creator Store's free audio library anytime.
+-- Speed changes the pitch (1 = normal). 0 or "" = silent.
+local SFX = "rbxasset://sounds/"
 Config.Sounds = {
-	EggAppear = { Id = 0, Volume = 0.6 }, -- egg lands in front of the camera
-	Shake = { Id = 0, Volume = 0.7 }, -- each wobble
-	Crack = { Id = 0, Volume = 0.8 }, -- a crack appears
-	Charge = { Id = 0, Volume = 0.6 }, -- rising glow before a rare+ pops
-	Pop = { Id = 0, Volume = 0.9 }, -- the egg bursts
-	RevealCommon = { Id = 0, Volume = 0.7 }, -- Common / Uncommon pet appears
-	RevealRare = { Id = 0, Volume = 0.8 }, -- Rare / Epic
-	RevealLegendary = { Id = 0, Volume = 1 }, -- Legendary / Secret fanfare
-	Purchase = { Id = 0, Volume = 0.6 }, -- coins spent
-	Denied = { Id = 0, Volume = 0.6 }, -- not enough coins / inventory full
-	Equip = { Id = 0, Volume = 0.6 },
-	Click = { Id = 0, Volume = 0.5 }, -- UI buttons
+	EggAppear = { Id = SFX .. "swoosh.wav", Volume = 0.5, Speed = 1.15 }, -- egg lands in front of the camera
+	Shake = { Id = SFX .. "clickfast.wav", Volume = 0.7, Speed = 0.8 }, -- each wobble
+	Crack = { Id = SFX .. "snap.wav", Volume = 0.8, Speed = 1.1 }, -- a crack appears
+	Charge = { Id = SFX .. "electronicpingshort.wav", Volume = 0.45, Speed = 0.6 }, -- rising glow before a rare+ pops
+	Pop = { Id = SFX .. "collide.wav", Volume = 0.9, Speed = 1.3 }, -- the egg bursts
+	RevealCommon = { Id = SFX .. "electronicpingshort.wav", Volume = 0.6, Speed = 1.0 }, -- Common / Uncommon pet appears
+	RevealRare = { Id = SFX .. "electronicpingshort.wav", Volume = 0.75, Speed = 1.25 }, -- Rare / Epic
+	RevealLegendary = { Id = SFX .. "electronicpingshort.wav", Volume = 0.9, Speed = 1.5, Repeat = 3 }, -- Legendary / Secret
+	Purchase = { Id = SFX .. "switch.wav", Volume = 0.6, Speed = 1.2 }, -- coins spent
+	Denied = { Id = SFX .. "button.wav", Volume = 0.6, Speed = 0.55 }, -- not enough coins / inventory full
+	Equip = { Id = SFX .. "switch.wav", Volume = 0.5, Speed = 1.0 },
+	Click = { Id = SFX .. "button.wav", Volume = 0.45, Speed = 1.1 }, -- UI buttons
 }
 
 return Config
