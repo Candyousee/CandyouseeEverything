@@ -1,0 +1,29 @@
+{
+  "name": "StudGear",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+      "StudGear": {
+        "$path": "src/shared/StudGear",
+        "Tools": { "$path": "assets/tools" }
+      }
+    },
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+      "StudGearServer": { "$path": "src/server/StudGearServer.server.luau" }
+    },
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "StudGearClient": { "$path": "src/client/StudGearClient.client.luau" }
+      }
+    },
+    "Workspace": {
+      "$className": "Workspace",
+      "StudGearDemo": { "$path": "assets/StudGearDemo.rbxm" }
+    },
+    "Lighting": { "$className": "Lighting", "$properties": { "ClockTime": 14 } }
+  }
+}

@@ -1,0 +1,3 @@
+std = "robloxlite"
+[lints]
+shadowing = "allow"
