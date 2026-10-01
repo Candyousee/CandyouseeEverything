@@ -1,8 +1,8 @@
 -- Plays the sounds listed in Config.Sounds (ID 0 = silent). One Sound per name, reused.
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local SoundService = game:GetService("SoundService")
 
-local Config = require(ReplicatedStorage:WaitForChild("StudPetSystem"):WaitForChild("Config"))
+local Find = require(script.Parent:WaitForChild("Find"))
+local Config = require(Find.Folder("StudPetSystem"):WaitForChild("Config"))
 
 local Sounds = {}
 local cache: { [string]: Sound } = {}

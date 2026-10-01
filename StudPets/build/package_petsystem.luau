@@ -125,7 +125,7 @@ do
 end
 
 local toSSS = folder("2_PutInServerScriptService")
-local server = assert(sss:FindFirstChild("StudPetSystem")):Clone()
+local server = assert(sss:FindFirstChild("StudPetSystemServer")):Clone()
 server.Disabled = false
 server.Parent = toSSS
 
@@ -139,16 +139,18 @@ stands.Parent = toWS
 local readme = Instance.new("ModuleScript")
 readme.Name = "README"
 readme.Source = [=[
---[[ STUD PET SYSTEM - setup (2 minutes)
+--[[ STUD PET SYSTEM - setup (1 minute)
 
-1. Open 1_PutInReplicatedStorage and drag everything inside it into ReplicatedStorage
-   (StudPetSystem, StudPets, StudPetSystemEggs, StudPetModels).
-2. Drag the StudPetSystem script from 2_PutInServerScriptService into ServerScriptService.
-3. Drag StudPetSystemClient from 3_PutInStarterPlayerScripts into
-   StarterPlayer > StarterPlayerScripts.
-4. Drag the EggStands folder from 4_PutInWorkspace_EggStands into Workspace and move the
-   stands wherever you like.
-5. Delete this model. Press Play: walk up to an egg, E = open 1, R = open 3, B = pets.
+Drag each numbered folder into the place its name says. Dragging the whole folder is fine.
+  1_PutInReplicatedStorage      -> ReplicatedStorage
+  2_PutInServerScriptService    -> ServerScriptService
+  3_PutInStarterPlayerScripts   -> StarterPlayer > StarterPlayerScripts
+  4_PutInWorkspace_EggStands    -> Workspace (move the stands wherever you like)
+Then delete this model and press Play: walk up to an egg, E = open 1, R = open 3,
+B or the Pets button = your pets.
+
+If something is in the wrong place, Studio shows a red message on screen saying what's
+missing (and it's printed in View > Output).
 
 Saving: works in your live game. In Studio it only saves if Game Settings > Security >
 "Enable Studio Access to API Services" is on - otherwise Studio tests just don't save.

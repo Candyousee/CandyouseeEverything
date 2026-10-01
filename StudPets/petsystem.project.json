@@ -11,7 +11,7 @@
     },
     "ServerScriptService": {
       "$className": "ServerScriptService",
-      "StudPetSystem": { "$path": "src/petsystem/server/StudPetSystem.server.luau" }
+      "StudPetSystemServer": { "$path": "src/petsystem/server/StudPetSystem.server.luau" }
     },
     "StarterPlayer": {
       "$className": "StarterPlayer",

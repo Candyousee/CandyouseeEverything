@@ -14,7 +14,28 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
-local System = ReplicatedStorage:WaitForChild("StudPetSystem")
+-- the StudPetSystem folder, even if it's still inside the package's 1_PutInReplicatedStorage
+local function findSystem(): Instance
+	local started = os.clock()
+	local reported = false
+	while true do
+		local direct = ReplicatedStorage:FindFirstChild("StudPetSystem")
+		if direct and direct:IsA("Folder") then
+			return direct
+		end
+		for _, d in ReplicatedStorage:GetDescendants() do
+			if d.Name == "StudPetSystem" and d:IsA("Folder") then
+				return d
+			end
+		end
+		if not reported and os.clock() - started > 6 then
+			reported = true
+			warn("[StudPetSystem] ReplicatedStorage is missing the StudPetSystem folder (from 1_PutInReplicatedStorage).")
+		end
+		task.wait(0.25)
+	end
+end
+local System = findSystem()
 local Config = require(System:WaitForChild("Config"))
 local Odds = require(System:WaitForChild("Odds"))(Config)
 

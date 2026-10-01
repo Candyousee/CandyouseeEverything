@@ -152,6 +152,17 @@ end
 function Inst:GetChildren()
 	return table.clone(rawget(self, "_children"))
 end
+function Inst:GetDescendants()
+	local out = {}
+	local function walk(o)
+		for _, c in rawget(o, "_children") do
+			table.insert(out, c)
+			walk(c)
+		end
+	end
+	walk(self)
+	return out
+end
 function Inst:SetAttribute(k, v)
 	rawget(self, "_attrs")[k] = v
 end
@@ -177,7 +188,9 @@ local function makeWorld(opts)
 		return self:GetChildren()
 	end
 	local RS = new("ReplicatedStorage")
-	local System = new("Folder", { Name = "StudPetSystem", Parent = RS })
+	-- opts.nested: dropped in still inside the package folder, like most people do
+	local holder = if opts.nested then new("Folder", { Name = "1_PutInReplicatedStorage", Parent = RS }) else RS
+	local System = new("Folder", { Name = "StudPetSystem", Parent = holder })
 	for _, name in { "Config", "Odds", "HatchSequence" } do
 		new("ModuleScript", { Name = name, Parent = System, Path = "src/petsystem/shared/StudPetSystem/" .. name .. ".luau" })
 	end
@@ -361,6 +374,12 @@ print("[studio, place not published]")
 do
 	local w = makeWorld({ studio = true, noDataStore = true })
 	playthrough(w, "unpublished")
+end
+
+print("[studio, folders left inside 1_PutInReplicatedStorage]")
+do
+	local w = makeWorld({ studio = true, noDataStore = true, nested = true })
+	playthrough(w, "nested")
 end
 
 print("[studio, API access off]")

@@ -3,24 +3,15 @@
 
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
-local System = ReplicatedStorage:WaitForChild("StudPetSystem")
+local Find = require(script:WaitForChild("Find"))
+local System = Find.Folder("StudPetSystem")
 local Config = require(System:WaitForChild("Config"))
 local Odds = require(System:WaitForChild("Odds"))(Config)
--- the server script creates the Remotes; say what's wrong instead of waiting silently
-local Remotes = System:WaitForChild("Remotes", 8)
-if not Remotes then
-	warn("[StudPetSystem] Waiting for the server: put the StudPetSystem script in ServerScriptService and make sure it's Enabled.")
-	Remotes = System:WaitForChild("Remotes")
-end
-local PetModels = ReplicatedStorage:WaitForChild("StudPetModels", 8)
-if not PetModels then
-	warn("[StudPetSystem] ReplicatedStorage.StudPetModels is missing: move it out of 1_PutInReplicatedStorage.")
-	PetModels = ReplicatedStorage:WaitForChild("StudPetModels")
-end
+local Remotes = Find.Folder("Remotes", System) -- made by the server script
+local PetModels = Find.Folder("StudPetModels")
 
 local HatchPlayer = require(script:WaitForChild("HatchPlayer"))
 local Followers = require(script:WaitForChild("Followers"))

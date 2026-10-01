@@ -2,11 +2,11 @@
 -- pets locally from the "StudPetsEquipped" player attribute - no server physics).
 
 local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
-local PetAnimator = require(ReplicatedStorage:WaitForChild("StudPets"):WaitForChild("PetAnimator"))
-local PetModels = ReplicatedStorage:WaitForChild("StudPetModels")
+local Find = require(script.Parent:WaitForChild("Find"))
+local PetAnimator = require(Find.Folder("StudPets"):WaitForChild("PetAnimator"))
+local PetModels = Find.Folder("StudPetModels")
 
 local FOLLOW_SCALE = 0.55
 local SIT_AFTER, SLEEP_AFTER = 5, 12

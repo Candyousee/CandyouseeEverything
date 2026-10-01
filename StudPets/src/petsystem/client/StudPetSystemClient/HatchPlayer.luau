@@ -6,18 +6,18 @@
 
 local Players = game:GetService("Players")
 local ProximityPromptService = game:GetService("ProximityPromptService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
-local System = ReplicatedStorage:WaitForChild("StudPetSystem")
+local Find = require(script.Parent:WaitForChild("Find"))
+local System = Find.Folder("StudPetSystem")
 local Config = require(System:WaitForChild("Config"))
 local Odds = require(System:WaitForChild("Odds"))(Config)
 local Hatch = require(System:WaitForChild("HatchSequence"))
 local Sounds = require(script.Parent:WaitForChild("Sounds"))
-local PetAnimator = require(ReplicatedStorage:WaitForChild("StudPets"):WaitForChild("PetAnimator"))
-local PetModels = ReplicatedStorage:WaitForChild("StudPetModels")
-local EggModels = ReplicatedStorage:WaitForChild("StudPetSystemEggs")
+local PetAnimator = require(Find.Folder("StudPets"):WaitForChild("PetAnimator"))
+local PetModels = Find.Folder("StudPetModels")
+local EggModels = Find.Folder("StudPetSystemEggs")
 
 local player = Players.LocalPlayer
 local SPARKLE = "rbxasset://textures/particles/sparkles_main.dds"
