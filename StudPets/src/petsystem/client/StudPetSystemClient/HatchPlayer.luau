@@ -397,6 +397,36 @@ local function update(slot, t, stageCF, camPos)
 			c.Transparency = 1
 		end
 	end
+	-- shards
+	for k, sh in slot.shards do
+		local d = s.shards[k]
+		if d then
+			sh.Size = Vector3.new(d.size, d.size, 0.16)
+			sh.CFrame = stageCF * CFrame.new(d.pos[1], d.pos[2], d.pos[3]) * CFrame.Angles(math.rad(d.rot[1]), math.rad(d.rot[2]), math.rad(d.rot[3]))
+			sh.Color = if d.color == 2 then slot.spotColor else slot.shellColor
+			sh.Transparency = 1 - d.alpha
+		else
+			sh.Transparency = 1
+		end
+	end
+
+	-- pet
+	if slot.pet then
+		local shown = s.petScale > 0.15
+		slot.pet.Parent = if shown then slot.petFolder else nil
+		local scale = slot.petFit * math.max(0.15, s.petScale)
+		if shown and math.abs(slot.pet:GetScale() - scale) > 1e-3 then
+			slot.pet:ScaleTo(scale)
+		end
+		local pos = (stageCF * CFrame.new(0, s.petY - 0.2, 0)).Position
+		local face = CFrame.lookAt(pos, Vector3.new(camPos.X, pos.Y, camPos.Z)) * CFrame.Angles(0, math.rad(s.petYaw), 0)
+		slot.pet:PivotTo(face * CFrame.new(-slot.petCenter * scale))
+	end
+	slot.label.Enabled = s.banner > 0.01
+	slot.labelName.TextTransparency = 1 - s.banner
+	slot.labelRarity.TextTransparency = 1 - s.banner
+	slot.labelRarity.TextColor3 = color
+	slot.labelPill.BackgroundTransparency = 1 - 0.55 * s.banner
 	return s
 end
 
