@@ -318,6 +318,19 @@ local function makePart(p, anchored)
 	return part
 end
 
+-- A classic Weld that stores the part's exact offset from `root` in the file.
+-- (A WeldConstraint saved from Lune loses its offset, so Roblox snaps every piece onto the
+-- root - that's what piled the coils up in the hand.)
+local function weld(root, part)
+	local w = Instance.new("Weld")
+	w.Name = "GearWeld"
+	w.Part0 = root
+	w.Part1 = part
+	w.C0 = root.CFrame:Inverse() * part.CFrame
+	w.C1 = CFrame.new()
+	w.Parent = part
+end
+
 local function makeTool(gear)
 	local tool = Instance.new("Tool")
 	tool.Name = gear.Name
@@ -367,10 +380,7 @@ local function makeTool(gear)
 	end
 	for _, part in tool:GetChildren() do
 		if part ~= handle then
-			local w = Instance.new("WeldConstraint")
-			w.Part0 = handle
-			w.Part1 = part
-			w.Parent = part
+			weld(handle, part)
 		end
 	end
 	return tool
@@ -417,10 +427,7 @@ local function makeWear(gear)
 	end
 	for _, part in model:GetChildren() do
 		if part ~= root then
-			local w = Instance.new("WeldConstraint")
-			w.Part0 = root
-			w.Part1 = part
-			w.Parent = part
+			weld(root, part)
 		end
 	end
 	model.PrimaryPart = root
