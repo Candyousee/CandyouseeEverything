@@ -5,6 +5,7 @@
 
 local fs = require("@lune/fs")
 local luau = require("@lune/luau")
+local roblox = require("@lune/roblox")
 
 local SOURCES = {}
 for _, path in {
@@ -44,6 +45,9 @@ local Task = {
 		resume(co, ...)
 		return co
 	end,
+	delay = function(n, fn, ...)
+		table.insert(queue, { at = now + n, co = coroutine.create(fn) })
+	end,
 	wait = function(n)
 		local start = now
 		table.insert(queue, { at = now + (n or 0.03), co = coroutine.running() })
@@ -79,6 +83,9 @@ local function signal()
 		for _, fn in table.clone(self.fns) do
 			Task.spawn(fn, ...)
 		end
+	end
+	function s:Once(fn)
+		return self:Connect(fn)
 	end
 	function s:Wait()
 		local co = coroutine.running()
@@ -211,16 +218,47 @@ function Inst:Destroy()
 	self.Parent = nil
 end
 function Inst:Clone()
-	local c = new(self.ClassName)
-	for k, v in rawget(self, "_p") do
-		if k ~= "Parent" and k ~= "ChildAdded" and k ~= "ChildRemoved" and k ~= "AncestryChanged" then
-			rawget(c, "_p")[k] = v
+	local map = {}
+	local function copy(o)
+		local c = new(o.ClassName)
+		map[o] = c
+		for k, v in rawget(o, "_p") do
+			if k ~= "Parent" and k ~= "ChildAdded" and k ~= "ChildRemoved" and k ~= "AncestryChanged" then
+				rawget(c, "_p")[k] = v
+			end
+		end
+		for k, v in rawget(o, "_a") do
+			rawget(c, "_a")[k] = v
+		end
+		for _, ch in rawget(o, "_c") do
+			local cc = copy(ch)
+			rawget(cc, "_p").Parent = c
+			table.insert(rawget(c, "_c"), cc)
+		end
+		return c
+	end
+	local root = copy(self)
+	-- references inside the copy point at the copy (PrimaryPart, Part0...)
+	for orig, c in map do
+		for k, v in rawget(c, "_p") do
+			if type(v) == "table" and map[v] and k ~= "Parent" then
+				rawget(c, "_p")[k] = map[v]
+			end
+		end
+		local _ = orig
+	end
+	return root
+end
+function Inst:GetPivot()
+	return self.PrimaryPart and self.PrimaryPart.CFrame or roblox.CFrame.new()
+end
+function Inst:PivotTo(cf)
+	local delta = cf * self:GetPivot():Inverse()
+	for _, d in self:GetDescendants() do
+		if rawget(d, "_p").CFrame then
+			d.CFrame = delta * d.CFrame
 		end
 	end
-	for k, v in rawget(self, "_a") do
-		rawget(c, "_a")[k] = v
-	end
-	return c
 end
 function Inst:EquipTool(tool)
 	tool.Parent = self.Parent -- humanoid's parent is the character
@@ -285,7 +323,8 @@ local function makeWorld(opts)
 				or error("no fake service " .. n)
 		end,
 	}
-	env.workspace = { Gravity = 196.2 }
+	local terrain = new("Terrain", { Name = "Terrain" })
+	env.workspace = { Gravity = 196.2, Terrain = terrain }
 	env.task = Task
 	env.require = fakeRequire
 	env.warn = function() end
@@ -298,15 +337,14 @@ local function makeWorld(opts)
 		local o = new(c)
 		if c == "ProximityPrompt" then
 			rawget(o, "_p").Triggered = signal()
+		elseif c == "RemoteEvent" then
+			rawget(o, "_p").OnServerEvent = signal()
 		end
 		return o
 	end }
-	env.Vector3 = {
-		new = function(x, y, z)
-			return { X = x, Y = y, Z = z }
-		end,
-		zero = { X = 0, Y = 0, Z = 0 },
-	}
+	env.Vector3 = roblox.Vector3
+	env.CFrame = roblox.CFrame
+	env.typeof = typeof
 	env.Color3 = { fromRGB = function(r, g, b)
 		return { r, g, b }
 	end }
@@ -329,8 +367,19 @@ local function makeWorld(opts)
 		end
 		local t = new("Tool", { Name = g.Name })
 		t:SetAttribute("StudGear", g.Name)
+		if g.Grapple then
+			local hook = new("Part", { Name = "Hook", Parent = t, CFrame = roblox.CFrame.new() })
+			new("Attachment", { Name = "Muzzle", Parent = hook })
+		end
 		t.Parent = Tools
 	end
+	local Wearables = new("Folder", { Name = "Wearables", Parent = System })
+	local pack = new("Model", { Name = "Jetpack", Parent = Wearables })
+	local wroot = new("Part", { Name = "WearRoot", Parent = pack, CFrame = roblox.CFrame.new(), Size = roblox.Vector3.new(0.2, 0.2, 0.2) })
+	rawget(pack, "_p").PrimaryPart = wroot
+	local nozzle = new("Part", { Name = "Nozzle", Parent = pack, CFrame = roblox.CFrame.new(0.5, -1, 0.7), Size = roblox.Vector3.new(1, 1, 1) })
+	local flame = new("Attachment", { Name = "Flame", Parent = nozzle })
+	new("ParticleEmitter", { Name = "Flame", Parent = flame, Enabled = false })
 	-- a display stand for the Speed Coil
 	local stand = new("Model", { Name = "Speed Coil" })
 	local top = new("Part", { Name = "Top", Parent = stand })
@@ -340,12 +389,13 @@ local function makeWorld(opts)
 
 	Task.spawn(luau.load(SOURCES["src/server/StudGearServer.server.luau"], { debugName = "StudGearServer", environment = env }))
 
-	local world = { Players = Players, Heartbeat = Heartbeat, MS = MS, prompts = prompts, stand = stand, script = script, config = config }
+	local world = { Players = Players, Heartbeat = Heartbeat, MS = MS, prompts = prompts, stand = stand, script = script, config = config, terrain = terrain, System = System }
 	local uid = 0
 	function world.spawn(player, mass)
 		local character = new("Model", { Name = player.Name, Player = player })
-		local humanoid = new("Humanoid", { WalkSpeed = 16, JumpPower = 50, JumpHeight = 7.2, Health = 100, Parent = character })
-		local root = new("Part", { Name = "HumanoidRootPart", AssemblyMass = mass or 15, Parent = character })
+		local humanoid = new("Humanoid", { WalkSpeed = 16, JumpPower = 50, JumpHeight = 7.2, Health = 100, MaxHealth = 100, Parent = character })
+		local root = new("Part", { Name = "HumanoidRootPart", AssemblyMass = mass or 15, Parent = character, CFrame = roblox.CFrame.new(0, 3, 0), Position = roblox.Vector3.new(0, 3, 0) })
+		new("Part", { Name = "UpperTorso", Parent = character, CFrame = roblox.CFrame.new(0, 3.5, 0), Size = roblox.Vector3.new(2, 1.6, 1) })
 		character.Parent = { _p = {}, _c = {}, ChildAdded = signal(), ChildRemoved = signal() } -- "workspace"
 		setmetatable(character.Parent, Inst)
 		player.Character = character
@@ -528,6 +578,102 @@ do
 	prompt.Triggered:Fire(p)
 	advance(0.05)
 	check(#w.prompts == 1, "owner using the stand just equips (no second purchase prompt)")
+end
+
+print("[regen, jetpack, grapple]")
+do
+	local w = makeWorld({})
+	local p = w.join("C")
+	local character, humanoid, root = w.spawn(p, 15)
+	local give = w.script.GiveGear.OnInvoke
+	local backpack = p:FindFirstChildOfClass("Backpack")
+	local fxRemote = w.System.Remotes.GearFx
+
+	-- regen
+	give(p, "Regen Coil")
+	humanoid.Health = 50
+	humanoid:EquipTool(w.toolIn(backpack, "Regen Coil"))
+	advance(0.05)
+	w.Heartbeat:Fire(1)
+	advance(0.01)
+	check(near(humanoid.Health, 60), "regen coil heals 10 HP a second (" .. tostring(humanoid.Health) .. ")")
+	for _ = 1, 10 do
+		w.Heartbeat:Fire(1)
+	end
+	advance(0.01)
+	check(near(humanoid.Health, 100), "regen stops at max health")
+	w.toolIn(character, "Regen Coil").Parent = backpack
+	advance(0.05)
+	humanoid.Health = 40
+	w.Heartbeat:Fire(1)
+	advance(0.01)
+	check(near(humanoid.Health, 40), "no healing once it's put away")
+
+	-- jetpack: worn on the back while equipped
+	give(p, "Jetpack")
+	local jet = w.toolIn(backpack, "Jetpack")
+	humanoid:EquipTool(jet)
+	advance(0.05)
+	local wear = character:FindFirstChild("StudGearWear")
+	check(wear, "jetpack pack appears on the character")
+	local weld = wear and wear.WearRoot and wear.WearRoot:FindFirstChildOfClass("WeldConstraint")
+	check(weld and weld.Part0 == character.UpperTorso and weld.Part1 == wear.WearRoot, "pack welded to the torso")
+	check(wear and near(wear.WearRoot.CFrame.Position.Z, 0.5), "pack sits on the back of the torso (z " .. tostring(wear and wear.WearRoot.CFrame.Position.Z) .. ")")
+	check(root:FindFirstChild("StudGearTrail") == nil, "no running trail for the jetpack")
+	local emitter = wear and wear:FindFirstChild("Nozzle"):FindFirstChild("Flame"):FindFirstChild("Flame")
+	fxRemote.OnServerEvent:Fire(p, "Jet", true)
+	advance(0.01)
+	check(emitter and emitter.Enabled == true, "flying turns the flames on for everyone")
+	fxRemote.OnServerEvent:Fire(p, "Jet", false)
+	advance(0.01)
+	check(emitter and emitter.Enabled == false, "and off again")
+	jet.Parent = backpack
+	advance(0.05)
+	check(character:FindFirstChild("StudGearWear") == nil, "pack comes off when unequipped")
+
+	-- grapple rope: everyone sees it, only within range, only while holding the hook
+	advance(1.1)
+	fxRemote.OnServerEvent:Fire(p, "Rope", roblox.Vector3.new(0, 30, -50))
+	advance(0.01)
+	check(w.terrain:FindFirstChild("StudGearRopeEnd") == nil, "no rope without holding the grapple")
+	give(p, "Grapple Hook")
+	local hook = w.toolIn(backpack, "Grapple Hook")
+	humanoid:EquipTool(hook)
+	advance(0.05)
+	fxRemote.OnServerEvent:Fire(p, "Rope", roblox.Vector3.new(0, 30, -50))
+	advance(0.01)
+	local ropeEnd = w.terrain:FindFirstChild("StudGearRopeEnd")
+	local beam = ropeEnd and ropeEnd:FindFirstChild("StudGearRope")
+	check(beam and beam.Attachment1 == ropeEnd and beam.Attachment0 and beam.Attachment0.Name == "Muzzle", "rope from the hook to the target")
+	check(beam and beam:GetAttribute("Owner") == p.UserId, "rope tagged with its owner (their own copy is hidden)")
+	fxRemote.OnServerEvent:Fire(p, "Rope", nil)
+	advance(0.01)
+	check(w.terrain:FindFirstChild("StudGearRopeEnd") == nil, "letting go removes the rope")
+	fxRemote.OnServerEvent:Fire(p, "Rope", roblox.Vector3.new(0, 3, -500))
+	advance(0.01)
+	check(w.terrain:FindFirstChild("StudGearRopeEnd") == nil, "out-of-range rope refused")
+	fxRemote.OnServerEvent:Fire(p, "Rope", "garbage")
+	advance(0.01)
+	check(w.terrain:FindFirstChild("StudGearRopeEnd") == nil, "junk values refused")
+	fxRemote.OnServerEvent:Fire(p, "Rope", roblox.Vector3.new(0, 30, -50))
+	advance(0.01)
+	hook.Parent = backpack
+	advance(0.05)
+	check(w.terrain:FindFirstChild("StudGearRopeEnd") == nil, "putting the hook away removes the rope")
+	humanoid:EquipTool(hook)
+	advance(0.05)
+	fxRemote.OnServerEvent:Fire(p, "Rope", roblox.Vector3.new(0, 30, -50))
+	advance(4.2)
+	check(w.terrain:FindFirstChild("StudGearRopeEnd") == nil, "a rope is never left behind (auto-removed)")
+	-- spam limit
+	advance(1.1)
+	for _ = 1, 40 do
+		fxRemote.OnServerEvent:Fire(p, "Rope", nil)
+	end
+	advance(0.01)
+	fxRemote.OnServerEvent:Fire(p, "Rope", roblox.Vector3.new(0, 30, -50))
+	advance(0.01)
+	check(w.terrain:FindFirstChild("StudGearRopeEnd") == nil, "spamming the remote gets ignored")
 end
 
 print(("[gear sim] %d passed, %d failed"):format(passes, failures))

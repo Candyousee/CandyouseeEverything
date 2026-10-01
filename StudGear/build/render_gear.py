@@ -35,12 +35,16 @@ def main():
     os.makedirs(out, exist_ok=True)
     # coils side by side
     scene = rp.reset_scene()
-    scene.render.resolution_x, scene.render.resolution_y = 1600, 700
+    scene.render.resolution_x, scene.render.resolution_y = 1800, 1000
     names = list(data["coils"])
+    per = 6
     for i, name in enumerate(names):
-        build(data["coils"][name], Matrix.Translation(((i - (len(names) - 1) / 2) * 2.4, 1.0, 0)))
+        row, col = divmod(i, per)
+        # Roblox space: x across, rows step back (-Z); turned a little so guns show their side
+        m = Matrix.Translation(((col - (per - 1) / 2) * 3.2, 1.0, -row * 6.5)) @ Matrix.Rotation(math.radians(-35), 4, "Y")
+        build(data["coils"][name], m)
     cam = rp.add_stage(scene, (0, 0, 2.6), 1)
-    look(cam, (0, -17, 3.6), (0, 0, 2.2), 45)
+    look(cam, (0, -24, 9), (0, 3.5, 3.4), 40)
     rp.render_to(scene, os.path.join(out, "coils.png"))
     # demo world
     scene = rp.reset_scene()

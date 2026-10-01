@@ -28,10 +28,14 @@ local system = assert(rs:FindFirstChild("StudGear")):Clone()
 system.Parent = toRS
 -- the tool templates would sit on top of each other at the origin: stand them in a row in
 -- front of the display stands instead (each tool moves as one piece)
-for i, tool in system.Tools:GetChildren() do
-	local n = #system.Tools:GetChildren()
-	local shift = CFrame.new((i - (n + 1) / 2) * 3, 0.5, 15)
-	for _, d in tool:GetDescendants() do
+local templates = system.Tools:GetChildren()
+for _, w in system.Wearables:GetChildren() do
+	table.insert(templates, w)
+end
+for i, item in templates do
+	local n = #templates
+	local shift = CFrame.new((i - (n + 1) / 2) * 3.2, 1.5, 17)
+	for _, d in item:GetDescendants() do
 		if d:IsA("BasePart") then
 			d.CFrame = shift * d.CFrame
 		end
@@ -56,12 +60,19 @@ Drag each numbered folder into the place its name says. Dragging the whole folde
 Then delete this model and press Play. Walk up to a stand and press E to get a coil.
 
 GEAR (ReplicatedStorage.StudGear.Config)
-  Speed Coil    walk speed x1.75
-  Gravity Coil  35% gravity (jumps ~3x higher, floaty falls)
-  Fusion Coil   speed x1.6 + 40% gravity
-  Jump Coil     jumps 80% higher
-  Rainbow Coil  speed x1.8 + 35% gravity + jump x1.15, rainbow trail
-Change any number in Config. Trails can be turned off there too.
+  Speed Coil        walk speed x1.75
+  Gravity Coil      35% gravity (jumps ~3x higher, floaty falls)
+  Fusion Coil       speed x1.6 + 40% gravity
+  Jump Coil         jumps 80% higher
+  Double Jump Coil  jump again in mid-air (AirJumps = 2 for a triple jump)
+  Regen Coil        heals 10 HP a second while held
+  Rainbow Coil      speed x1.8 + 35% gravity + jump x1.15, rainbow trail
+  Balloon           float down slowly (fall speed capped) + lighter gravity
+  Jetpack           hold Jump to fly; fuel bar on screen, refills on the ground; worn on
+                    your back with flames everyone sees
+  Grapple Hook      click / tap a surface up to 120 studs away to zip to it; jump lets go
+Change any number in Config, or copy a line to make your own gear. Trails can be turned
+off there too. Works on PC, mobile and console.
 
 SELL GEAR AS GAME PASSES
   1. Create a game pass for your experience (Creator Hub > your experience > Monetization > Passes).
@@ -76,6 +87,9 @@ WHY THESE WORK
     accessories), so it feels the same for everyone.
   - Speed and jump go back exactly when you unequip, swap, or die. If another server script
     changes speed while a coil is held (a sprint key, a speed pad), the coil stacks on top.
+  - Double jump, slow fall, jetpack and grapple run on the player's own device (where their
+    character's physics lives), so they're instant and smooth even with lag. Ropes and
+    jetpack flames are shown to everyone through the server, which checks range and rate.
 
 GIVE GEAR FROM YOUR OWN SCRIPTS (server)
   game.ServerScriptService:FindFirstChild("StudGearServer", true).GiveGear:Invoke(player, "Speed Coil")

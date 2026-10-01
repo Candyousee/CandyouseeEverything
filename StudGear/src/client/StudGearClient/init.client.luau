@@ -1,5 +1,6 @@
--- Stud Gear (client): spins the coils on their display stands and shows each player
--- whether a piece of gear is FREE, its price, or OWNED. (All gear effects run on the server.)
+-- Stud Gear (client): the movement abilities that have to run on your own device to feel
+-- instant (double jump, slow fall, jetpack, grapple - see Abilities), and the display stands:
+-- spinning gear with FREE / price / OWNED for each player.
 
 local CollectionService = game:GetService("CollectionService")
 local MarketplaceService = game:GetService("MarketplaceService")
@@ -27,7 +28,11 @@ local function findSystem(): Instance
 		task.wait(0.25)
 	end
 end
-local Config = require(findSystem():WaitForChild("Config"))
+local System = findSystem()
+local Config = require(System:WaitForChild("Config"))
+task.spawn(function()
+	require(script:WaitForChild("Abilities")).Start(System)
+end)
 local player = Players.LocalPlayer
 local FONT = Font.new("rbxasset://fonts/families/FredokaOne.json", Enum.FontWeight.Bold)
 

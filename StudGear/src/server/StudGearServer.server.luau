@@ -42,6 +42,7 @@ local System = findSystem()
 local Config = require(System:WaitForChild("Config")) :: any
 local Effects = require(System:WaitForChild("Effects")) :: any
 local Tools = System:WaitForChild("Tools")
+local Wearables = System:FindFirstChild("Wearables")
 
 local byName: { [string]: any } = {}
 for _, g in Config.Gear do
@@ -149,6 +150,9 @@ type State = {
 	appliedJumpPower: number?,
 	appliedJumpHeight: number?,
 	force: VectorForce?,
+	regen: number,
+	wear: Model?,
+	rope: { Instance }?,
 	trail: Trail?,
 	trailAttachments: { Attachment }?,
 }
@@ -204,7 +208,9 @@ local function setTrail(st: State, gear: { any })
 	local want = nil
 	if Config.Trails then
 		for _, g in gear do
-			want = g
+			if (g.Look or "coil") == "coil" then
+				want = g
+			end
 		end
 	end
 	if not want then
@@ -242,6 +248,52 @@ local function setTrail(st: State, gear: { any })
 	trail.Color = if want.Rainbow then RAINBOW else ColorSequence.new(rgb(want.Color), rgb(want.Accent or want.Color))
 end
 
+local function clearRope(st: State)
+	for _, i in st.rope or {} do
+		i:Destroy()
+	end
+	st.rope = nil
+end
+
+-- gear with a model in StudGear.Wearables (the jetpack) wears it on the back while equipped
+local function setWear(st: State, character: Model)
+	local source = nil
+	for _, c in character:GetChildren() do
+		if c:IsA("Tool") then
+			local found = Wearables and Wearables:FindFirstChild(c:GetAttribute("StudGear") :: string? or "")
+			source = found or source
+		end
+	end
+	if st.wear and (not source or st.wear:GetAttribute("From") ~= source.Name) then
+		st.wear:Destroy()
+		st.wear = nil
+	end
+	local torso = character:FindFirstChild("UpperTorso") or character:FindFirstChild("Torso")
+	if source and not st.wear and torso and torso:IsA("BasePart") then
+		local wear = source:Clone() :: Model
+		wear.Name = "StudGearWear"
+		wear:SetAttribute("From", source.Name)
+		local anchor = wear.PrimaryPart
+		if anchor then
+			for _, p in wear:GetDescendants() do
+				if p:IsA("BasePart") then
+					p.Anchored = false
+					p.CanCollide = false
+					p.Massless = true
+				end
+			end
+			-- the Wear model is built with its anchor at the middle of the wearer's back
+			wear:PivotTo(torso.CFrame * CFrame.new(0, 0, torso.Size.Z / 2) * anchor.CFrame:ToObjectSpace(wear:GetPivot()))
+			local weld = Instance.new("WeldConstraint")
+			weld.Part0 = torso
+			weld.Part1 = anchor
+			weld.Parent = anchor
+			wear.Parent = character
+			st.wear = wear
+		end
+	end
+end
+
 local refresh: (Model) -> ()
 function refresh(character: Model)
 	local humanoid = character:FindFirstChildOfClass("Humanoid")
@@ -256,7 +308,7 @@ function refresh(character: Model)
 		if not fx.active and #gear == 0 then
 			return
 		end
-		st = { humanoid = humanoid, root = root, speed = 1, jump = 1, gravity = 1 } :: State
+		st = { humanoid = humanoid, root = root, speed = 1, jump = 1, gravity = 1, regen = 0 } :: State
 		states[character] = st
 		-- another script changed a stat while gear is held: take it as the new base
 		for prop, appliedKey in { WalkSpeed = "appliedWalk", JumpPower = "appliedJumpPower", JumpHeight = "appliedJumpHeight" } do
@@ -270,7 +322,7 @@ function refresh(character: Model)
 		end
 	end
 	local s = st :: State
-	s.speed, s.jump, s.gravity = fx.speed, fx.jump, fx.gravity
+	s.speed, s.jump, s.gravity, s.regen = fx.speed, fx.jump, fx.gravity, fx.regen
 	applyStat(s, "WalkSpeed", "baseWalk", "appliedWalk", fx.speed)
 	-- jump height scales with JumpPower squared; set both so either mode works
 	applyStat(s, "JumpPower", "baseJumpPower", "appliedJumpPower", math.sqrt(fx.jump))
@@ -298,12 +350,20 @@ function refresh(character: Model)
 		s.force = nil
 	end
 	setTrail(s, gear)
+	setWear(s, character)
+	if not fx.grapple then
+		clearRope(s)
+	end
 end
 
--- keep every gravity force matched to the character's current mass
-RunService.Heartbeat:Connect(function()
+-- keep every gravity force matched to the character's current mass, and heal Regen gear
+RunService.Heartbeat:Connect(function(dt)
 	local g = workspace.Gravity
 	for character, st in states do
+		local h = st.humanoid
+		if st.regen > 0 and h.Health > 0 and h.Health < h.MaxHealth then
+			h.Health = math.min(h.MaxHealth, h.Health + st.regen * dt)
+		end
 		if st.force then
 			if st.root.Parent then
 				st.force.Force = Vector3.new(0, Effects.LiftForce(st.root.AssemblyMass, g, st.gravity), 0)
@@ -364,6 +424,88 @@ for _, p in Players:GetPlayers() do
 end
 Players.PlayerRemoving:Connect(function(p)
 	owned[p] = nil
+end)
+
+---------------------------------------------------------------------------
+-- What other players should see of client-side gear: jetpack flames, grapple ropes
+---------------------------------------------------------------------------
+local remotes = System:FindFirstChild("Remotes") or Instance.new("Folder")
+remotes.Name = "Remotes"
+local FxRemote = remotes:FindFirstChild("GearFx") or Instance.new("RemoteEvent")
+FxRemote.Name = "GearFx"
+FxRemote.Parent = remotes
+remotes.Parent = System
+
+local budget: { [Player]: { t: number, n: number } } = {}
+FxRemote.OnServerEvent:Connect(function(player: Player, kind: any, value: any)
+	-- at most 20 messages a second per player
+	local now = os.clock()
+	local b = budget[player]
+	if not b or now - b.t > 1 then
+		b = { t = now, n = 0 }
+		budget[player] = b
+	end
+	b.n += 1
+	if b.n > 20 then
+		return
+	end
+	local character = player.Character
+	local st = character and states[character]
+	if not (character and st) then
+		return
+	end
+	local fx = Effects.Combine(heldGear(character))
+	if kind == "Jet" then
+		if fx.jetpack and st.wear then
+			for _, e in st.wear:GetDescendants() do
+				if e:IsA("ParticleEmitter") or e:IsA("PointLight") then
+					e.Enabled = value == true
+				end
+			end
+		end
+	elseif kind == "Rope" then
+		clearRope(st)
+		if typeof(value) ~= "Vector3" or not fx.grapple then
+			return
+		end
+		if (value - st.root.Position).Magnitude > (fx.grapple.Range or 120) + 20 then
+			return
+		end
+		local muzzle = nil
+		for _, c in character:GetChildren() do
+			if c:IsA("Tool") and c:FindFirstChild("Muzzle", true) then
+				muzzle = c:FindFirstChild("Muzzle", true)
+			end
+		end
+		if not (muzzle and muzzle:IsA("Attachment")) then
+			return
+		end
+		local target = Instance.new("Attachment")
+		target.Name = "StudGearRopeEnd"
+		target.WorldPosition = value
+		target.Parent = workspace.Terrain
+		local beam = Instance.new("Beam")
+		beam.Name = "StudGearRope"
+		beam.Attachment0 = muzzle
+		beam.Attachment1 = target
+		beam.Width0, beam.Width1 = 0.16, 0.16
+		beam.FaceCamera = true
+		beam.Segments = 1
+		beam.LightInfluence = 1
+		beam.Color = ColorSequence.new(Color3.fromRGB(70, 60, 50))
+		beam:SetAttribute("Owner", player.UserId)
+		beam.Parent = target
+		st.rope = { beam, target }
+		-- never leave a rope behind
+		task.delay(4, function()
+			if st.rope and st.rope[2] == target then
+				clearRope(st)
+			end
+		end)
+	end
+end)
+Players.PlayerRemoving:Connect(function(p)
+	budget[p] = nil
 end)
 
 ---------------------------------------------------------------------------

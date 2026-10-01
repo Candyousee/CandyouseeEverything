@@ -6,7 +6,8 @@
       "$className": "ReplicatedStorage",
       "StudGear": {
         "$path": "src/shared/StudGear",
-        "Tools": { "$path": "assets/tools" }
+        "Tools": { "$path": "assets/tools" },
+        "Wearables": { "$path": "assets/wearables" }
       }
     },
     "ServerScriptService": {
@@ -17,7 +18,7 @@
       "$className": "StarterPlayer",
       "StarterPlayerScripts": {
         "$className": "StarterPlayerScripts",
-        "StudGearClient": { "$path": "src/client/StudGearClient.client.luau" }
+        "StudGearClient": { "$path": "src/client/StudGearClient" }
       }
     },
     "Workspace": {
