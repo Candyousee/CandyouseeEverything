@@ -97,7 +97,7 @@ Config.Eggs = {
 		Name = "Dino Egg",
 		Theme = "spikes", -- shell decoration: spots / leaves / rosettes / waves / spikes / royal
 		Price = 75000,
-		Colors = { Shell = { 120, 175, 90 }, Spots = { 70, 110, 55 } },
+		Colors = { Shell = { 235, 140, 60 }, Spots = { 110, 60, 35 } },
 		Pets = {
 			{ Pet = "Raptor", Rarity = "Common", Weight = 30 },
 			{ Pet = "Parasaurolophus", Rarity = "Common", Weight = 28 },

@@ -13,169 +13,186 @@ local Hatch = require("../src/petsystem/shared/StudPetSystem/HatchSequence")
 
 local K = { 40, 34, 30 }
 
--- Egg shape: two overlapping ellipsoids (SpecialMesh spheres, built into Roblox - no uploads):
--- a wider body and a narrower, taller top, which together read as a real egg.
-local BODY = { c = -0.05, rx = 1.36, ry = 1.78 } -- one smooth oval
-local TOP = BODY
-local EGG_H = (TOP.c + TOP.ry) - (BODY.c - BODY.ry)
+-- Stud eggs: stacked tiers with studs on every ledge. Each egg has its own silhouette
+-- (tier profile), colour shading and themed block decorations.
+local PROFILES = {
+	default = { { 1.4, 0.35 }, { 2.0, 0.4 }, { 2.45, 0.45 }, { 2.7, 0.5 }, { 2.8, 0.5 }, { 2.7, 0.45 }, { 2.45, 0.4 }, { 2.05, 0.4 }, { 1.5, 0.35 }, { 0.9, 0.25 } },
+	round = { { 1.6, 0.35 }, { 2.3, 0.4 }, { 2.75, 0.45 }, { 3.0, 0.5 }, { 3.05, 0.5 }, { 2.9, 0.45 }, { 2.6, 0.4 }, { 2.15, 0.4 }, { 1.55, 0.35 }, { 0.9, 0.25 } },
+	tall = { { 1.3, 0.35 }, { 1.9, 0.4 }, { 2.3, 0.45 }, { 2.55, 0.5 }, { 2.6, 0.5 }, { 2.5, 0.5 }, { 2.3, 0.45 }, { 2.0, 0.45 }, { 1.6, 0.4 }, { 1.1, 0.35 }, { 0.6, 0.25 } },
+	wide = { { 1.7, 0.35 }, { 2.4, 0.4 }, { 2.85, 0.45 }, { 3.1, 0.5 }, { 3.1, 0.5 }, { 2.95, 0.45 }, { 2.6, 0.4 }, { 2.1, 0.4 }, { 1.5, 0.3 }, { 0.85, 0.25 } },
+}
+local THEME_PROFILE = { spots = "default", leaves = "default", rosettes = "default", waves = "round", spikes = "wide", royal = "tall" }
 
--- point + outward normal on the shell at a yaw (0 = front, -Z) and height y
-local function surface(yaw: number, y: number)
-	local function rAt(e)
-		local k = (y - e.c) / e.ry
-		return if math.abs(k) < 1 then e.rx * math.sqrt(1 - k * k) else 0
+local function shade(c, k)
+	return { math.clamp(math.floor(c[1] * k), 0, 255), math.clamp(math.floor(c[2] * k), 0, 255), math.clamp(math.floor(c[3] * k), 0, 255) }
+end
+
+-- tier layout for an egg: list of {w, h, y} (y = centre), centred on y = 0
+local function tiers(egg)
+	local prof = PROFILES[THEME_PROFILE[egg.Theme or "spots"] or "default"]
+	local H = 0
+	for _, t in prof do
+		H += t[2]
 	end
-	local rb, rt = rAt(BODY), rAt(TOP)
-	local e = if rb >= rt then BODY else TOP
-	local r = math.max(rb, rt)
-	local x, z = math.sin(yaw) * r, -math.cos(yaw) * r
-	local n = Vector3.new(x / (e.rx * e.rx), (y - e.c) / (e.ry * e.ry), z / (e.rx * e.rx)).Unit
-	return Vector3.new(x, y, z), n
+	local out, y = {}, -H / 2
+	for _, t in prof do
+		table.insert(out, { w = t[1], h = t[2], y = y + t[2] / 2 })
+		y += t[2]
+	end
+	return out, H
 end
 
--- a flat decoration lying on the shell (thin axis along the surface normal)
-local function onShell(yaw: number, y: number, lift: number?, spin: number?)
-	local p, n = surface(yaw, y)
-	local up = if math.abs(n.Y) > 0.95 then Vector3.new(0, 0, -1) else Vector3.new(0, 1, 0)
-	return CFrame.lookAt(p + n * (lift or 0), p + n * 2, up) * CFrame.Angles(0, 0, math.rad(spin or 0))
-end
+local EGG_H = select(2, tiers({ Theme = "spots" }))
 
-local function dark(c, k)
-	return { math.floor(c[1] * k), math.floor(c[2] * k), math.floor(c[3] * k) }
-end
-
--- part list in egg space: {name, size, cf, color, shape?, neon?, crack?, class?}
+-- part list in egg space: {name, size, cf, color, studs?, class?, neon?, crack?}
 local function eggParts(egg: any)
 	local C = egg.Colors
 	local shell, spots = C.Shell, C.Spots
+	local T, H = tiers(egg)
 	local parts = {}
+	local n = 0
 	local function add(p)
+		n += 1
+		p.name = p.name .. n
 		table.insert(parts, p)
 		return p
 	end
-	add({ name = "Body", size = { BODY.rx * 2, BODY.ry * 2, BODY.rx * 2 }, cf = CFrame.new(0, BODY.c, 0), color = shell, shape = "sphere" })
-	local n = 0
-	local function deco(name, size, cf, color, extra)
-		n += 1
-		-- a flat oval on a curved shell: sink it so its rim meets the surface (no floating edges)
-		if not (extra and extra.raised) then
-			-- rounded domes: thick enough to read as soft bumps at the silhouette, mostly sunk in
-			local r = math.max(size[1], size[2]) / 2
-			local sag = r * r / (2 * 1.4)
-			local thick = math.max(size[3], 0.5 * r + 2 * sag)
-			cf = cf * CFrame.new(0, 0, sag + thick * 0.22)
-			size = { size[1], size[2], thick }
-		end
-		local p = { name = name .. n, size = size, cf = cf, color = color, shape = "sphere" }
-		for k, v in extra or {} do
-			p[k] = v
+	-- the shell: darker at the bottom, lighter at the top, studs on every ledge
+	for i, t in T do
+		local k = 0.86 + 0.24 * (i - 1) / (#T - 1)
+		add({ name = "Tier", size = { t.w, t.h, t.w }, cf = CFrame.new(0, t.y, 0), color = shade(shell, k), studs = true })
+	end
+	-- a flat tile on one face of a tier. face 0 = front (-Z), 1 = left, 2 = back, 3 = right;
+	-- u = -1..1 across the face; dy = offset from the tier centre
+	local function tile(face, ti, u, w, h, color, proud, dy, extra)
+		local t = T[ti]
+		local half = t.w / 2
+		local pr = proud or 0.08
+		local cf = CFrame.Angles(0, face * math.pi / 2, 0) * CFrame.new(u * (half - w / 2 - 0.02), t.y + (dy or 0), -half - pr / 2 + 0.01)
+		local p = { name = "Deco", size = { w, h, pr }, cf = cf, color = color }
+		for key, v in extra or {} do
+			p[key] = v
 		end
 		return add(p)
 	end
 	local theme = egg.Theme or "spots"
-	local TAU = math.pi * 2
 	if theme == "spots" then
-		-- big cow spots, front-loaded so they read from the camera
-		local S = { { -0.35, 0.55, 1.05 }, { 0.55, -0.35, 0.85 }, { -0.85, -0.8, 0.6 }, { 1.2, 0.85, 0.55 }, { 2.4, -0.1, 0.9 }, { 3.4, 0.7, 0.75 }, { 4.3, -0.6, 0.85 }, { 5.3, 0.3, 0.7 }, { 0.2, 1.45, 0.45 } }
+		-- farm: big two-tone brown spots all round + grass tufts at the base
+		local S = { { 0, 5, -0.55, 0.75 }, { 0, 3, 0.45, 0.6 }, { 0, 7, 0.2, 0.5 }, { 1, 4, 0.1, 0.8 }, { 1, 7, -0.4, 0.5 }, { 2, 5, 0.3, 0.75 }, { 2, 3, -0.5, 0.5 }, { 3, 4, -0.2, 0.7 }, { 3, 6, 0.45, 0.55 } }
 		for _, sp in S do
-			deco("Spot", { sp[3], sp[3] * 0.82, 0.16 }, onShell(sp[1], sp[2], -0.05, sp[1] * 37), spots)
+			local t = T[sp[2]]
+			local sz = math.min(sp[4], t.h * 1.6)
+			-- an irregular blob: two overlapping tiles
+			tile(sp[1], sp[2], sp[3], sz, math.min(sz, t.h + 0.2), spots, 0.1)
+			tile(sp[1], sp[2], sp[3] + (if sp[3] > 0 then -0.18 else 0.18), sz * 0.6, math.min(sz, t.h + 0.2) * 0.6, spots, 0.12, (if sp[2] % 2 == 0 then 0.18 else -0.18))
+		end
+		for face = 0, 3 do
+			for k = -1, 1 do
+				add({ name = "Grass", class = "WedgePart", size = { 0.18, 0.45, 0.3 }, cf = CFrame.Angles(0, face * math.pi / 2 + k * 0.35, 0) * CFrame.new(k * 0.35, T[1].y + 0.05, -T[2].w / 2 - 0.05), color = { 110, 190, 80 } })
+			end
 		end
 	elseif theme == "leaves" then
-		-- two rings of flat leaves hugging the lower half, plus a sprout on top
-		for k = 0, 11 do
-			local yaw = TAU * k / 12
-			deco("Leaf", { 0.6, 1.0, 0.1 }, onShell(yaw, -0.75, 0, if k % 2 == 0 then 18 else -18), if k % 2 == 0 then spots else dark(spots, 0.82))
+		-- forest: a zig-zag vine band, a little flower on the front, a crown of leaves on top
+		for face = 0, 3 do
+			for k = -2, 2 do
+				local ti = if k % 2 == 0 then 4 else 5
+				tile(face, ti, k * 0.42, 0.42, T[ti].h - 0.06, spots, 0.08)
+			end
 		end
-		for k = 0, 11 do
-			deco("LeafHigh", { 0.5, 0.8, 0.1 }, onShell(TAU * (k + 0.5) / 12, -0.05, 0, if k % 2 == 0 then -18 else 18), dark(spots, 0.9))
+		tile(0, 7, -0.3, 0.32, 0.32, { 255, 140, 190 }, 0.1)
+		tile(0, 7, -0.3, 0.14, 0.14, { 255, 230, 90 }, 0.16)
+		local top = T[#T].y + T[#T].h / 2
+		for k = 0, 4 do
+			local a = k * math.pi * 2 / 5
+			add({ name = "TopLeaf", class = "WedgePart", size = { 0.14, 0.95, 0.7 }, cf = CFrame.new(math.sin(a) * 0.38, top + 0.32, -math.cos(a) * 0.38) * CFrame.Angles(0, -a, 0) * CFrame.Angles(math.rad(-45), 0, 0), color = if k % 2 == 0 then spots else shade(spots, 1.3) })
 		end
-		local top = TOP.c + TOP.ry
-		add({ name = "Stem", size = { 0.18, 0.55, 0.18 }, cf = CFrame.new(0, top + 0.15, 0) * CFrame.Angles(0, 0, math.rad(-10)), color = { 110, 80, 50 } })
-		deco("SproutLeaf", { 0.8, 0.16, 0.42 }, CFrame.new(0.38, top + 0.42, 0) * CFrame.Angles(0, 0, math.rad(25)), spots)
-		deco("SproutLeaf", { 0.65, 0.14, 0.36 }, CFrame.new(-0.32, top + 0.34, 0) * CFrame.Angles(0, 0, math.rad(-30)), spots)
 	elseif theme == "rosettes" then
-		-- leopard rosettes: dark ring, warm centre
-		local R = { { -0.3, 0.6 }, { 0.45, 0.05 }, { -0.7, -0.45 }, { 0.15, -1.0 }, { 0.95, 0.95 }, { 1.4, -0.6 }, { 2.2, 0.4 }, { 2.9, -0.5 }, { 3.6, 0.7 }, { 4.3, -0.2 }, { 5.0, 0.8 }, { 5.6, -0.7 }, { -0.05, 1.45 } }
+		-- safari: leopard rosettes - a dark ring with a warm centre
+		local R = { { 0, 3, -0.4 }, { 0, 5, 0.35 }, { 0, 7, -0.25 }, { 1, 4, 0.3 }, { 1, 6, -0.4 }, { 2, 3, 0.2 }, { 2, 5, -0.35 }, { 2, 7, 0.3 }, { 3, 4, -0.3 }, { 3, 6, 0.4 } }
 		for _, r in R do
-			deco("Rosette", { 0.72, 0.62, 0.15 }, onShell(r[1], r[2], -0.05, r[1] * 50), spots)
-			deco("RosetteMid", { 0.36, 0.3, 0.16 }, onShell(r[1], r[2], 0.1, r[1] * 50), { 230, 150, 55 }, { raised = true })
+			local t = T[r[2]]
+			local sz = math.min(0.6, t.h + 0.15)
+			tile(r[1], r[2], r[3], sz, sz, spots, 0.09)
+			tile(r[1], r[2], r[3], sz * 0.5, sz * 0.5, { 225, 140, 50 }, 0.14)
 		end
 	elseif theme == "waves" then
-		-- a white scalloped wave band, a big starfish, bubbles
-		for k = 0, 19 do
-			local yaw = TAU * k / 20
-			deco("Wave", { 0.62, 0.5, 0.14 }, onShell(yaw, -0.3 + 0.1 * math.sin(k * 1.3), -0.04), { 248, 252, 255 })
-		end
-		for k = 0, 19 do
-			deco("DeepWave", { 0.62, 0.5, 0.14 }, onShell(TAU * (k + 0.5) / 20, -0.85, -0.04), spots)
+		-- ocean: a white wave crest band, darker deep-water bottom, a starfish, bubbles
+		for face = 0, 3 do
+			for k = -3, 3 do
+				local up = (k % 2 == 0)
+				tile(face, 5, k * 0.36, 0.34, if up then 0.62 else 0.42, { 245, 252, 255 }, 0.08, if up then 0.08 else -0.02)
+			end
+			for k = -2, 2 do
+				tile(face, 3, k * 0.45, 0.4, T[3].h - 0.08, shade(spots, 1), 0.07)
+			end
+			tile(face, 8, 0.35, 0.18, 0.18, { 210, 240, 255 }, 0.08, 0.05)
+			tile(face, 9, -0.2, 0.14, 0.14, { 210, 240, 255 }, 0.08)
 		end
 		for k = 0, 4 do
-			deco("StarArm", { 0.24, 0.62, 0.12 }, onShell(0.35, 0.75, 0.0) * CFrame.Angles(0, 0, math.rad(72 * k)) * CFrame.new(0, 0.24, 0), { 255, 150, 90 })
-		end
-		for k = 0, 5 do
-			local r = 0.22 + (k % 3) * 0.08
-			deco("Bubble", { r, r, 0.12 }, onShell(-0.5 + k * 0.45, 1.0 + (k % 2) * 0.35, -0.02), { 225, 245, 255 })
+			add({ name = "Star", size = { 0.14, 0.38, 0.08 }, cf = CFrame.new(-0.45, T[7].y, -T[7].w / 2 - 0.05) * CFrame.Angles(0, 0, math.rad(72 * k)) * CFrame.new(0, 0.15, 0), color = { 255, 140, 80 } })
 		end
 	elseif theme == "spikes" then
-		-- a ridge of bony spikes up the side facing the camera, and tiger stripes
-		for k = 0, 6 do
-			local y = -1.0 + 0.45 * k
-			local pt, nn = surface(math.rad(-80), math.min(y, TOP.c + TOP.ry - 0.1))
-			local size = 0.45 + 0.15 * math.sin(math.pi * k / 6)
-			add({ name = "Spike" .. k, class = "WedgePart", size = { 0.26, size, size }, cf = CFrame.lookAt(pt, pt + nn, Vector3.new(0, 1, 0)) * CFrame.Angles(math.rad(-90), 0, 0) * CFrame.new(0, size * 0.3, 0), color = { 250, 236, 200 } })
+		-- dino: bony spikes out of both sides and a crest on top, dark stripes, pale belly
+		for i = 3, #T - 1 do
+			local t = T[i]
+			local sz = 0.4 + 0.18 * math.sin(math.pi * (i - 3) / (#T - 4))
+			for _, side in { -1, 1 } do
+				add({ name = "Spike", class = "WedgePart", size = { 0.22, sz, sz }, cf = CFrame.new(side * (t.w / 2 + sz * 0.3), t.y + 0.05, 0.25) * CFrame.Angles(0, side * math.pi / 2, 0), color = { 250, 236, 200 } })
+			end
 		end
-		for k = 0, 11 do
-			local yaw = TAU * k / 12 + 0.15
-			deco("Stripe", { 0.3, 1.1, 0.14 }, onShell(yaw, 0.25 - (k % 2) * 0.55, -0.04, if k % 2 == 0 then 12 else -12), spots)
+		local top = T[#T].y + T[#T].h / 2
+		for k = -1, 1 do
+			add({ name = "Crest", class = "WedgePart", size = { 0.2, 0.55 - math.abs(k) * 0.15, 0.5 }, cf = CFrame.new(k * 0.3, top + 0.2, 0) * CFrame.Angles(0, math.pi / 2, 0), color = { 250, 236, 200 } })
 		end
+		for face = 0, 3 do
+			for k = -1, 1 do
+				tile(face, 5 + (k + 1) % 2, k * 0.6, 0.24, 0.85, spots, 0.08)
+			end
+		end
+		tile(0, 3, 0, 1.1, T[3].h - 0.05, shade(shell, 1.3), 0.06)
+		tile(0, 4, 0, 1.3, T[4].h - 0.05, shade(shell, 1.3), 0.06)
 	elseif theme == "royal" then
-		-- a gold band with glowing gems, a gold crown, sparkles
-		for k = 0, 23 do
-			deco("Band", { 0.55, 0.5, 0.13 }, onShell(TAU * k / 24, -0.15, -0.04), spots)
+		-- mythic: a gold band with glowing gems, gold crown, star sparkles
+		local band = 5
+		for face = 0, 3 do
+			tile(face, band, 0, T[band].w - 0.04, T[band].h - 0.04, spots, 0.07)
+			tile(face, band, 0, 0.3, 0.3, C.Gem or { 90, 230, 255 }, 0.14, 0, { neon = true })
+			tile(face, 8, (face % 2) * 0.5 - 0.25, 0.14, 0.14, { 255, 250, 210 }, 0.08, 0, { neon = true })
+			tile(face, 3, 0.4 - (face % 2) * 0.8, 0.12, 0.12, { 255, 250, 210 }, 0.08, 0, { neon = true })
 		end
-		for k = 0, 5 do
-			deco("Gem", { 0.42, 0.5, 0.2 }, onShell(TAU * k / 6, -0.15, 0.03), C.Gem or { 90, 230, 255 }, { neon = true })
-		end
-		local top = TOP.c + TOP.ry
-		add({ name = "CrownBase", size = { 0.25, 1.1, 1.1 }, cf = CFrame.new(0, top - 0.12, 0) * CFrame.Angles(0, 0, math.rad(90)), color = spots, shape = "cylinder" })
+		local top = T[#T].y + T[#T].h / 2
 		for k = 0, 4 do
-			local a = TAU * k / 5
-			add({ name = "Crown" .. k, class = "WedgePart", size = { 0.14, 0.5, 0.32 }, cf = CFrame.new(math.sin(a) * 0.44, top + 0.2, -math.cos(a) * 0.44) * CFrame.Angles(0, -a, 0), color = spots })
+			local a = k * math.pi * 2 / 5
+			add({ name = "Crown", class = "WedgePart", size = { 0.12, 0.42, 0.24 }, cf = CFrame.new(math.sin(a) * 0.36, top + 0.2, -math.cos(a) * 0.36) * CFrame.Angles(0, -a, 0), color = spots })
 		end
-		for k = 0, 6 do
-			deco("Sparkle", { 0.22, 0.22, 0.12 }, onShell(-1.2 + k * 0.45, 0.85 + (k % 2) * 0.4, -0.01), { 255, 250, 210 }, { neon = true })
-		end
+		add({ name = "CrownGem", size = { 0.22, 0.22, 0.22 }, cf = CFrame.new(0, top + 0.15, 0), color = C.Gem or { 90, 230, 255 }, neon = true })
 	end
-	-- glossy highlight (front-left, upper), on every egg
-	deco("Shine", { 0.38, 0.75, 0.1 }, onShell(-0.55, 0.85, 0.0, -20), { 255, 255, 255 }, { transparency = 0.35 })
-	deco("ShineDot", { 0.18, 0.18, 0.1 }, onShell(-0.62, 0.28, 0.0), { 255, 255, 255 }, { transparency = 0.35 })
-	-- crack lines on the front (-Z, faces the camera): three connected zig-zags, revealed
-	-- one per shake. Neon so the rarity glow shines through them.
+
+	-- crack lines on the front (-Z, faces the camera): three connected zig-zags revealed one
+	-- per shake. Neon so the rarity glow shines through them.
+	local function faceZ(y)
+		for _, t in T do
+			if y <= t.y + t.h / 2 then
+				return -t.w / 2
+			end
+		end
+		return -T[#T].w / 2
+	end
 	local CRACKS = {
-		{ { -0.75, 0.15 }, { -0.45, 0.4 }, { -0.15, 0.08 }, { 0.12, 0.38 } },
-		{ { 0.12, 0.38 }, { 0.38, 0.05 }, { 0.62, 0.32 }, { 0.85, 0.02 } },
-		{ { -0.15, 0.08 }, { -0.05, -0.32 }, { 0.22, -0.62 }, { 0.02, -0.95 } },
+		{ { -0.95, 0.15 }, { -0.55, 0.45 }, { -0.2, 0.1 }, { 0.15, 0.4 } },
+		{ { 0.15, 0.4 }, { 0.45, 0.05 }, { 0.8, 0.35 }, { 1.05, 0.05 } },
+		{ { -0.2, 0.1 }, { -0.05, -0.3 }, { 0.3, -0.6 }, { 0.05, -0.95 } },
 	}
 	for ci, pts in CRACKS do
 		for j = 1, #pts - 1 do
 			local a, b = pts[j], pts[j + 1]
-			-- yaw from the x offset across the front
-			local function at(pt)
-				local p = surface(math.asin(math.clamp(pt[1] / 1.35, -1, 1)), pt[2])
-				return p
-			end
-			local pa, pb = at(a), at(b)
-			local mid = (pa + pb) / 2
-			local _, nrm = surface(math.asin(math.clamp((a[1] + b[1]) / 2 / 1.35, -1, 1)), (a[2] + b[2]) / 2)
-			local len = (pb - pa).Magnitude + 0.08
-			local dir = (pb - pa).Unit
-			local right = dir
-			local look = nrm
-			local up = look:Cross(right).Unit
-			local cf = CFrame.fromMatrix(mid + nrm * 0.03, right, up, -look)
-			add({ name = ("Crack%d_%d"):format(ci, j), size = { len, 0.11, 0.08 }, cf = cf, color = { 255, 250, 220 }, crack = ci, neon = true })
+			local mx, my = (a[1] + b[1]) / 2, (a[2] + b[2]) / 2
+			local len = math.sqrt((b[1] - a[1]) ^ 2 + (b[2] - a[2]) ^ 2) + 0.1
+			local ang = math.atan2(b[2] - a[2], b[1] - a[1])
+			table.insert(parts, { name = ("Crack%d_%d"):format(ci, j), size = { len, 0.12, 0.08 }, cf = CFrame.new(mx, my, faceZ(my) - 0.12) * CFrame.Angles(0, 0, ang), color = { 255, 250, 220 }, crack = ci, neon = true })
 		end
 	end
+	local _ = H
 	return parts
 end
 
@@ -199,7 +216,7 @@ local function makeEgg(egg)
 		part.CFrame = p.cf
 		part.Color = Color3.fromRGB(p.color[1], p.color[2], p.color[3])
 		part.Material = if p.neon then Enum.Material.Neon else Enum.Material.SmoothPlastic
-		part.TopSurface = Enum.SurfaceType.Smooth
+		part.TopSurface = if p.studs then Enum.SurfaceType.Studs else Enum.SurfaceType.Smooth
 		part.BottomSurface = Enum.SurfaceType.Smooth
 		part.Anchored = true
 		part.CanCollide = false
@@ -315,7 +332,7 @@ if process.args[1] == "preview" then
 	local ep = eggParts(egg)
 	local parts, frames = {}, {}
 	for _, p in ep do
-		table.insert(parts, { name = p.name, class = p.class or "Part", size = p.size, color = p.color, studs = false, neon = p.neon == true, shape = p.shape })
+		table.insert(parts, { name = p.name, class = p.class or "Part", size = p.size, color = p.color, studs = p.studs == true, neon = p.neon == true, shape = p.shape })
 	end
 	local MAXS = 24
 	for k = 1, MAXS do
@@ -375,7 +392,7 @@ if process.args[1] == "eggs" then
 		local parts, frame = {}, {}
 		for _, p in eggParts(egg) do
 			if not p.crack or process.args[3] == "cracked" then
-				table.insert(parts, { name = p.name, class = p.class or "Part", size = p.size, color = p.color, studs = false, neon = p.neon == true, shape = p.shape })
+				table.insert(parts, { name = p.name, class = p.class or "Part", size = p.size, color = p.color, studs = p.studs == true, neon = p.neon == true, shape = p.shape })
 				for _, c in { (CFrame.new(0, EGG_H / 2 + 0.25, 0) * p.cf):GetComponents() } do
 					table.insert(frame, c)
 				end
