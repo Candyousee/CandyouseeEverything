@@ -37,10 +37,12 @@ local function hsv(h, s, v)
 	return { math.round(c.R * 255), math.round(c.G * 255), math.round(c.B * 255) }
 end
 
--- A classic coil in handle space: a rubber grip in your fist, a smooth shiny spring standing
--- straight up out of it around a glowing core, and a themed top so every coil reads at a
--- glance (+Y is up once the tool's Grip is applied).
--- {name, size, cf, color, neon?, shape?, shine?, glass?, tipFx?}
+-- A classic coil: a shiny spring worn wrapped round your hand and forearm.
+-- In a tool's handle space (with the default Grip) the arm runs along Z, whatever animation
+-- is playing: +Z goes up the forearm toward the elbow, -Z out past the fingers. So the spring
+-- is a helix round the Z axis, wide enough to clear R6 and R15 arms, with a ring at each end.
+-- The handle itself is an invisible block in your fist.
+-- {name, size, cf, color, neon?, shape?, shine?, invisible?, tipFx?}
 local function coilParts(gear)
 	local parts = {}
 	local function add(name, size, cf, color, extra)
@@ -51,35 +53,22 @@ local function coilParts(gear)
 		table.insert(parts, p)
 		return p
 	end
-	local UP = CFrame.Angles(0, 0, math.rad(90)) -- a cylinder's axis is X: turn it upright
-	local grip, metal, darkMetal = { 52, 54, 64 }, { 190, 195, 205 }, { 120, 124, 136 }
 	local color = gear.Color
 	local accent = gear.Accent or color
-	local glow = if gear.Rainbow then { 255, 255, 255 } else lighten(color, 0.35)
+	add("Grip", { 0.3, 0.3, 0.3 }, CFrame.new(0, 0, 0), { 46, 48, 62 }, { invisible = true })
 
-	-- grip: rubber with ridges, a metal pommel, an accent stripe and a flared guard
-	add("Grip", { 1.1, 0.42, 0.42 }, CFrame.new(0, 0, 0) * UP, grip, { shape = "cylinder" })
-	for k = -2, 2 do
-		add("Ridge" .. k, { 0.07, 0.46, 0.46 }, CFrame.new(0, k * 0.17 - 0.04, 0) * UP, { 34, 35, 42 }, { shape = "cylinder" })
-	end
-	add("Pommel", { 0.16, 0.52, 0.52 }, CFrame.new(0, -0.6, 0) * UP, metal, { shape = "cylinder", shine = true })
-	add("PommelCap", { 0.24, 0.24, 0.24 }, CFrame.new(0, -0.7, 0), darkMetal, { shape = "ball", shine = true })
-	add("Stripe", { 0.08, 0.47, 0.47 }, CFrame.new(0, 0.42, 0) * UP, if gear.Rainbow then { 255, 90, 90 } else color, { shape = "cylinder", neon = true })
-	add("Guard", { 0.12, 0.78, 0.78 }, CFrame.new(0, 0.54, 0) * UP, darkMetal, { shape = "cylinder", shine = true })
-	add("Base", { 0.16, 1.08, 1.08 }, CFrame.new(0, 0.66, 0) * UP, metal, { shape = "cylinder", shine = true })
-	add("BaseRim", { 0.06, 1.14, 1.14 }, CFrame.new(0, 0.74, 0) * UP, accent, { shape = "cylinder" })
-
-	-- spring: a round tube on a helix, shading darker at the bottom to lighter at the top
-	local TURNS, PER, R, TUBE = 6, 18, 0.43, 0.17
-	local y0, y1 = 0.8, 3.05
-	local n = TURNS * PER
-	local rise = (y1 - y0) / n
+	local R, TUBE, PER = 0.8, 0.16, 16
+	local z0, z1 = -0.55, 1.45
+	local TURNS = 6
+	local n = math.floor(TURNS * PER)
+	local rise = (z1 - z0) / n
 	local step = 2 * math.pi * R / PER
 	local pitch = math.atan2(rise, step)
 	local len = math.sqrt(step * step + rise * rise) * 1.12
+	-- helix round Z: point (R cos a, R sin a, z); tangent mostly round the circle, a little along +Z
 	for i = 0, n - 1 do
 		local a = (i + 0.5) / PER * 2 * math.pi
-		local y = y0 + (i + 0.5) * rise
+		local z = z0 + (i + 0.5) * rise
 		local k = i / (n - 1)
 		local c
 		if gear.Rainbow then
@@ -87,68 +76,19 @@ local function coilParts(gear)
 		elseif gear.Name == "Fusion Coil" then
 			c = if math.floor(i / PER) % 2 == 0 then color else accent
 		else
-			c = mix(darken(color, 0.22), lighten(color, 0.18), k)
+			c = mix(darken(color, 0.2), lighten(color, 0.2), k)
 		end
-		local cf = CFrame.new(R * math.cos(a), y, R * math.sin(a)) * CFrame.Angles(0, -a - math.pi / 2, 0) * CFrame.Angles(0, 0, pitch)
-		add("Spring" .. i, { len, TUBE, TUBE }, cf, c, { shape = "cylinder", shine = true })
+		local pos = Vector3.new(R * math.cos(a), R * math.sin(a), z)
+		local tangent = Vector3.new(-math.sin(a) * math.cos(pitch), math.cos(a) * math.cos(pitch), math.sin(pitch))
+		add("Spring" .. i, { len, TUBE, TUBE }, along(pos, tangent), c, { shape = "cylinder", shine = true })
 	end
-	-- glowing core inside the spring
-	add("Core", { y1 - y0, 0.3, 0.3 }, CFrame.new(0, (y0 + y1) / 2, 0) * UP, glow, { shape = "cylinder", neon = true, glass = 0.35 })
-	add("TopRim", { 0.06, 1.14, 1.14 }, CFrame.new(0, y1 + 0.04, 0) * UP, accent, { shape = "cylinder" })
-	add("Top", { 0.16, 1.02, 1.02 }, CFrame.new(0, y1 + 0.13, 0) * UP, metal, { shape = "cylinder", shine = true })
-	add("Socket", { 0.14, 0.5, 0.5 }, CFrame.new(0, y1 + 0.27, 0) * UP, darkMetal, { shape = "cylinder", shine = true })
-
-	-- themed top
-	local top = y1 + 0.34
-	local function orb(name, y, d, c)
-		return add(name, { d, d, d }, CFrame.new(0, y, 0), c, { shape = "ball", neon = true })
-	end
-	if gear.Rainbow then
-		-- a sparkling star: six glowing points
-		local tip = orb("Tip", top + 0.3, 0.3, { 255, 255, 255 })
-		tip.tipFx = true
-		local pts = { { 0, 0, 0 }, { 0, 0, 90 }, { 90, 0, 0 }, { 0, 45, 45 }, { 0, -45, 45 } }
-		for k, r in pts do
-			add("Ray" .. k, { 0.1, 0.78, 0.1 }, CFrame.new(0, top + 0.3, 0) * CFrame.Angles(math.rad(r[1]), math.rad(r[2]), math.rad(r[3])), hsv(k / #pts, 0.6, 1), { neon = true })
-		end
-	elseif gear.Regen then
-		-- a glowing heal cross
-		local tip = add("Tip", { 0.18, 0.62, 0.18 }, CFrame.new(0, top + 0.34, 0), { 120, 255, 150 }, { neon = true })
-		tip.tipFx = true
-		add("CrossX", { 0.62, 0.18, 0.18 }, CFrame.new(0, top + 0.38, 0), { 120, 255, 150 }, { neon = true })
-		add("CrossZ", { 0.18, 0.18, 0.62 }, CFrame.new(0, top + 0.38, 0), { 120, 255, 150 }, { neon = true })
-	elseif gear.AirJumps then
-		-- two jump orbs, one above the other
-		orb("Tip", top + 0.16, 0.3, glow).tipFx = true
-		orb("Orb2", top + 0.5, 0.22, accent)
-		add("OrbStem", { 0.4, 0.06, 0.06 }, CFrame.new(0, top + 0.3, 0) * UP, darkMetal, { shape = "cylinder" })
-	elseif gear.Jump then
-		-- an up arrow
-		local tip = add("Tip", { 0.16, 0.42, 0.16 }, CFrame.new(0, top + 0.21, 0), glow, { neon = true })
-		tip.tipFx = true
-		-- arrowhead: two arms meeting at the top of the stem
-		for side = -1, 1, 2 do
-			add("Arrow" .. side, { 0.14, 0.38, 0.16 }, CFrame.new(side * 0.12, top + 0.3, 0) * CFrame.Angles(0, 0, side * math.rad(45)), glow, { neon = true })
-		end
-	elseif gear.Speed and not gear.Gravity then
-		-- a glowing lightning bolt, seen from the front and the back
-		local pts = { { 0.15, 0.78 }, { -0.1, 0.4 }, { 0.1, 0.4 }, { -0.15, 0.02 } }
-		for k = 1, 3 do
-			local a0 = Vector3.new(pts[k][1], top + pts[k][2], 0)
-			local a1 = Vector3.new(pts[k + 1][1], top + pts[k + 1][2], 0)
-			local seg = add("Bolt" .. k, { (a1 - a0).Magnitude + 0.1, if k == 2 then 0.11 else 0.13, if k == 2 then 0.11 else 0.13 }, along((a0 + a1) / 2, a1 - a0), { 255, 235, 120 }, { neon = true })
-			seg.tipFx = k == 2
-		end
-	else
-		orb("Tip", top + 0.18, 0.34, glow).tipFx = true
-		if gear.Gravity then
-			-- a ring floating round the tip
-			local RING, SEG = 0.42, 14
-			for k = 0, SEG - 1 do
-				local a = (k + 0.5) / SEG * 2 * math.pi
-				local tilt = CFrame.Angles(math.rad(18), 0, 0)
-				add("Ring" .. k, { 2 * math.pi * RING / SEG * 1.1, 0.06, 0.06 }, CFrame.new(0, top + 0.18, 0) * tilt * CFrame.new(RING * math.cos(a), 0, RING * math.sin(a)) * CFrame.Angles(0, -a - math.pi / 2, 0), if gear.Speed then accent else glow, { shape = "cylinder", neon = true })
-			end
+	-- an end ring at each end (accent), so the spring looks finished
+	local RSEG = 18
+	for e, z in { z0 - 0.04, z1 + 0.04 } do
+		for k = 0, RSEG - 1 do
+			local a = (k + 0.5) / RSEG * 2 * math.pi
+			local seg = add(("Ring%d_%d"):format(e, k), { 2 * math.pi * R / RSEG * 1.15, 0.2, 0.2 }, along(Vector3.new(R * math.cos(a), R * math.sin(a), z), Vector3.new(-math.sin(a), math.cos(a), 0)), if gear.Rainbow then { 255, 255, 255 } else accent, { shape = "cylinder", shine = true })
+			seg.tipFx = e == 1 and k == 0 -- a soft glow and sparkles from the front ring
 		end
 	end
 	return parts
@@ -306,7 +246,14 @@ local function displayParts(gear)
 	elseif look == "grapple" then
 		return grappleParts(gear), 1.5, 0.6
 	end
-	return coilParts(gear), 1.7, 0.5
+	-- stand the coil upright on its stand (its Z axis turned to point up)
+	local upright = {}
+	for _, p in coilParts(gear) do
+		local q = table.clone(p)
+		q.cf = CFrame.Angles(math.rad(-90), 0, 0) * p.cf
+		table.insert(upright, q)
+	end
+	return upright, 1.5, 1.0
 end
 
 local function makePart(p, anchored)
@@ -377,8 +324,9 @@ local function makeTool(gear)
 	tool.RequiresHandle = true
 	tool.CanBeDropped = false
 	tool.ManualActivationOnly = gear.Grapple == nil -- only the grapple uses clicks
-	-- built with +Y up and -Z forward; this Grip makes the hand hold it that way round
-	tool.Grip = CFrame.Angles(math.pi, 0, 0)
+	-- the default Grip: in handle space the arm runs along Z (+Z toward the elbow) and the
+	-- back of the hand faces +Y; coils are built round Z, the grapple fires along -Z
+	tool.Grip = CFrame.new()
 	local bits = {}
 	if gear.Speed then
 		table.insert(bits, ("%d%% faster"):format(math.round((gear.Speed - 1) * 100)))
