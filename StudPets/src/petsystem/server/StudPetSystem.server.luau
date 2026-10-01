@@ -119,22 +119,44 @@ local function publish(player: Player)
 	DataRemote:FireClient(player, { Pets = d.Pets, Equipped = d.Equipped, MaxEquipped = Config.MaxEquipped, MaxInventory = Config.MaxInventory })
 end
 
+-- Session lock: while a server has a player's data open it stamps the save with its JobId.
+-- Another server waits for that lock to be released (or go stale) before loading, so a
+-- fast server hop can never load an older copy and overwrite newer progress.
+local LOCK_STALE = 300 -- seconds; autosaves refresh the lock every 90 s
+local LOAD_TRIES = 8 -- ~30 s of waiting for the old server to finish saving
+
 local function load(player: Player)
 	local saved: any = nil
 	local loadedOk = store == nil
 	if store then
-		for attempt = 1, 3 do
+		for attempt = 1, LOAD_TRIES do
+			local lockedElsewhere = false
+			local force = attempt == LOAD_TRIES -- last try: the old server must have died, take over
 			local ok, result = pcall(function()
-				return store:GetAsync(key(player))
+				return store:UpdateAsync(key(player), function(old)
+					old = if type(old) == "table" then old else {}
+					local lock = old.Lock
+					if not force and type(lock) == "table" and lock.Job ~= game.JobId and os.time() - (lock.Time or 0) < LOCK_STALE then
+						lockedElsewhere = true
+						return nil -- leave it alone, try again shortly
+					end
+					old.Lock = { Job = game.JobId, Time = os.time() }
+					return old
+				end)
 			end)
-			if ok then
+			if ok and not lockedElsewhere then
 				saved = result
 				loadedOk = true
 				break
 			end
-			warn(("[StudPetSystem] load failed for %s (try %d): %s"):format(player.Name, attempt, tostring(result)))
-			if attempt < 3 then
-				task.wait(attempt)
+			if not ok then
+				warn(("[StudPetSystem] load failed for %s (try %d): %s"):format(player.Name, attempt, tostring(result)))
+			end
+			if attempt < LOAD_TRIES then
+				task.wait(4)
+			end
+			if not player.Parent then
+				return
 			end
 		end
 	end
@@ -158,14 +180,22 @@ local function load(player: Player)
 	publish(player)
 end
 
-local function save(player: Player)
+local function save(player: Player, release: boolean?)
 	local d = data[player]
 	if not (store and d and loaded[player]) then
 		return
 	end
 	d.Coins = getCoins(player)
 	local ok, err = pcall(function()
-		store:SetAsync(key(player), d)
+		store:UpdateAsync(key(player), function(old)
+			-- another server took this player over: never overwrite its newer data
+			if type(old) == "table" and type(old.Lock) == "table" and old.Lock.Job ~= game.JobId then
+				return nil
+			end
+			local out = table.clone(d)
+			out.Lock = if release then nil else { Job = game.JobId, Time = os.time() }
+			return out
+		end)
 	end)
 	if not ok then
 		warn(("[StudPetSystem] save failed for %s: %s"):format(player.Name, tostring(err)))
@@ -281,7 +311,7 @@ for _, p in Players:GetPlayers() do
 end
 Players.PlayerRemoving:Connect(function(player)
 	if not savedOnClose[player] then
-		save(player)
+		save(player, true)
 	end
 	data[player] = nil
 	loaded[player] = nil
@@ -300,7 +330,7 @@ game:BindToClose(function()
 			pending += 1
 			savedOnClose[p] = true
 			task.spawn(function()
-				save(p)
+				save(p, true)
 				pending -= 1
 			end)
 		end
