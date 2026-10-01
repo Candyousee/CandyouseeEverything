@@ -53,17 +53,18 @@ export type Timing = {
 function Hatch.Timing(drama: number): Timing
 	local shakes = {}
 	local n = 3 + (if drama >= 2 then 1 else 0)
-	local gap = 0.5 - 0.03 * drama
+	-- snappy: the egg pops ~1.7 s in (Common) to ~2.6 s (Secret)
+	local gap = 0.36 - 0.02 * drama
 	for i = 1, n do
-		table.insert(shakes, 0.55 + (i - 1) * gap)
+		table.insert(shakes, 0.4 + (i - 1) * gap)
 	end
-	local shakeLen = 0.32
+	local shakeLen = 0.26
 	local charge = shakes[n] + shakeLen + 0.05
-	local chargeLen = if drama >= 1 then 0.3 + 0.35 * drama else 0.12
+	local chargeLen = if drama >= 1 then 0.2 + 0.22 * drama else 0.1
 	local pop = charge + chargeLen + 0.16 -- 0.16 s anticipation squash
-	local hold = 1.4 + 0.5 * drama
+	local hold = 1.4 + 0.35 * drama
 	return {
-		appear = 0.45,
+		appear = 0.35,
 		shakes = shakes,
 		shakeLen = shakeLen,
 		charge = charge,

@@ -460,8 +460,13 @@ function HatchPlayer.Play(eggName: string, results: { any })
 	end
 	local controls = nil
 	pcall(function()
-		controls = require(player:WaitForChild("PlayerScripts"):WaitForChild("PlayerModule", 2)):GetControls()
-		controls:Disable()
+		-- never wait for it: games that move or replace the PlayerModule just keep their controls
+		local scripts = player:FindFirstChild("PlayerScripts")
+		local module = scripts and scripts:FindFirstChild("PlayerModule")
+		if module then
+			controls = require(module):GetControls()
+			controls:Disable()
+		end
 	end)
 	local oldPrompts = ProximityPromptService.MaxPromptsVisible
 	ProximityPromptService.MaxPromptsVisible = 0
@@ -549,12 +554,16 @@ function HatchPlayer.Play(eggName: string, results: { any })
 	local skipTo = nil
 	local skipConn = UserInputService.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-			local popped = true
+			-- click while it shakes: straight to the pop; click after the reveal: finish
+			local firstPop, popped = math.huge, true
 			for _, s in slots do
+				firstPop = math.min(firstPop, s.timing.pop)
 				popped = popped and t > s.timing.pop + 0.6
 			end
 			if popped then
 				skipTo = length - 0.45
+			elseif t > 0.4 and t < firstPop - 0.25 then
+				skipTo = firstPop - 0.2
 			end
 		end
 	end)
@@ -566,6 +575,7 @@ function HatchPlayer.Play(eggName: string, results: { any })
 		if skipTo and t < skipTo then
 			t = skipTo
 		end
+		skipTo = nil
 		local camPos = baseCF.Position
 		local shake, flashA, dim = 0, 0, 0
 		local punch, charge = 0, 0
@@ -595,7 +605,7 @@ function HatchPlayer.Play(eggName: string, results: { any })
 		flash.BackgroundTransparency = 1 - flashA
 		-- fade back out of black at the start, into black at the end
 		black.BackgroundTransparency = math.clamp(t / 0.3, 0, 1) * (1 - math.clamp((t - length + 0.3) / 0.3, 0, 1))
-		hint.TextTransparency = if skipTo == nil and t > 2.5 and t < length - 0.6 then 0.3 else 1
+		hint.TextTransparency = if t > 0.5 and t < length - 0.6 then 0.3 else 1
 		local nx = math.noise(t * 25, 1.7) * shake
 		local ny = math.noise(t * 25, 9.3) * shake
 		local popped = punch > 0.01 or t > slots[1].timing.pop
