@@ -1,6 +1,6 @@
 -- Builds the Creator Store upload for the Stud Pet System: one plain Model of folders the
 -- buyer drags into place. Nothing installs itself (auto-install scripts get flagged by
--- moderation) and the one server Script ships disabled, so nothing runs until it's set up.
+-- moderation); the server Script just waits for ReplicatedStorage.StudPetSystem.
 --   rojo build petsystem.project.json -o StudPetSystem.rbxl
 --   lune run build/package_petsystem.luau
 -- Writes StudPetSystem_CreatorStore.rbxm. Drag it into Studio, then
@@ -126,7 +126,7 @@ end
 
 local toSSS = folder("2_PutInServerScriptService")
 local server = assert(sss:FindFirstChild("StudPetSystem")):Clone()
-server.Disabled = true
+server.Disabled = false
 server.Parent = toSSS
 
 local toSPS = folder("3_PutInStarterPlayerScripts")
@@ -143,17 +143,18 @@ readme.Source = [=[
 
 1. Open 1_PutInReplicatedStorage and drag everything inside it into ReplicatedStorage
    (StudPetSystem, StudPets, StudPetSystemEggs, StudPetModels).
-2. Drag the StudPetSystem script from 2_PutInServerScriptService into ServerScriptService,
-   then select it and tick "Enabled" in Properties (it ships switched off so it can't run
-   from the wrong place).
+2. Drag the StudPetSystem script from 2_PutInServerScriptService into ServerScriptService.
 3. Drag StudPetSystemClient from 3_PutInStarterPlayerScripts into
    StarterPlayer > StarterPlayerScripts.
 4. Drag the EggStands folder from 4_PutInWorkspace_EggStands into Workspace and move the
    stands wherever you like.
 5. Delete this model. Press Play: walk up to an egg, E = open 1, R = open 3, B = pets.
 
-Saving: Game Settings > Security > "Enable Studio Access to API Services" to test saving in
-Studio. It always saves in a published game.
+Saving: works in your live game. In Studio it only saves if Game Settings > Security >
+"Enable Studio Access to API Services" is on - otherwise Studio tests just don't save.
+
+Not working? Open View > Output while playing - each problem prints a [StudPetSystem]
+message saying what's missing.
 
 CUSTOMISE - everything is in ReplicatedStorage.StudPetSystem.Config:
   * Currency name, starting coins, passive income (set 0 to turn off)
@@ -180,9 +181,6 @@ readme.Parent = model
 fs.writeFile("StudPetSystem_CreatorStore.rbxm", roblox.serializeModel({ model }))
 local scripts = 0
 for _, d in model:GetDescendants() do
-	if d:IsA("Script") and not d:IsA("LocalScript") and not d.Disabled then
-		error("enabled server Script in package: " .. d:GetFullName())
-	end
 	if d:IsA("LuaSourceContainer") then
 		scripts += 1
 	end

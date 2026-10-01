@@ -12,6 +12,7 @@
 local DataStoreService = game:GetService("DataStoreService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
 local System = ReplicatedStorage:WaitForChild("StudPetSystem")
 local Config = require(System:WaitForChild("Config"))
@@ -151,6 +152,13 @@ local function load(player: Player)
 			end
 			if not ok then
 				warn(("[StudPetSystem] load failed for %s (try %d): %s"):format(player.Name, attempt, tostring(result)))
+				if RunService:IsStudio() then
+					-- usually "Studio Access to API Services" is off: play this test without saving
+					warn("[StudPetSystem] Saving is off for this Studio test. To test saving: Game Settings > Security > Enable Studio Access to API Services.")
+					store = nil
+					loadedOk = true
+					break
+				end
 			end
 			if attempt < LOAD_TRIES then
 				task.wait(4)
