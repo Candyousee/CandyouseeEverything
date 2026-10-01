@@ -151,7 +151,7 @@ local function makeSlot(folder, eggName, result, index)
 	-- sunburst behind the egg/pet (rare+): tapered rays, each two mirrored wedges
 	slot.rays = {}
 	if slot.drama >= 1 then
-		for k = 1, 12 do
+		for k = 1, 8 do
 			local pair = {}
 			for side = 1, 2 do
 				local w = Instance.new("WedgePart")
@@ -222,6 +222,17 @@ local function makeSlot(folder, eggName, result, index)
 	gui.AlwaysOnTop = true
 	gui.LightInfluence = 0
 	gui.Adornee = fx
+	local pill = Instance.new("Frame")
+	pill.AnchorPoint = Vector2.new(0.5, 0)
+	pill.Position = UDim2.fromScale(0.5, 0)
+	pill.Size = UDim2.fromScale(0.85, 1)
+	pill.BackgroundColor3 = Color3.fromRGB(16, 18, 34)
+	pill.BackgroundTransparency = 1
+	local pc = Instance.new("UICorner")
+	pc.CornerRadius = UDim.new(0.25, 0)
+	pc.Parent = pill
+	pill.Parent = gui
+	slot.labelPill = pill
 	local name = Instance.new("TextLabel")
 	name.BackgroundTransparency = 1
 	name.Size = UDim2.fromScale(1, 0.55)
@@ -229,6 +240,7 @@ local function makeSlot(folder, eggName, result, index)
 	name.TextScaled = true
 	name.TextColor3 = Color3.new(1, 1, 1)
 	name.TextStrokeTransparency = 0.1
+	name.ZIndex = 2
 	name.Text = result.Pet:gsub("(%l)(%u)", "%1 %2")
 	name.Parent = gui
 	local rar = Instance.new("TextLabel")
@@ -239,6 +251,7 @@ local function makeSlot(folder, eggName, result, index)
 	rar.TextScaled = true
 	rar.TextColor3 = rgb(rarity.Color)
 	rar.TextStrokeTransparency = 0.1
+	rar.ZIndex = 2
 	rar.Text = string.upper(rarity.Name)
 	rar.Parent = gui
 	gui.Parent = folder
@@ -328,15 +341,16 @@ local function update(slot, t, stageCF, camPos)
 	slot.aura.Color = ColorSequence.new(color)
 
 	-- sunburst: tapered rays BEHIND the egg (+Z is away from the camera), slowly turning
-	local L = 7.5 + slot.drama
+	-- shorter and fainter, and smaller still when three eggs share the stage
+	local L = (3.6 + 0.8 * slot.drama) * (if slot.crowded then 0.7 else 1)
 	for k, pair in slot.rays do
 		local a = (k / #slot.rays) * math.pi * 2 + t * 0.35
 		local u = stageCF:VectorToWorldSpace(Vector3.new(math.cos(a), math.sin(a), 0))
 		local pv = stageCF:VectorToWorldSpace(Vector3.new(-math.sin(a), math.cos(a), 0))
 		local tip = (stageCF * CFrame.new(0, 0.3, 3)).Position
-		local w = 0.55 + 0.15 * slot.drama
-		local alpha = 0.5 * s.rays * (1 - s.fade)
-		local col = if k % 2 == 0 then color else color:Lerp(Color3.new(1, 1, 1), 0.6)
+		local w = 0.35 + 0.1 * slot.drama
+		local alpha = 0.3 * s.rays * (1 - s.fade)
+		local col = if k % 2 == 0 then color:Lerp(Color3.new(1, 1, 1), 0.25) else color:Lerp(Color3.new(1, 1, 1), 0.7)
 		for side, wedge in pair do
 			local across = if side == 1 then pv else -pv
 			wedge.Size = Vector3.new(0.05, w, L)
@@ -361,10 +375,10 @@ local function update(slot, t, stageCF, camPos)
 		end
 	end
 	if s.ring then
-		ringAt(slot.ring, s.ring[1], s.ring[2], 0.32 * s.ring[2] + 0.06)
-		local p2 = t - slot.timing.pop - 0.08
-		local r2 = 0.8 + (3.5 + slot.drama) * math.sqrt(math.clamp(p2 / 0.7, 0, 1))
-		ringAt(slot.ring2, r2, if p2 > 0 then 0.6 * (1 - math.clamp(p2 / 0.7, 0, 1)) else 0, 0.16)
+		-- one clean ring, kept compact
+		local ringScale = if slot.crowded then 0.5 else 0.65
+		ringAt(slot.ring, 0.8 + (s.ring[1] - 0.8) * ringScale, s.ring[2] * 0.7, 0.16 * s.ring[2] + 0.05)
+		ringAt(slot.ring2, 0, 0, 0)
 	else
 		ringAt(slot.ring, 0, 0, 0)
 		ringAt(slot.ring2, 0, 0, 0)
@@ -387,13 +401,16 @@ local function update(slot, t, stageCF, camPos)
 	for k, c in slot.confetti do
 		local life = 2.4
 		if pp > 0 and pp < life then
-			local r1, r2, r3 = math.noise(k, 1.3), math.noise(k, 2.7), math.noise(k, 5.1)
-			local ang = (k / #slot.confetti) * math.pi * 2 + r1 * 3
-			local spd = 5 + 3 * (r2 + 0.5)
-			local up = math.min(pp, 0.45)
-			local x = math.cos(ang) * spd * math.min(pp, 0.5) * 1.6 + math.sin(pp * 6 + k) * 0.35
-			local y = 0.5 + (7 + 3 * r3) * up - 2.4 * math.max(0, pp - 0.45)
-			local z = -math.abs(math.sin(ang)) * 1.5 * math.min(pp, 0.5)
+			-- each piece gets its own direction, height, delay and flutter
+			local h1 = (k * 0.6180339) % 1
+			local h2 = (k * 0.4142135 + 0.3) % 1
+			local h3 = (k * 0.7320508 + 0.7) % 1
+			local q = math.max(0, pp - h3 * 0.25)
+			local ang = h1 * math.pi * 2
+			local out = (2.5 + 3 * h2) * (1 - math.exp(-q * 3))
+			local x = math.cos(ang) * out + math.sin(q * 5 + k) * 0.3
+			local y = 0.3 + (2.5 + 3.5 * h3) * (1 - math.exp(-q * 4)) - 1.6 * q * q
+			local z = math.sin(ang) * out * 0.5
 			c.CFrame = stageCF * CFrame.new(x, y, z) * CFrame.Angles(pp * (7 + k % 5), pp * (5 + k % 3), pp * 3)
 			c.Transparency = math.clamp((pp - life + 0.5) / 0.5, 0, 1)
 		else
@@ -430,6 +447,7 @@ local function update(slot, t, stageCF, camPos)
 	slot.labelName.TextTransparency = 1 - s.banner
 	slot.labelRarity.TextTransparency = 1 - s.banner
 	slot.labelRarity.TextColor3 = color
+	slot.labelPill.BackgroundTransparency = 1 - 0.55 * s.banner
 	return s
 end
 
@@ -524,8 +542,8 @@ function HatchPlayer.Play(eggName: string, results: { any })
 	floor.CFrame = STAGE * CFrame.new(0, -3.4, 0)
 	floor.Parent = folder
 	local halos = {}
-	for k, r in { 13, 8.5, 5 } do
-		local h = part({ Name = "Halo", Shape = Enum.PartType.Cylinder, Material = Enum.Material.Neon, Size = Vector3.new(0.05, r, r), Transparency = 0.94 - k * 0.04 })
+	for k, r in { 9, 6, 3.6 } do
+		local h = part({ Name = "Halo", Shape = Enum.PartType.Cylinder, Material = Enum.Material.Neon, Size = Vector3.new(0.05, r, r), Transparency = 0.96 - k * 0.03 })
 		h.CFrame = STAGE * CFrame.new(0, 0.4, -6 + k * 0.05) * CFrame.Angles(0, math.rad(90), 0)
 		h.Parent = folder
 		halos[k] = h
@@ -535,6 +553,7 @@ function HatchPlayer.Play(eggName: string, results: { any })
 	for i, r in results do
 		slots[i] = makeSlot(folder, eggName, r, i)
 		slots[i].offset = (i - (n + 1) / 2) * spacing
+		slots[i].crowded = n > 1
 		local x = slots[i].offset
 		local top = part({ Name = "Pedestal", Shape = Enum.PartType.Cylinder, Material = Enum.Material.SmoothPlastic, Color = Color3.fromRGB(40, 42, 70), Size = Vector3.new(0.6, 3.6, 3.6) })
 		top.CFrame = STAGE * CFrame.new(x, -2.75, 0) * CFrame.Angles(0, 0, math.rad(90))
