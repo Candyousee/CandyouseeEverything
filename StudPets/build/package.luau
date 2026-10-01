@@ -1,4 +1,5 @@
--- Builds the Creator Store upload: one Model that installs itself.
+-- Builds the Creator Store upload: one plain Model, no running scripts (the buyer drags
+-- two folders into place - auto-install scripts get flagged by moderation).
 --   lune run build/package.luau            (after `rojo build -o StudPets.rbxl`)
 -- Writes StudPets_CreatorStore.rbxm. Drag it into Studio, then
 -- right-click > Save / Export > Save to Roblox...
@@ -13,16 +14,15 @@ local sps = game:GetService("StarterPlayer"):FindFirstChild("StarterPlayerScript
 
 local model = Instance.new("Model")
 model.Name = "StudPets200"
-model:SetAttribute("InstallDemo", true)
 
 local toRS = Instance.new("Folder")
-toRS.Name = "ReplicatedStorage"
+toRS.Name = "PutInReplicatedStorage"
 toRS.Parent = model
 assert(rs:FindFirstChild("StudPets")):Clone().Parent = toRS
 assert(rs:FindFirstChild("StudPetModels")):Clone().Parent = toRS
 
 -- Lay the pets out in rows so the inserted model is a tidy showcase (and a good store
--- thumbnail) instead of 200 pets stacked on the origin. Setup moves them away on Play.
+-- thumbnail) instead of 200 pets stacked on the origin.
 do
 	local x, z, rowDepth = 0, 0, 0
 	local ROW = 240
@@ -51,26 +51,20 @@ do
 end
 
 local toSPS = Instance.new("Folder")
-toSPS.Name = "StarterPlayerScripts"
+toSPS.Name = "PutInStarterPlayerScripts_Optional"
 toSPS.Parent = model
 assert(sps and sps:FindFirstChild("PetDemo")):Clone().Parent = toSPS
 
-local readme = Instance.new("Script")
+local readme = Instance.new("ModuleScript")
 readme.Name = "README"
-readme.Disabled = true
 readme.Source = [=[
---[[ STUD PETS 200
+--[[ STUD PETS 200 - setup (1 minute)
 
-Setup: leave this model in Workspace and press Play (the pet rows you see are just a
-preview - they vanish on Play). The Setup script
-moves everything into place when the game starts:
-  ReplicatedStorage.StudPets        animation system (PetAnimator + data)
-  ReplicatedStorage.StudPetModels   the 200 pet models (StudCat, StudDog, StudLion...)
-  StarterPlayerScripts.PetDemo      demo: a pet follows you (G trick, ] / [ next / previous pet)
-
-Don't want the demo follower? Select this model and untick the InstallDemo attribute.
-Prefer it permanent in your place? Move the two folders' contents into ReplicatedStorage
-and StarterPlayerScripts yourself, then delete this model.
+1. Drag the two folders inside PutInReplicatedStorage (StudPets and StudPetModels)
+   into ReplicatedStorage.
+2. Optional demo: drag PetDemo from PutInStarterPlayerScripts_Optional into
+   StarterPlayer > StarterPlayerScripts. A pet follows you (G = trick, ] / [ = next / previous pet).
+3. Delete this model. Done.
 
 Use it (LocalScript):
   local PetAnimator = require(game.ReplicatedStorage.StudPets.PetAnimator)
@@ -83,43 +77,9 @@ Use it (LocalScript):
 
 Every pet: 7 animations played from code. Nothing to upload, no asset IDs.
 ]]
+return nil
 ]=]
 readme.Parent = model
-
-local setup = Instance.new("Script")
-setup.Name = "Setup"
-setup.Source = [=[
--- Moves Stud Pets into place when the game starts, then removes this model.
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local StarterPlayer = game:GetService("StarterPlayer")
-local Players = game:GetService("Players")
-
-local model = script.Parent
-
-for _, item in model.ReplicatedStorage:GetChildren() do
-	if not ReplicatedStorage:FindFirstChild(item.Name) then
-		item.Parent = ReplicatedStorage
-	end
-end
-
-if model:GetAttribute("InstallDemo") ~= false then
-	local demo = model.StarterPlayerScripts.PetDemo
-	if not StarterPlayer.StarterPlayerScripts:FindFirstChild(demo.Name) then
-		-- players already in the game get a copy too
-		for _, player in Players:GetPlayers() do
-			local holder = Instance.new("ScreenGui")
-			holder.Name = "StudPetsDemo"
-			holder.ResetOnSpawn = false
-			demo:Clone().Parent = holder
-			holder.Parent = player:WaitForChild("PlayerGui")
-		end
-		demo.Parent = StarterPlayer.StarterPlayerScripts
-	end
-end
-
-model:Destroy()
-]=]
-setup.Parent = model
 
 fs.writeFile("StudPets_CreatorStore.rbxm", roblox.serializeModel({ model }))
 local n = 0
@@ -128,4 +88,4 @@ for _, d in model:GetDescendants() do
 		n += 1
 	end
 end
-print(`[package] StudPets_CreatorStore.rbxm: {#model.ReplicatedStorage.StudPetModels:GetChildren()} pets, {n} parts`)
+print(`[package] StudPets_CreatorStore.rbxm: {#toRS.StudPetModels:GetChildren()} pets, {n} parts`)

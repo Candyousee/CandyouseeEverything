@@ -50,7 +50,7 @@ The detailed table below covers the original Cat & Dog.
   - It walks, runs, sits after 5 s and falls asleep after 12 s, and it jumps when you jump.
   - **G** makes it do its trick. **]** / **[** cycle the follower through all 200.
 - **With Rojo:** run `rojo serve` in this folder and connect with the Rojo plugin.
-- **Creator Store package:** `StudPets_CreatorStore.rbxm` is everything in one Model that installs itself on Play (`lune run build/package.luau` rebuilds it).
+- **Creator Store package:** `StudPets_CreatorStore.rbxm` is everything in one plain Model with no running scripts: drag its two folders into ReplicatedStorage (and the optional demo into StarterPlayerScripts). `lune run build/package.luau` rebuilds it.
 - **Just the models:** drag any file in `assets/pets/` into Studio.
   To animate them you also need the `src/shared/StudPets` modules.
 
