@@ -15,7 +15,7 @@
 
 ## Before step 1
 
-- **Style sheet** (templates/STYLE-SHEET.md) for Aura Clash. Ask the owner: anime cel-shaded or chunky simulator?
+- **Style:** chosen by the owner, see `STYLE-SHEET.md` (glossy toon anime: smooth plastic, outlines, highlights, calm bases + loud loot). Generate the art bible from it.
 - **GPU concept sheets:**
   - aura forms 1-4 (Light + Fire);
   - 10 spirits (5 rarities × zones 1-2);
