@@ -58,7 +58,7 @@ Numbers in brackets, like [r45], are the old STANDING-RULES numbers. They are ke
 
 **P12.** **Prove the concept before building the game.** The owner's last game failed because its core concept wasn't enough. So:
 - the concept must pass the **concept test** (GAME-PLAN section 2b);
-- then a **greybox prototype** of the core loop must pass the **fun gate** (PIPELINE section 3c);
+- then a **greybox prototype** of the core loop must pass Winter's fun gate AND the owner's playtest (PIPELINE section 3a);
 - only then do art, polish and content start.
 
 A concept that fails gets reworked or killed, and Winter tells the owner why. Never polish a weak concept.
@@ -68,7 +68,12 @@ A concept that fails gets reworked or killed, and Winter tells the owner why. Ne
 - Labels are 1-3 words; icons + numbers over sentences; tutorials point and show, never lecture.
 - If something needs a paragraph to explain, the design is too complicated: simplify the design, don't add text.
 
-**P14.** **Winter is the judge.** The owner gives Winter the power to decide what's good and reviews only the finished product. So Winter's bar must BE the owner's bar:
+**P14.** **Winter is the judge of quality; the owner is the judge of FUN.**
+- Winter plans, designs and executes, and decides whether the work is good enough (looks, cleanliness, polish).
+- **Whether the game is fun is decided by the owner playing it.** His last game failed partly because it wasn't played enough before it was finished.
+- So Winter schedules short owner playtests at fixed points (PIPELINE section 3d) and makes them easy: a ready build, 10-15 minutes, a few questions.
+
+For quality, Winter's bar must BE the owner's bar:
 - the rules, the style sheet and the taste gallery;
 - every gate passed honestly, never waved through;
 - when unsure whether he'd like something, choose the higher bar.

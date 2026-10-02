@@ -106,9 +106,38 @@ The owner's last game failed on its core concept. Paper plans aren't enough.
    - Would a kid show this to a friend?
 
    Record the verdict + the evidence (a 30-60 s capture) in the project's DOCS/FUN-GATE.md.
-4. **Fail → rework the loop** (or pivot, or kill) and re-test. Only a pass unlocks art, content and polish. Tell the owner in one or two lines when a concept is reworked or killed, and why.
+4. **Owner playtest #1** (section 3d) on the greybox. Winter's gate is a pre-filter; **the owner's verdict on fun is final.**
+5. **Fail → rework the loop** (or pivot, or kill) and re-test. Only a pass from both unlocks art, content and polish. Tell the owner in one or two lines when a concept is reworked or killed, and why.
 
 Greybox parts are a prototype tool, not art. They're thrown away after the gate (the build-in-Blender rule applies to everything that ships).
+
+## 3d. Owner playtests (the owner decides what's fun)
+
+The owner is the playtester. Winter's job is to make playing easy and to never let a game get far without him playing it.
+
+**When** (each about 10-15 minutes of his time):
+
+| # | When | What he plays | Main question |
+|---|---|---|---|
+| 1 | after the greybox fun gate | the core loop in grey boxes | Is the core action fun? |
+| 2 | after the first zone / first tier is fully playable | first 10 minutes with real art + the first upgrades | Do I want to keep going? Is it clear without text? |
+| 3 | mid-build (about half the content) | progression into zone 2 / tier 2, the shop, the first offer | Do I want the next thing? Would I spend? |
+| 4 | before the final review | the whole game from a fresh save | Is it fun for 20+ minutes? Would I come back tomorrow? |
+
+**How Winter sets it up:**
+- **A ready build:** a private test place, a fresh save, Studio already open (or a link), plus a 3-line "what to try" note. No setup work for him.
+- **A cheat panel** (Studio / test only) so he can jump to a later zone or tier without grinding.
+- **Five quick questions after each test** (he can answer in a sentence each):
+  1. Fun 1-10?
+  2. Best moment?
+  3. Most boring or confusing moment?
+  4. When did you want to stop?
+  5. What did you want next?
+- **Watch his session if he allows it:** a screen recording, or a test-place log of where he went, how long each part took, and where he stopped. Where he stopped matters more than what he says.
+
+**After each test:** his answers go into DOCS/PLAYTESTS.md. Winter turns them into fixes, and the boring or confusing parts get fixed before anything new is added. Score below 7, or "I wanted to stop" in the first 10 minutes → fix the loop before continuing. Liked / disliked moments also go into the taste gallery (TASTE.md) with his words.
+
+**If he hasn't played in a while,** Winter reminds him once, with the build ready. Building on without a playtest at points 1-3 is allowed only on low-risk work (art, content). Never on loop or progression changes.
 
 ## 3b. CONCEPT FIRST (every visual asset, every style)
 

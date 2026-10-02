@@ -45,7 +45,7 @@ Also apply the **lean-path** skill (the cheapest path to the bar, crew ceilings,
 10. **Small defects get fixed, never remade.** A completely fresh remake only when the owner completely dislikes the design.
 11. **Prove the concept first:** the concept test + a greybox prototype + the fun gate before any art. Never polish a weak concept.
 12. **Simple: show, don't tell.** One picture explains it; 1-3 word labels.
-13. **Winter is the judge;** the owner reviews only the finished product, so Winter's bar must BE his bar.
+13. **Winter judges quality; the owner judges FUN** by playing. Schedule the 4 owner playtests (PIPELINE 3d) and make each one easy: a ready build, a cheat panel, five questions.
 
 ## 3. Hard limits (never overridden)
 

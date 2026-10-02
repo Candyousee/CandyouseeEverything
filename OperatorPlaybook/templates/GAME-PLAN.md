@@ -50,6 +50,14 @@ Answer each one. Any "no" or "not sure" means rework the concept, or kill it and
 | **Simple:** can an 8-year-old explain the game in one sentence? | |
 | **Strong enough alone?** If all the art were grey boxes, would the loop still be fun? (The fun gate tests this for real.) | |
 
+## 2c. Patterns used (craft/GAMEPLAY.md section 1b)
+
+- <e.g. zones gated by speed; rebirth at about 45 min; helper pets for earned currency only>, and how this game makes each one feel fresh.
+
+## 2d. Owner playtest plan
+
+- #1 greybox: <date> | #2 first zone: <date> | #3 mid-build: <date> | #4 final: <date>
+
 ## 3. Paper playthrough (minute by minute)
 
 Write what the player sees, does and feels:

@@ -15,6 +15,25 @@ The owner gives seeds ("open the parcels", "speed coils that actually work"). Fi
 5. **Every action is a meaningful choice or a satisfying skill.** Animation and particles on an action with no decision and no skill won't hold players.
 6. Tell the owner the expanded design in a short list (what, why, order), then build in phases. Each phase is fully playable before the next.
 
+## 1b. Proven patterns (keep in mind; use when they fit the concept)
+
+Successful Roblox games reuse a few proven structures. Know them, borrow what fits, and make each one feel fresh in this game's concept and style. Never copy one blindly.
+
+| Pattern | How it works | Watch out for |
+|---|---|---|
+| **Zones / worlds** | Advance through areas unlocked by a requirement (gold, speed, strength, rebirths). Each zone: a new look, better rewards, a new thing to collect | Each zone needs a visible headline reason to want it, not just bigger numbers. The gate cost must feel reachable (payback 10-20 min early) |
+| **+1 stat per action / per second** | Every action (or second) raises a stat; the stat unlocks zones and wins | Needs visible growth: size, speed, effects. Pure numbers get boring fast |
+| **Rebirth / prestige** | Reset progress for a permanent multiplier | First rebirth around 30-60 minutes; show the multiplier gain before they confirm |
+| **Pets / helpers with multipliers** | Collect helpers that boost earnings; equip the best few; merge or upgrade | Eggs are random: if bought with Robux (or Robux-buyable currency), they're paid random items. Show odds + PolicyService, or sell them only for earned currency |
+| **Collections / index** | Complete a set for a bonus | Show the empty slots so players see what's missing |
+| **Tools / gear upgrades** | A better tool = a faster core action | Each tier must visibly change the action, not just a number |
+| **Obby stages** | Checkpointed difficulty, skips as products | A skip must never be the only way past a stage |
+| **Tycoon droppers** | Buy buttons that build the base and raise income | The base must look better as it grows (it's the reward) |
+| **Daily / timed rewards** | A reason to return | Real timers, real rewards |
+| **Leaderboards + auras / titles** | Show-off status | Visible in the world, not only in a menu |
+
+The concept test (GAME-PLAN 2b) decides which patterns this game uses. A pattern never replaces a strong core action: zones and numbers on a boring action still make a boring game.
+
 ## 2. Feel (the hand)
 
 - **Response:** input → visible / audible response in under 100 ms, every time. Predict on the client, confirm on the server.
