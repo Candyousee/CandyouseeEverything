@@ -131,7 +131,7 @@ Each layer has its own timing offset. If they all start on the same frame, it re
 
 ## Build every hero effect with a bake-off (craft/TOOLS.md section 3)
 
-For a new effect type, sample 2-3 methods (e.g. FLUX frames vs a Blender sim vs Krita painting) for 15-30 minutes each. Compare in the VFX preview place and keep the winner's recipe on the mastery card.
+For a new effect type with no proven recipe on the mastery card, sample 2-3 methods (e.g. FLUX frames vs a Blender sim vs Krita painting) for 15-30 minutes each. Compare in the VFX preview place and keep the winner's recipe on the mastery card.
 
 ## Senses: what to catch
 

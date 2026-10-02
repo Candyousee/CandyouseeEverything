@@ -24,13 +24,13 @@ This file covers the process. The craft detail lives in `craft/`, one guide per 
 
 | Size | Examples | Spec | Crew (ceiling) |
 |---|---|---|---|
-| **S: asset** | a model pack, an icon set, one VFX, a fix | 5-line brief + the MODEL-SPEC sheet for models | operator alone, or + 1 focused agent |
-| **M: kit / system** | a GUI kit, a pet system, a gear pack, a vehicle | 1-page brief + contracts (save, purchase, setup) + an offline test harness | operator + 1-2 |
-| **L: full game** | anything players live in | Stage 1 spec: loop, economy model, map plan, commerce, analytics, retention | lead + 2-4 lanes, grown only when a lane is blocked by workload |
+| **S: asset** | a model pack, an icon set, one VFX, a fix | 5-line brief (+ style sheet if new) + the MODEL-SPEC sheet for models | operator alone, or + 1 focused agent |
+| **M: kit / system** | a GUI kit, a pet system, a gear pack, a vehicle | short GAME-PLAN (what it does, how a buyer uses it, why it beats the alternatives) + style sheet + contracts (save, purchase, setup) + an offline test harness | operator + 1-2 |
+| **L: full game** | anything players live in | full GAME-PLAN (market check, concept test, playthrough, economy, monetization) + style sheet + greybox fun gate + 4 owner playtests | lead + 2-4 lanes, grown only when a lane is blocked by workload |
 
 Agents that share one GPU, one Studio or one Blender just queue. Run those serially. A second lane may write NEW files offline and integrate after the first lane's handoff.
 
-## 2. Intake (≤ 15 minutes)
+## 2. Intake (about 30-45 minutes for a game; less for assets)
 
 1. **Read** the owner's references and package (private, RULES 10).
 2. **Judge the idea** (RULES 12): agree / change / disagree, plus a better version if there is one. Expand seeds into one streamlined system (craft/GAMEPLAY.md section 1).
@@ -56,7 +56,7 @@ Agents that share one GPU, one Studio or one Blender just queue. Run those seria
 
 ## 3. Plan the game: the one approval round
 
-**Nothing is built until the game is planned and the owner approves the plan.** Planning is the cheapest place to make the game great: a weak loop or bad monetization found here costs minutes; found after building, it costs days.
+**Nothing is built until the game is planned and the owner approves the plan.** Scale it to the project size (section 1): a full plan for games, a short one for kits, a 5-line brief for assets. Planning is the cheapest place to make the game great: a weak loop or bad monetization found here costs minutes; found after building, it costs days.
 
 - **GAME-PLAN.md** (templates/GAME-PLAN.md), for every game:
   - the pitch and the best games in the genre studied;
@@ -107,12 +107,12 @@ The owner's last game failed on its core concept. Paper plans aren't enough.
    - Would a kid show this to a friend?
 
    Record the verdict + the evidence (a 30-60 s capture) in the project's DOCS/FUN-GATE.md.
-4. **Owner playtest #1** (section 3d) on the greybox. Winter's gate is a pre-filter; **the owner's verdict on fun is final.**
+4. **Owner playtest #1** (section 3b) on the greybox. Winter's gate is a pre-filter; **the owner's verdict on fun is final.**
 5. **Fail → rework the loop** (or pivot, or kill) and re-test. Only a pass from both unlocks art, content and polish. Tell the owner in one or two lines when a concept is reworked or killed, and why.
 
 Greybox parts are a prototype tool, not art. They're thrown away after the gate (the build-in-Blender rule applies to everything that ships).
 
-## 3d. Owner playtests (the owner decides what's fun)
+## 3b. Owner playtests (the owner decides what's fun)
 
 The owner is the playtester. Winter's job is to make playing easy and to never let a game get far without him playing it.
 
@@ -140,7 +140,7 @@ The owner is the playtester. Winter's job is to make playing easy and to never l
 
 **If he hasn't played in a while,** Winter reminds him once, with the build ready. Building on without a playtest at points 1-3 is allowed only on low-risk work (art, content). Never on loop or progression changes.
 
-## 3b. CONCEPT FIRST (every visual asset, every style)
+## 3c. CONCEPT FIRST (every visual asset, every style)
 
 Winter never designs by freestyling in Studio. Every visible thing goes **references → GPU concepts → build tool → Studio**.
 
@@ -174,7 +174,7 @@ Concepts are style guides, never shipped art: generated images aren't put in the
   - Build fast with light checks: compiles, runs, one smoke test.
   - Exception: **correctness-critical code** (saves, purchases, security, setup) gets its tests WHEN it's built. They are cheap fixtures, so final QA isn't the first time they run.
 - **Art:**
-  - Review loops against the art bible.
+  - Review loops against the GPU concepts, the art bible and the taste gallery.
   - Hero assets first: what players see constantly (the main held item, the core effect, the HUD, the landmark).
   - Never build downstream on an unapproved step.
 - **Every lane ends with its own gate** before its handoff:
@@ -263,6 +263,7 @@ Follow the TASTE.md loop:
 - every lane gate passed;
 - the prune sweep done;
 - the seven-sense review done;
+- owner playtest #4 done (games): fun score 7+ and no "wanted to stop" in the first 20 minutes;
 - KNOWN-ISSUES written.
 
 **Live gate** (anything players join), run in a live private server, not Studio:
@@ -280,9 +281,14 @@ Follow the TASTE.md loop:
    - every owner correction gets a root-cause class (BRIEF / REVIEW / TOOL / TIMING / TASTE);
    - fix the system where it will be read next time (RULES, a craft guide, a template or a tool);
    - log it in LESSONS.md.
-2. **Refresh RobloxLibrary** with improved systems (code only) and update CATALOG.md.
-3. **Archive the project's history** to `LOG/<project>.md`. Remove the project from STATE.md and CHECK-PLAN.md.
-4. **Metric line** in LESSONS.md: owner-found defects / restarts / idle minutes per session. The trend must go down.
+2. **Tools and taste:**
+   - every mastery card's use log updated;
+   - repeated steps turned into toolkit scripts;
+   - the time trends checked;
+   - the taste INDEX patterns refreshed.
+3. **Refresh RobloxLibrary** with improved systems (code only) and update CATALOG.md.
+4. **Archive the project's history** to `LOG/<project>.md`. Remove the project from STATE.md and CHECK-PLAN.md.
+5. **Metric line** in LESSONS.md: owner-found defects / restarts / idle minutes per session. The trend must go down.
 
 ## 9. Updating these files
 

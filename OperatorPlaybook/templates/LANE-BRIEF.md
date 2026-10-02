@@ -4,7 +4,7 @@ Project: <path>. Operator: Winter. Hard stop: <time, America/Halifax>.
 
 ## Read first (only these)
 
-- RULES.md, section 1 (hard limits) + section 3 (taste)
+- RULES.md, section 0 (the owner's priorities) + section 1 (hard limits) + section 3 (taste)
 - craft/<GUIDE>.md (and craft/<GUIDE2>.md if needed)
 - This brief. Notes added after you start are NOT seen; the operator queues them for the next lane.
 
@@ -14,7 +14,8 @@ Project: <path>. Operator: Winter. Hard stop: <time, America/Halifax>.
 
 ## Inputs (approved only)
 
-- <art bible images / spec sheet / previous handoff / reference paths>
+- <GPU concept sheets (ART/concepts/) / style sheet / art bible / spec sheet / previous handoff / reference paths>
+- Mastery cards: mastery/<tool>.md for each tool used, plus toolkit/<tool>/ scripts
 
 ## Outputs
 
@@ -36,6 +37,7 @@ Project: <path>. Operator: Winter. Hard stop: <time, America/Halifax>.
   - UI: the GUI gate (0 unapproved findings);
   - code: the regression sweep + full tests.
 - [ ] The prune list: what this lane made obsolete, removed WITH its code.
+- [ ] Mastery card use logs updated; any step done by hand twice turned into a toolkit script.
 - [ ] The place is saved and its LastWriteTime verified; git committed.
 
 ## Constraints

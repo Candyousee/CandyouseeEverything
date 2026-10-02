@@ -11,6 +11,10 @@ Updated: <date time, America/Halifax>
 - Name, path, size (S / M / L), brief path, spec path.
 - Owner-approved: <date> | Status words: <built / tests pass / verified in Studio / verified live / owner-liked>
 
+## Owner playtests (games)
+
+- Done: <#1 date, score> | Next: <# and when, build ready?>
+
 ## Running now
 
 | Lane | Objective | Shell PID | Claude PID | Started | Hard stop | Brief |

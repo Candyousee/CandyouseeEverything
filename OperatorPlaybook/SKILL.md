@@ -14,7 +14,11 @@ Read these from `C:\Users\Condo\Documents\ClaudePlugins\` and trust them over me
 2. `RULES.md`: the owner's rules. Section 0 is his priorities; section 1 is the hard limits.
 3. `PIPELINE.md`: planning, the process, the seven-sense review, the release gates.
 
-Always load `craft/STYLE.md` and `craft/TOOLS.md` (plus the mastery card of each tool the task uses), (the game's style + the owner's taste constants) and `TASTE.md` (then read the `taste/INDEX.md` lines for the categories in this task). Then load **only the craft guides the current task needs** from `craft/`:
+Always load:
+- `craft/STYLE.md` (the game's style + the owner's taste constants);
+- `craft/TOOLS.md` + the mastery card of each tool the task uses;
+- `TASTE.md` + the `taste/INDEX.md` lines for the categories in this task.
+Then load **only the craft guides the current task needs** from `craft/`:
 
 | Task | Guides |
 |---|---|
@@ -45,7 +49,7 @@ Also apply the **lean-path** skill (the cheapest path to the bar, crew ceilings,
 10. **Small defects get fixed, never remade.** A completely fresh remake only when the owner completely dislikes the design.
 11. **Prove the concept first:** the concept test + a greybox prototype + the fun gate before any art. Never polish a weak concept.
 12. **Simple: show, don't tell.** One picture explains it; 1-3 word labels.
-13. **Winter judges quality; the owner judges FUN** by playing. Schedule the 4 owner playtests (PIPELINE 3d) and make each one easy: a ready build, a cheat panel, five questions.
+13. **Winter judges quality; the owner judges FUN** by playing. Schedule the 4 owner playtests (PIPELINE 3b) and make each one easy: a ready build, a cheat panel, five questions.
 14. **Master every tool** (mastery cards, docs + tutorials, bake-offs).
 15. **Crazy VFX:** hero effects at ladder level 5, plus a +1 pass.
 
@@ -60,11 +64,23 @@ Also apply the **lean-path** skill (the cheapest path to the bar, crew ceilings,
 ## 4. Every task, in one line each
 
 1. **Size it** (S / M / L) and pick the smallest crew; say why.
-2. **Judge the idea** (correct the owner if needed), check the route can reach the quality bar, pick the best free tools (install them), reuse the library.
-3. **Plan, then one approval round:** GAME-PLAN + STYLE-SHEET + brief + art bible + specs.
-4. **Build:** code fast, correctness-critical code tested when built; art in review loops; every lane ends with its gate.
-5. **Seven-sense review** (eye: shape, eye: motion, ear, hand, clock, taste, head) + the structural audits + the whole-screen critique, before the owner sees anything.
-6. **Ship gate;** plus the live gate for anything players join.
-7. **Retro:** fix the system (RULES / craft / template / tool), log it in LESSONS.md, refresh the library, archive to LOG/.
+2. **Intake:**
+   - judge the idea (correct the owner if needed);
+   - do the market check and the online reference research;
+   - check the route can reach the quality bar;
+   - pick the best free tools (install them);
+   - reuse the library.
+3. **Plan, then one approval round:** GAME-PLAN (concept test included) + STYLE-SHEET + brief + art bible + specs, scaled to size.
+4. **Prove the concept:** a greybox + Winter's fun gate + owner playtest #1, before any art.
+5. **Build:**
+   - concepts first on the GPU, then build in Blender / Inkscape;
+   - code fast; correctness-critical code tested when built;
+   - art in review loops;
+   - every lane ends with its gate;
+   - owner playtests #2-#3 on schedule;
+   - mastery cards and toolkit updated after every tool use.
+6. **Seven-sense review** (eye: shape, eye: motion, ear, hand, clock, taste, head) + the structural audits + the whole-screen critique, before the owner sees anything.
+7. **Ship gate** (owner playtest #4 included), plus the live gate for anything players join.
+8. **Retro:** fix the system (RULES / craft / template / tool), log it in LESSONS.md, refresh the mastery cards, toolkit, taste patterns and library, and archive to LOG/.
 
 Update STATE.md after every milestone and every owner decision.

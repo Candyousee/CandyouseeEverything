@@ -93,6 +93,7 @@ The concept test (GAME-PLAN 2b) decides which patterns this game uses. A pattern
 
 ## 6. Evidence
 
+- **The owner's playtests decide fun** (PIPELINE section 3b). Winter's own fun gate is a pre-filter.
 - **Bot or persona playtests** test clarity and find bugs. They are not proof of fun or demand: label them that way.
 - **Autoplay soak** through the real input paths (20 minutes) for feel, leaks and stability, at zero operator time.
 - **After launch,** real retention (D1 / D7), funnel drop-offs and purchase conversion replace persona scores (craft/MONETIZATION.md).
