@@ -2,6 +2,8 @@
 
 v5 changes (owner, 2 Oct): **Power comes from MEDITATION** (the AFK half). **Crystals become crystal MONSTERS** (pets tank and fight). **The bag is capped** for mobile. Force is cut. One stat, one currency, one pet number.
 
+v5.1 (owner): **monster MUTATIONS** (Gold, Fire, Rainbow…: rarer, worth much more, their shards spin in your storm); **pets eat SOUL FOOD** dropped by monsters to level up; **Bond is cut**; pet fusion tiers renamed to **stars** (★, ★★) so "Gold" only means the mutation.
+
 ## 0. The core in one picture
 
 ```
@@ -34,6 +36,7 @@ So a meditation-only player has big Power but no new pets (slow), and a hunting-
 | **SHARDS** (storm: 18 / 60) | loot you're carrying | monsters you defeat |
 | **COINS** | the one currency | selling shards |
 | **PETS** | each has one number, **Strength** | eggs (coins) |
+| **SOUL FOOD** | levels up your pets | monsters drop it (straight into your pouch, never the bag) |
 
 ---
 
@@ -104,6 +107,26 @@ The grove's wildlife has been overgrown by crystals: **crystal monsters that sha
   - you have a health bar; a monster hit takes 10-30% of it (less as your Power outgrows the zone); it regenerates quickly out of combat;
   - if you're knocked out: you reappear at the Shrine and **keep everything**, bag included. No loss, only lost time.
 - **Respawn:** each monster type has fixed spawn points (Shardlings 5 s, Boars 10 s, Brutes 30 s), max about 30 monsters per zone.
+- **Every monster also drops Soul Food** (section 3b): Shardling 10% chance of 1, Boar 1, Brute 3.
+
+### Mutations (the jackpot layer)
+
+Any monster can spawn **mutated**: same monster, a different crystal. Rarer mutations are worth far more.
+
+| Mutation | Chance per spawn | Shard value | HP | How you spot it |
+|---|---|---|---|---|
+| **Gold** | 1 in 25 | ×5 | ×2 | shiny gold crystals, a gold sparkle trail |
+| **Fire** | 1 in 60 | ×10 | ×3 | burning crystals, embers rising |
+| **Frost** | 1 in 60 | ×10 | ×3 | icy blue crystals, cold mist |
+| **Rainbow** | 1 in 400 | ×25 | ×4 | shifting rainbow crystals; a light beam above it visible across the zone |
+| **Void** | 1 in 2,000 | ×75 | ×6 | dark purple crystals that warp the air; a deep hum |
+| **Celestial** | 1 in 10,000 | ×250 | ×8 | starry crystals, a halo; **a server announcement** when it spawns and when it's defeated |
+
+- **Its shards keep the mutation.** Mutated shards **spin in your Shard Storm** glowing in their colour (gold glints, fire shards trailing embers, rainbow shards shimmering), so everyone can see what you're carrying. They're always the ones shown first in the storm's 12 visible shards.
+- **At the altar,** mutated shards sell with their own bigger pop ("RAINBOW ×25!").
+- **Mutated monsters drop ×3 Soul Food.**
+- **Why it works:** every spawn is a tiny lottery, so hunting never feels flat; spotting a Rainbow beam across the zone makes everyone run; and it's a natural hook for later events ("Fire mutations ×5 this hour") and the owner's luck items.
+- **Rules:** the shared-damage rule applies (15% of its HP = the full drop), so racing to a Rainbow is a group moment, never a steal. The first Gold Shardling is guaranteed in the tutorial (around 1:10) to teach it.
 
 ### Why pets matter here (the reason for monsters)
 
@@ -143,9 +166,10 @@ Press SELL (or G / gamepad Y) anywhere outside a boss fight:
 | Mythic | 20 | 200% | +200% |
 | Secret | 50 | 500% | +500% |
 
-**Fusion: what Gold and Rainbow mean** (they're pet versions, not a currency):
-- **3 copies of the same pet → 1 GOLD version: ×3 Strength** and a shiny gold look.
-- **3 Golds → 1 RAINBOW version: ×9 Strength** and an animated rainbow shimmer.
+**Fusion: stars** (so "Gold" and "Rainbow" only ever mean monster mutations):
+- **3 copies of the same pet → the ★ version: ×3 Strength**, a star badge and a brighter glow.
+- **3 ★ copies → the ★★ version: ×9 Strength**, two stars and a sparkling outline.
+- The fused pet keeps the **highest level** of the three (section 3b), so no feeding is wasted.
 - It turns duplicates into progress and gives a goal for every pet, even Commons. (Auto-fuse for Commons and Rares that aren't equipped; manual for the rest.)
 
 **How pets behave:**
@@ -159,7 +183,19 @@ Press SELL (or G / gamepad Y) anywhere outside a boss fight:
 | Meditating | sit in a circle around you, meditating in their own pose |
 
 - **Slots:** 3 to start; rank quests add more (up to 6 in the first two zones).
-- **Bond:** one pet walks at your side (or rides your shoulder if small); **your aura and storm take its element** (embers for fire, sparkles for light). Looks only.
+- **No Bond** (cut). Your aura's look comes from your **transformations** (Spark → Blaze → …) earned from bosses.
+
+### 3b. Soul Food (pet levels)
+
+- **Monsters drop Soul Food:** glowing little treats in the zone's flavour (Crystal Berries in the Grove, Magma Peppers in the Lava Dojo). They fly into a **food pouch**, not your bag, so they never fill the storm.
+- **Feeding:** in the pet menu, tap **FEED** on a pet (or **Feed All** to share it across your equipped team). The pet gobbles it with a happy bounce and hearts; its XP bar fills; a level-up gives a sparkle burst and "Lv 7!".
+- **Levels 1-30.** Each level gives **+5% Strength** (Lv 30 = about ×2.5). Higher zones' food gives more XP.
+- **One number stays one number:** the pet card shows a single **Strength** = rarity × stars × level. Pets also look a bit bigger and brighter as they level.
+- **Why it's good:**
+  - every monster kill now feeds your team, not just your wallet;
+  - your favourite pet grows with you, which builds attachment;
+  - Commons and Rares stay useful early, since you can level them while you hunt for better eggs;
+  - it's a second reason to hunt the biggest monsters you can (Brutes drop the most food).
 
 **Eggs:** each zone's egg: Common 60 / Rare 28 / Epic 10 / Legendary 1.9 / Mythic 0.1 / **??? Secret 1 in 500,000.** The hatch grows with rarity (a pop → a blue glow → lightning → a gold pillar + server announcement → a **Mythic cutscene** → a **10-second Secret cutscene** that changes the server's sky). **The crack colour always shows the true rarity.**
 
@@ -197,10 +233,11 @@ They alternate between the halves, which teaches the rhythm:
 | 0:05 | **Tutorial meditation** (boosted ×10 for 20 s): Focus taps; the aura swells; "Power 10 → 50!" | Power 50 |
 | 0:30 | The hand points at Shardlings. First blast; first PERFECT one-shots | — |
 | 1:00 | First Overdrive chains through a Shardling pack | — |
+| ~1:10 | A guaranteed **Gold Shardling** sparkles nearby: "MUTATION!". It drops gold shards that spin in your storm | — |
 | 1:30 | **Storm full** (60). SELL → coins roll up. The first sell stays at the Shrine | Coins ~180 |
-| 1:40 | First egg (the tutorial egg is always dramatic): **Light Fox**. "Bond it?" Then 2 more eggs (guaranteed Rare on the 3rd) | 3 pets |
+| 1:40 | First egg (the tutorial egg is always dramatic): **Light Fox** (equipped instantly; it hops to your side). Then 2 more eggs (guaranteed Rare on the 3rd) | 3 pets |
 | 2:00 | Rank quest 1: Focus meditate for 20 s with 3 pets → +1 slot | Power ~75 |
-| 2:30-5:00 | Hunting with 4 pets: Shardlings, then Boars (the pets tank the charges). Power stays put while hunting (it only comes from meditating). Two sells → Bag Lv1, Mat Lv1, 1-2 more eggs | Power ~75, coins spent |
+| 2:30-5:00 | Hunting with 4 pets: Shardlings, then Boars (the pets tank the charges). Power stays put while hunting (it only comes from meditating). Two sells → Bag Lv1, Mat Lv1, 1-2 more eggs. First **FEED**: the Fox eats Crystal Berries → Lv 3 | Power ~75, coins spent |
 | 5:00 | The Boars feel slow now. Sit at the Shrine and Focus meditate for about 1 minute (Mat Lv1, 4-5 pets) | Power ~150 |
 | 6:00 | **The boss gate opens** (rank quest 5) | — |
 | 6:00-7:30 | **Stone Golem** (below) | — |
@@ -232,13 +269,16 @@ Win: slow motion, the beam swallows it, it shatters into loot, you **transform**
 | Who judges PERFECT / Focus timing? | Your device (lag never ruins it); the server checks it's possible |
 | SELL in a boss fight? | No (greyed out) |
 | Bag full mid-Overdrive? | Overdrive keeps going; the storm turns gold |
+| Do mutated shards take more bag space? | No: 1 shard = 1 slot, whatever its mutation |
+| Does Soul Food fill the bag? | No: it goes to the food pouch (no cap) |
 | Does AFK skip the game? | No: AFK gives Power only. Pets, upgrades and zones need coins (hunting) and bosses (active) |
 
 ## 9. LAG BUDGET (mobile first)
 
 - Max ~30 monsters per zone; simple server logic (move, telegraph, hit), animations on the client.
 - Pets are client-side visuals; the server computes their damage as numbers.
-- Storm: max 12 meshes + 2 emitters for you; 1 emitter for others; "Low effects" option.
+- Storm: max 12 meshes + 2 emitters for you (mutated shards shown first); 1 emitter for others; "Low effects" option.
+- Mutation effects: one emitter per mutated monster; the Rainbow+ light beams are a single beam part each.
 - Other players' pets at a distance: simple follow, no idle animations.
 - Target: 60 fps on a mid-range phone with a full server at the Shrine.
 
@@ -246,7 +286,7 @@ Win: slow motion, the beam swallows it, it shatters into loot, you **transform**
 
 | Second to second | Minute to minute | 5-10 minutes | Session / days |
 |---|---|---|---|
-| PERFECT timing, combo, Overdrive chains, pets pouncing, monsters shattering | storm full → SELL → hatch / upgrade; the next monster turns green | meditate → come back stronger → boss | offline meditation, the next zone, fusion goals, Secret hunting |
+| PERFECT timing, combo, Overdrive chains, pets pouncing, monsters shattering, **a mutation sparkling into view** | storm full → SELL → hatch / upgrade / **feed**; the next monster turns green | meditate → come back stronger → boss | offline meditation, the next zone, fusion goals, Secret hunting |
 
 **Still to prove in playtest #1:**
 - whether blasting monsters feels great for 20+ minutes;

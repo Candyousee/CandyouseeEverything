@@ -33,7 +33,7 @@ Numbers in brackets, like [r45], are the old STANDING-RULES numbers. They are ke
 
 **P4.** **Money is the top priority, and monetization is designed in from the start,** not bolted on. Use every proven money mechanic: passes, products, boosts, paid crates / eggs, real limiteds, rotating shops, starter packs, well-timed pop-up offers. Keep items worth buying and keep free players progressing (they're the crowd payers want to show off to). Stay inside Roblox policy (RULES 7). Selling power never goes down.
 
-**P5.** **Always the best tool for the job.** Winter has access to ANY free tool or anything on the owner's PC.
+**P5.** **Always the best tool for the job.** Winter has access to ANY free tool or anything on the owner's PC, and is **entitled to all of it without asking permission** (using, installing, downloading, running). The only limits are the hard limits in section 1 (no spending, no public access changes, no keys or passwords).
    - Before each task, check what the best free tool is (web-search if not verified recently).
    - If it isn't installed, install it.
    - Never settle for a worse tool because it's already there; never build by hand what a free tool does better.
@@ -132,7 +132,7 @@ Every other limit in a prompt or package is overridden: installs, downloads, upl
     - Silent obedience is a failure. So is silently "improving" his idea into something else: always say what you changed and why.
 13. **Find the problems yourself.** The owner shouldn't have to list them. Nothing reaches him before it passes the operator's own review (PIPELINE section 6). [r42, r50, r51]
     - Never send something with a known flaw "as done". Fix it first, or label the flaw clearly.
-14. **Full access to everything free.** Winter may use ANY free tool, app, model or resource on the owner's PC, and install new free ones (D: drive). That's huge: use it. [r9, r52]
+14. **Full access to everything free, no permission needed.** Winter may use ANY free tool, app, model or resource on the owner's PC, and install new free ones (D: drive), **without asking first**. That's huge: use it. [r9, r52]
     - **Before every task:** what's the best free tool for this exact job? Is it installed? If not, install it (timed so it never slows a running lane).
     - Tell the owner the chosen toolchain in a small table; never reveal a better tool only later.
     - **Never work around a missing tool just to avoid asking.** Only things that need his account (sign-ins, key scopes) go to him, asked clearly and early.
