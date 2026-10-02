@@ -1,81 +1,106 @@
-# Assessment: Revenue research + Stage 1 template vs. the current pipeline
+# Assessment v2: the pipeline files, the revenue research, and what to improve
 
-Assessed 2 October 2026 from the cloud session that built Stud Pets, the Stud Pet System, Stud Gear and the anime clip.
-Compared against: `roblox-game-pipeline` (skill), `lean-path` (skill), and what actually happened on those four projects.
-**Not seen:** OPERATOR-STATE.md, STANDING-RULES.md, PIPELINE.md, the library CATALOG and the MODEL-SPEC template (they live on the PC). Re-check every point below against them before changing anything; they stay the authority.
+Assessed 2 October 2026 (cloud session "Stud Pets / Pet System / Stud Gear / anime clip").
 
-## Verdict in one paragraph
+**Read:**
+- roblox-game-pipeline (skill), OPERATOR-STATE.md, STANDING-RULES.md, CHECK-PLAN.md, GUI-QA-GATE.md, OVERNIGHT-2026-09-28/29.md, SENT-PHOTOS.txt;
+- the Revenue and Stage 1 research, and the Stage 1 template.
 
-The research is accurate and careful: it doesn't invent revenue, it separates simulation from real evidence, it cites current Roblox docs, and it has good corrections (status separation, receipt contracts, map gate, paid-random-item policy). The main risk is **weight**. Used as written for every job, the Stage 1 template is far bigger than most of the owner's actual work (Creator Store packs and kits), and it would burn usage and delay results, which contradicts `lean-path`. Adopt it **by tier**, keep the existing one-review pipeline, and add the handful of lessons this session learned the hard way. The research has no way to know those.
+**Not read:** PIPELINE.md and RobloxLibrary/CATALOG.md. Check sections C and D against them.
 
-## 1. Tier it (the most important change)
+The owner's files stay the authority. Everything below is a proposal: add to them, don't replace them.
 
-| Tier | Examples | What to require |
+## Verdict
+
+The system is strong and already learns from mistakes. The rules capture real owner taste, and there are concrete audits (overlap, support, functional surface, GUI gate), kaizen notes, save verification, PID-by-command-line checks and pruning. The biggest wins now are **not** more rules. They are:
+
+1. **Clean the files** so a reload is short and has no contradictions (section A).
+2. **Spend less usage on checking** (section B). The weekly limit was hit on 30 Sep and two Roadster lanes died.
+3. **Fix ITP's live problems and start measuring real players.** ITP went PUBLIC on 30 Sep, so real data now beats persona scores (section C).
+4. Use the research **selectively, by project size** (section D).
+
+## A. File hygiene (do first; cheap; helps every future chat)
+
+| Problem | Where | Fix |
 |---|---|---|
-| **T0: asset pack** | Stud Pets 200 | 1-page brief, art references, one approved hero asset, in-Studio import check, store packaging rules (section 4) |
-| **T1: drop-in system / kit** | Pet System, Stud Gear, Obby Kit | T0 + contracts for save / purchase / security / setup, an offline simulation harness, and the **Studio verification gate** (section 3) |
-| **T2: full game** | a real experience the owner wants to grow and earn from | the full Stage 1 template, map correctness gate, economy model, analytics and commerce plan |
+| Stale hard-limits line: "no passes/products/live IDs" | OPERATOR-STATE line 10 | Replace with rules 2/15/56 wording (passes/products allowed; never spend; never change access). The header date is also stale (27 Sep). |
+| Team-size rules contradict each other | STANDING-RULES 5 ("package count / 6"), 16 ("8 agents"), 26 ("ceilings") | Keep 26 as the single rule; reduce 5 and 16 to "see 26"; keep 16's lane roles as an example shape. |
+| "Build first, test at the end" vs per-lane audits | Rule 1 vs 37, 47, 51, 55, 57, GUI-QA-GATE | Restate rule 1: *code builds fast with light checks; art, GUI and spatial audits run at the end of each lane that touches them; save / purchase / security correctness is tested when built (cheap fixtures), not only in final QA.* This matches what actually works in the logs. |
+| Rule 11 missing; garbled characters (`â€”`, `Â±`) | STANDING-RULES | Renumber, or note "11 retired"; re-save the file as UTF-8. |
+| OPERATOR-STATE is about 450 lines of history | The whole file | Split it into **STATE.md**: a short "now" file (under 80 lines: active projects, running lanes, waiting-on-owner, next steps, limits) that is rewritten, not appended. Plus **LOG/<project>.md** for history. The skill reloads STATE.md every compaction. A 450-line reload burns context and buries the current state. |
+| CHECK-PLAN keeps finished ITP sections ("ignore below") | CHECK-PLAN.md | Move finished plans to LOG/; CHECK-PLAN holds only the active plan. |
+| Owner taste is spread over rules 20, 28, 30-57 | STANDING-RULES | Fine as rules. Optionally add a 10-line "taste at a glance" summary at the top for briefs (cartoony, clean, no lookalikes, no grey chips, shine sweeps, things sit on surfaces, hype stays, about 10% less saturation, no flag props, Blender for visible props). |
 
-Pick the tier at intake and say it in one line, the same way the crew size is chosen. Never apply T2 paperwork to a T0/T1 job.
+## B. Spend less usage, with no drop in quality
 
-## 2. Already covered: keep as is
+1. **Event-driven checks instead of clock checks.** Most 10- and 20-minute checks find "alive, healthy", and each one re-reads the big state files. Run one small background watcher per lane. It exits (and wakes the operator) only when one of these happens: the HANDOFF file appears, a READY file appears, no file changes for 15 minutes with flat CPU, the process dies, or the hard-stop time arrives. Keep a long safety-net check (60-90 min). Owner-present spot checks stay as he likes.
+2. **Check the plan limit before launching lanes.** This is already a kaizen note (30 Sep 13:08). Make it a launch-checklist line in the skill, not just a log entry.
+3. **Short lane briefs, and a short STATE.md** (section A): every lane and every operator turn reads less.
+4. **One Play session per batch of checks**: already rule 22. Keep enforcing it.
 
-- No money / Robux / paid tools; never publish or change access (hard limits).
-- One front-loaded owner review; brief + art bible; hero asset first; art review loops; two speeds (code fast, art reviewed).
-- Reuse library first; crew size is a ceiling; serialize Studio/GPU work.
-- After shipping: update the library and lessons.
+## C. Inspect the Package is LIVE: priorities that beat new features
 
-The research itself says to preserve these. Agreed.
+1. **Fix the parked bug now.** Belt parcels are invisible on live until they reach the station (likely 250 user-owned meshes under Asset Privacy in a group-owned game). On a public game this is player-facing. Fix: re-upload the meshes with `-GroupId` (the tool supports it) and `ApplyMesh` onto the templates. Then verify in a live server, not Studio.
+2. **Start measuring real players** (free, built in; this is the research's most useful point for ITP right now):
+   - Funnel events: join → first parcel → tutorial done → first license → first purchase prompt → first purchase.
+   - Economy events on committed coin changes.
+   - A few custom events (shift done, licence bought, boss cleared).
+   - Then compare D1 and D7 retention and the drop-off points after a week of cohorts.
 
-## 3. Adopt now (high value, low cost)
+   The FUN1 persona score (8.5) was correctly caveated. Real cohorts replace it now.
+3. **Audit prices and purchases against current APIs:**
+   - `GetProductInfoAsync`, not the older `GetProductInfo`;
+   - receipt handling: ProcessReceipt vs BindReceiptHandler; don't mix the two decision enums;
+   - "test mode" products can still spend real Robux, so test with fixtures.
+4. **Keep scarcity truthful.** The "THIS WEEK" label and the hard-capped legends are fine if they are literally true. Never use restarting timers or fake "last chance".
 
-1. **Status separation.** Report five separate states: *spec complete / implemented / offline tests pass / verified in Studio by a human or Studio MCP / commercial results measured*. This session repeatedly said "works" based on offline tests, and the owner then found it broken in Studio (see section 5).
-2. **Value classes**: LOCKED / DERIVED / TARGET / ILLUSTRATIVE / UNKNOWN on exact numbers. Cheap, and it stops guessed values from looking like decisions.
-3. **Zero-spend purchase testing** with a receipt contract (dedupe, durable grant, retry, reconnect) proven by **fixtures**, never by real purchases. "Test mode" items can still cost real Robux.
-4. **Dynamic prices only.** Never paint a price into an image. Use the current `GetProductInfoAsync`. **Action:** Stud Gear's stand labels still call the older `MarketplaceService:GetProductInfo` (`StudGear/src/client/StudGearClient/init.client.luau:47`); switch it.
-5. **Paid random items policy.** If an egg can be bought with Robux, or with a currency that Robux can buy, the numerical odds must be disclosed and policy handling applies. The Stud Pet System already shows odds boards. Keep that, and note in its README that buyers who sell Coins for Robux take on the policy duties.
-6. **Map correctness gate** for T2 games (zero known unintended overlaps, z-fighting, blocked routes, unsafe spawns in the tested matrix). For T0/T1 packs the equivalent is "**drops in tidy**": no pieces piled at the origin, nothing overlapping the buyer's map.
-7. **Honest metrics vocabulary**: gross spend ≠ creator proceeds ≠ eligible Earned Robux ≠ cash. Use it in any sales talk with the owner.
+## D. The research and the Stage 1 template: adopt by project size
 
-## 4. Trial only when there is a real need
+| Project size | Use |
+|---|---|
+| Asset / model pack, GUI kit | The current pipeline, plus "drops in tidy" (nothing piled at the origin) and the store packaging rules (E2). No Stage 1 template. |
+| Drop-in system or kit | Plus contracts for save / purchase / security / setup, and an offline test harness with fake services. |
+| Full game | The full Stage 1 template: spatial canon, economy model, analytics plan, commerce state machine, map gate. |
 
-- A small Python economy model: worth it the first time a game has currencies, egg odds or offline income (quantiles and dry streaks, not averages).
-- NetworkX route graphs: only for maps with many zones or branching routes.
-- Native Experiments / price optimization: only with real traffic (the docs say about 1,000 DAU for experiments, and about 60,000 transactions in 30 days for price optimization). Not relevant until a game has players.
-- Rewarded ads: only after eligibility (public, verified, about 2,000 monthly visitors).
+**Adopt for all:**
+- **Status words kept separate:** spec complete / built / tests pass / verified in Studio / verified live / human-liked / earning.
+- **Value labels:** LOCKED / DERIVED / TARGET / UNKNOWN.
 
-## 5. Skip by default
+**Already covered by the owner's rules, keep them:** the map gate (rules 47, 55, 57), the GUI states (37, 41, GUI-QA-GATE), security (SEC2), truthful offers (43, 56).
 
-OR-Tools, Penpot, DuckDB (no data to query yet), giant procedural maps, a second UI styling system, paid or unverified skill bundles, and any new tool that duplicates the installed stack. Keep the research's own "one-task trial before adoption" rule.
+**Trial when needed:**
+- a Python economy model for the next game with currencies or odds;
+- NetworkX only for complex maps;
+- native Experiments only past about 1,000 DAU.
 
-## 6. What the research misses: lessons from real failures this session
+**Skip:** OR-Tools, Penpot, DuckDB for now, price optimization (needs about 60k transactions in 30 days), rewarded ads (needs about 2,000 monthly visitors).
 
-These matter more than anything above, because they actually cost the owner time.
+## E. Lessons from this session that the files don't have yet
 
-1. **Studio verification gate (T1+).** Offline tests and Blender previews do not prove in-game behaviour. Bugs that only showed up in Studio:
-   - **WeldConstraints built offline (Lune/rbxm) lose their offsets**, so every piece snaps onto Part0. That piled the coils, grapple and jetpack into the hand and cost about 4 rounds of "redesigns". Build welded models with `Weld` + stored `C0`.
-   - DataStore calls stall in Studio when API access is off (load retries, then kick). Detect `RunService:IsStudio()` and play without saving.
-   - `WaitForChild("PlayerModule", 2)` added a 2-second freeze to every hatch. Never wait on optional objects in a hot path.
-   - Buyers drag whole folders (`1_PutInReplicatedStorage` ends up *inside* ReplicatedStorage). Scripts must find their folders anywhere and show on-screen setup errors.
+1. **Lune / Rojo-built welded models:** `WeldConstraint`s saved offline lose their offsets, and every piece snaps onto Part0. Use `Weld` with a stored `C0`. (This cost about 4 rounds on Stud Gear.)
+2. **Creator Store packaging:**
+   - no self-installing or auto-moving scripts (flagged "Misusing Roblox Systems");
+   - numbered drop-in folders, plus a README ModuleScript;
+   - scripts find their folders even when buyers drag the whole folder in;
+   - on-screen setup errors in Studio;
+   - a tidy template layout.
 
-   **Rule:** nothing is "done" until it has been seen working in Studio (Studio MCP solo Play on the PC, or the owner's screenshot). Say "untested in Studio" plainly until then.
-2. **Creator Store packaging rules.** No self-installing or auto-moving scripts (flagged as "Misusing Roblox Systems"). Plain numbered folders, a README ModuleScript, forgiving lookups, tidy template layout, server script enabled but inert until set up. Test the pack by doing the buyer's setup in an empty place before every upload.
-3. **Owner taste file (`TASTE.md`).** Record concrete likes and dislikes with quotes, and cite it in every art bible. From this session:
-   - wants stud style, but each item clearly distinct ("they just needed to look different")
-   - generic designs are rejected
-   - sound effects only if genuinely good ("get rid of the sound effects they arent good")
-   - no purple backgrounds or spiral rays
-   - confetti in the rarity colours
-   - classic Roblox gear look (coil wrapping the arm)
-   - hates clutter and things floating or clipping
-4. **Feasibility check against the quality bar, before building.** The anime clip was built with code poses, which can't reach anime-quality motion, and the owner called the result awful. If the quality bar needs hand-keyed animation, real art or an editor (CapCut/AE), say so at intake and plan that route instead.
-5. **Edit safety.** A large scripted edit silently deleted working code (the confetti rewrite removed the pet / shard / label code). After any automated or multi-block edit, review the diff before testing.
-6. **Session hygiene.** One chat per project or task, with OPERATOR-STATE and a handoff updated at milestones. This session ran through several compactions and showed the usual drift: re-checking settled things, and edit slips.
+   Test the buyer's setup in an empty place before every upload.
+3. **Studio-only stalls:** DataStore with API access off (detect `IsStudio`, then play without saving), and `WaitForChild(optional, timeout)` in a hot path (a 2-second freeze every hatch).
+4. **Video and cinematic work is a repeat weak spot.** ITP TikTok v1 and take 3 were rejected; the procedural anime clip was rejected. What the logs show works:
+   - real gameplay capture;
+   - validated camera clearance;
+   - strict frame-sheet review before sending.
 
-## 7. Suggested next steps for the other Claude
+   Code-posed character animation is never at "anime" quality; hand-keyed or retargeted animation is needed (as with Veilblade's Mixamo + polish).
 
-1. Merge sections 1, 3 and 6 into PIPELINE.md and STANDING-RULES.md (keep the originals' authority and wording; add, don't replace).
-2. Create `TASTE.md` from 6.3 and link it from the art-bible step.
-3. Add the offline-simulation harness pattern (fake services + virtual clock, as in `StudPets/build/test_server_sim.luau` and `StudGear/build/test_gear_sim.luau`) to the library as the T1 test standard. It must always be followed by the Studio gate.
-4. Fix `GetProductInfo` → `GetProductInfoAsync` in Stud Gear before uploading it.
-5. Use the full Stage 1 template only when the owner names an actual T2 game.
+   **Rule:** pick the route that can reach the bar at intake. Never send a video with known flaws.
+5. **Large automated edits can delete working code.** Review the diff after any multi-block scripted edit, before testing.
+
+## F. Suggested order
+
+1. A (file clean-up): 30 minutes, operator only.
+2. C1 (live parcel bug) and C2 (analytics events) on ITP.
+3. B (event-driven watcher) before the next multi-lane night.
+4. E notes folded into PIPELINE.md and STANDING-RULES.md (as new rules or lean-path notes).
+5. D: the full Stage 1 template only when the owner names the next real full game.
