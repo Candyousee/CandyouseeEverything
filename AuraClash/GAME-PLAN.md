@@ -34,7 +34,7 @@ Everything gameplay-facing is built from scratch.
 | 5 | Aura: the layer hierarchy, the Wardrobe + "NEW LOOK" prompt, the size formula, forms 1-4 (FLAME tutorial, BLAZE on boss 1, SURGE on boss 2) | Early-aura spec (CORE-GAME 12) met at gameplay distance |
 | 6 | Boss 1 + boss 2 clashes: the drift / push / counter rules, the tips card, Overpower | The win rates in a scripted bot test resemble `clash_results.txt` |
 | 7 | Mini Plaza: spawn, 2 portals, the Fusion Altar, the Wardrobe Mirror, the Incubator (CORE-GAME 10.2), the Daily Board (streak) | All machines reachable within 10 s of spawn |
-| 8 | **Persistence** (CORE-GAME 14): session-locked profile, save points, an incubator rolled at start with server time, atomic collect / claims, the Studio no-save banner | Tests P1-P5 pass (rejoin, incubator, spam / dual collect, crash mid-collect, clock change) |
+| 8 | **Persistence** (CORE-GAME 14): session-locked profile; queued saves for ordinary progress; **confirmed saving with operation ids** for incubator / claims; an incubator rolled at start with server time; saved tutorial + lifetime hatch count; the Studio no-save banner | Tests P1-P5c pass in the real game (rejoin, incubator, spam / dual collect, crash mid-collect, clock change, failed / ambiguous writes, guarantees once) |
 | 9 | Test tools: a cheat panel (set power / coins / zone), a session log (where the player went, what they bought, when they stopped) | The owner can run playtest #1 without help |
 
 **Quality bar for the test:** **representative** art, not greybox.

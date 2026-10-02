@@ -298,7 +298,7 @@ if __name__ == "__main__":
         d = ASC_REQ_DEPTH(n); g = gates[d-1] if d <= 8 else gates[7] * INFINITY_STEP ** (d - 8)
         name = f"boss {d}" if d <= 8 else f"Infinity tier {d-8}"
         print(f"  Ascension {n+1:>2}: clear {name:<16} (boss power {nice(g):,}; +1 shard per x100 beyond)")
-    print("\nSPIRIT BONUS BY ZONE (added to the team multiplier; Gold x6, Rainbow x36, Shiny x1.5)")
+    print("\nSPIRIT BONUS BY ZONE (added to the team multiplier; Gold x3, Rainbow x9, Shiny x1.5)")
     print("zone " + "".join(f"{r:>12}" for r in RARITIES))
     for z in range(ZONES):
         print(f"{z+1:>4} " + "".join(f"{'+'+format(bonus(z,r),',.2f'):>12}" for r in range(5)))

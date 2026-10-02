@@ -25,7 +25,7 @@ ASCENSION REQUIREMENTS (depth to clear in the run; shards measured vs that boss'
   Ascension 11: clear Infinity tier 2  (boss power 120,000,000,000,000; +1 shard per x100 beyond)
   Ascension 12: clear Infinity tier 3  (boss power 180,000,000,000,000; +1 shard per x100 beyond)
 
-SPIRIT BONUS BY ZONE (added to the team multiplier; Gold x6, Rainbow x36, Shiny x1.5)
+SPIRIT BONUS BY ZONE (added to the team multiplier; Gold x3, Rainbow x9, Shiny x1.5)
 zone       Common        Rare        Epic   Legendary      Mythic
    1        +0.10       +0.25       +0.60       +1.50       +4.00
    2        +0.25       +0.62       +1.50       +3.75      +10.00

@@ -512,9 +512,11 @@ One every 10 min online (up to 6 a day), each 1 Ticket.
 ## 12. QUALITY TARGET (unchanged from v2)
 
 - **Early / mid / end aura specs** at gameplay distance:
-  - early: 2.5-4.3 studs, 2 layers, ≤ 40 particles;
-  - mid: 5-9 studs, 4-5 layers, ≤ 120;
-  - end: 10-15 studs, 6-7 layers + Signature / Mythic extras, ≤ 220.
+  - early (forms 1-3, A0): **2.5-4.3** studs, 2 layers, ≤ 40 particles;
+  - mid (form 4 at A1 → form 7 at A3): **5.6-9.1** studs, 4-5 layers, ≤ 120;
+  - end (form 8 at A5 → form 10 at A10): **10.8-14.6** studs, 6-7 layers + Signature / Mythic extras, ≤ 220.
+
+  All ranges come from the size formula in 4.3.
 - **References:**
   - anime power-up auras;
   - Sol's RNG high-rarity auras;
@@ -571,6 +573,7 @@ The day-2 test is meaningless if progress or the incubator can be lost or duplic
 | Run state | power, coins, zone access, stone levels, form |
 | Spirits | inventory (with favourites), equipped list, auto-fuse / auto-delete settings |
 | Wardrobe | unlocked looks, chosen look / Auto, slots, first-clear history, index |
+| Tutorial / guarantees | tutorial egg claimed (yes/no), **lifetime hatch count** (so the 1st-hatch Common and 3rd-hatch Rare can't repeat or be skipped by rejoining), tutorial step reached, FLAME tutorial done |
 | Daily systems | streak day + last-claim date, Tickets, Charms, Boss Seals, rematch dates |
 | Incubator | `{state, zone, startTime, readyTime, rolledReward, rewardId}` |
 | Mailbox | its contents |
@@ -579,9 +582,21 @@ The day-2 test is meaningless if progress or the incubator can be lost or duplic
 
 - **Session lock:** a profile is used by **one server at a time**. Rejoining elsewhere waits for, or takes over, the lock safely, so two servers can never both grant.
 - **When to save:**
-  - immediately (queued) after every hatch, fusion, purchase, incubator start / collect, and streak claim;
-  - autosave every 60 s;
-  - on leaving and on server shutdown.
+  - **ordinary progress** (power, coins, hatches, fusions): queued save, plus an autosave every 60 s, on leave and on server shutdown;
+  - **critical operations** (incubator start / collect, streak claim, rematch reward, mailbox claim): **confirmed saving**, as follows.
+
+  **Queued is not confirmed.**
+
+### 14.2b Confirmed saving for critical operations
+
+1. **Write first, show second:** the server calls `UpdateAsync` with the change and a unique operation id. **Only after the write succeeds** does the client see the reward animation.
+2. **Retry with backoff** on failure (3 tries). If all fail, nothing is granted. The UI says "Couldn't save, try again", and the incubator stays ready.
+3. **Ambiguous writes** (a timeout where the write may or may not have landed): on the next attempt, `UpdateAsync` reads the stored operation ids first. If the id is already there, the operation counts as done and is never granted twice. So a retry is always safe.
+4. **Follow Roblox's data store guidance:** https://create.roblox.com/docs/cloud-services/data-stores/best-practices
+   - `UpdateAsync`, not `SetAsync`, for player data;
+   - respect the budgets and request limits;
+   - session locking;
+   - `BindToClose` saves.
 - **The incubator reward is rolled when you START it** and stored (`rolledReward` + a unique `rewardId`). Rejoining can never re-roll it.
   - The timer uses **server time** (`os.time()`), so changing the device clock does nothing.
 - **Collect is one atomic server transaction:**
@@ -593,6 +608,8 @@ The day-2 test is meaningless if progress or the incubator can be lost or duplic
 
 ### 14.3 Tests (the build isn't playtest-ready until all pass)
 
+**Status: these are REQUIREMENTS for the Roblox build. None has been run yet;** they can only pass in the real game. The Python model doesn't test saving.
+
 | # | Test | Pass |
 |---|---|---|
 | P1 | Play 5 min, leave, rejoin (another server) | everything in 14.1 identical |
@@ -600,6 +617,8 @@ The day-2 test is meaningless if progress or the incubator can be lost or duplic
 | P3 | Spam "Collect" (20 clicks), and collect from two clients at once | exactly one grant |
 | P4 | Kill the server during collect (forced shutdown test) | after rejoin: either granted once or still ready, never zero or twice |
 | P5 | Change the device clock ±1 day | no effect on the incubator or streak |
+| P5b | Force a failing / timing-out data store write during incubator collect (Studio mock) | no grant, a "try again" message; the retry grants exactly once |
+| P5c | Rejoin before the 3rd hatch, and after the tutorial egg | the guarantees happen exactly once, in order |
 | P6 | **Odds test (statistical):** an automated server-side hatch of **200,000** eggs | each rarity's count within **±4 standard deviations** of its expected value (Mythic: 200 expected, accepted 144-256). A manual 1,000-hatch run is NOT a pass / fail test: about 37% of such runs show zero Mythics |
 | P7 | Crack colour vs result over the same 200,000 hatches | 100% match |
 
