@@ -198,6 +198,19 @@
 
 ---
 
+
+## 8. Rules that close the gaps (decided; the owner can override)
+
+| Question | Rule |
+|---|---|
+| **Who gets the loot when several players hit the same crystal?** | Crystals are shared. **Everyone who dealt at least 15% of its HP gets the full drop and the full Power** (Pet Simulator style). Nobody can steal your kill, and helping is never a loss |
+| **What about shards from crystals far away (spirit hits, Overdrive chains)?** | Every shard from a crystal you earned flies to you, whatever the distance. The 12-stud pull is only for the visual spiral at the end |
+| **Can I SELL during a boss fight?** | No: the SELL button is greyed out in boss arenas |
+| **Are bosses shared?** | Each boss fight is your own instance (you can bring friends later); nobody steals or ruins your fight |
+| **When do spirits attack?** | From your first blast on a target until it breaks, then they return and lounge. They never attack on their own, so standing still is always calm |
+| **Who judges PERFECT?** | Your device judges the timing (so lag never ruins it); the server checks the hold length is possible and the damage is right |
+| **Bag full mid-Overdrive?** | Overdrive keeps going and still gives Power. The storm turns gold so you know to sell right after |
+
 ## 7. Why the loop holds
 
 | Second to second | Minute to minute | 5-10 minutes | Session |
