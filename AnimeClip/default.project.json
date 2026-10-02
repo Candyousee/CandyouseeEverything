@@ -1,0 +1,66 @@
+{
+  "name": "AnimeClip",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+      "AnimeClip": {
+        "$path": "src/shared/AnimeClip"
+      },
+      "AnimeClipStandIns": {
+        "$path": "assets/StandIns.rbxm"
+      }
+    },
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+      "AnimeClipServer": {
+        "$path": "src/server/AnimeClipServer.server.luau"
+      }
+    },
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "AnimeClipPlayer": {
+          "$path": "src/client/AnimeClipPlayer.client.luau"
+        }
+      }
+    },
+    "Workspace": {
+      "$className": "Workspace",
+      "DuelStage": {
+        "$path": "assets/Stage.rbxm"
+      },
+      "Spawn": {
+        "$className": "SpawnLocation",
+        "$properties": {
+          "Anchored": true,
+          "Size": [
+            6,
+            1,
+            6
+          ],
+          "Position": [
+            0,
+            0.5,
+            70
+          ],
+          "Transparency": 1,
+          "Neutral": true,
+          "Duration": 0
+        }
+      },
+      "$properties": {
+        "StreamingEnabled": false
+      }
+    },
+    "Lighting": {
+      "$className": "Lighting",
+      "$properties": {
+        "Technology": "Future",
+        "ClockTime": 17.6,
+        "Brightness": 2.2
+      }
+    }
+  }
+}
