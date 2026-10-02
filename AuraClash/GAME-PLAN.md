@@ -1,5 +1,7 @@
 # GAME PLAN: Aura Clash (draft v1, 2 October 2026; for owner approval)
 
+**Full mechanics (how every system works, with numbers): see DESIGN.md.** This file is the plan summary.
+
 Every system below answers two questions:
 - **WHY** it makes players stay or pay;
 - **HOW** it works.
@@ -61,7 +63,7 @@ CHARGE & RELEASE  →  POWER  →  AURA GROWS / TRANSFORMS  →  COINS → SPIRI
 ### 2.3 Coins and spirits (the pets)
 
 - **WHY:**
-  - Spirits are the second, more personal collection; they reuse our tested Stud Pets system.
+  - Spirits are the second, more personal collection; built from scratch.
   - They multiply training, so they're the main thing coins are spent on.
   - Visually, they **orbit inside your aura and colour it**, so a rare spirit makes your whole aura look rarer.
 - **HOW:**
@@ -287,9 +289,7 @@ A free player reaches zone 8 in about 5.3 h of play (multi-session) and ascends 
 - **Crew:**
   - operator + 2 lanes (art / VFX lane; systems lane);
   - VFX is the hero lane, so it gets the most time.
-- **Reuse:**
-  - the Stud Pets system → spirits (hatch sequence, followers, inventory, save, fuse);
-  - the library backbone (data, remotes, security, UI kit).
+- **Everything gameplay-facing is built from scratch** (spirits, hatching, aura, clash). Only invisible plumbing (save / remote / security patterns) may come from the library.
 - **Style:** stylised anime simulator (STYLE-SHEET to write: chunky cel-shaded characters-and-world, glowing additive VFX, bold UI).
 - **Phases:**
   1. **Greybox (1-3 h):**
@@ -318,7 +318,7 @@ A free player reaches zone 8 in about 5.3 h of play (multi-session) and ascends 
   - a visible, show-off-driven progression;
   - a skill moment in both the core action and the gate;
   - every money mechanic hooked to a real moment of want;
-  - reuses our pet system and our VFX focus.
+  - plays to our VFX focus.
 - **Weak / risky:**
   - the genre is crowded;
   - success depends on VFX quality and a fun charge-release.
