@@ -38,9 +38,9 @@ def _od_run(chain_n, power, mi):
         pl.power, pl.quest, pl.t = power, 1, 100
         pl.milestones["mut_tutorial"] = 0
         pl.spend = lambda: None
-        pl.od_left = M.OD_TIME
+        pl.start_overdrive()
         n0, blasts = len(pl.kill_log), 0
-        while pl.od_left > 0:
+        while pl.in_overdrive():
             pl.hunt_blast(mi)
             blasts += 1
         return blasts, pl.kill_log[n0:]
@@ -107,6 +107,37 @@ def test_food_xp_follows_its_origin():                 # a zone-1 Berry is 1 XP 
     pl.food = [0, 1]
     pl.feed()
     assert pl.pets[0].lv == 2 and pl.pets[0].xp == 2      # 1 + 3 = 4 XP; Lv 1 -> 2 costs 2
+
+
+def test_overdrive_expires_on_real_time():            # CORE-LOOP 2.1: 8 s of real time, whatever you do
+    pl = M.Player("average", 9)
+    pl.power, pl.quest, pl.t = 50, 1, 100
+    pl.milestones["mut_tutorial"] = 0
+    pl.spend = lambda: None
+    pl.start_overdrive()
+    t0 = pl.t
+    while pl.t < t0 + 30:
+        pl.hunt_blast(0)
+    boosted = [k for k in pl.kill_log if k[3]]
+    assert boosted and max(k[0] for k in boosted) <= t0 + M.OD_TIME + 1e-9   # walking time between kills counts
+    pl2 = M.Player("average", 9)
+    pl2.start_overdrive()
+    pl2.meditate(60)                                       # meditating doesn't pause it
+    assert not pl2.in_overdrive()
+    pl3 = M.Player("average", 9)
+    pl3.start_overdrive()
+    pl3.t += M.SELL_TIME + 3 * M.HATCH_TIME + M.ALTAR_TIME  # selling, hatching and fusing don't pause it either
+    t_left = pl3.od_until - pl3.t
+    assert abs(t_left - (M.OD_TIME - M.SELL_TIME - 3 * M.HATCH_TIME - M.ALTAR_TIME)) < 1e-9
+
+
+def test_beginner_protected_pack_in_a_crowded_server():   # CORE-LOOP 8: veterans can't block a beginner's quest
+    solo = st.median(M.crowded_quest_time(0, True, seed_=r) for r in range(30))
+    for vets in (3, 10):
+        protected = st.median(M.crowded_quest_time(vets, True, seed_=r) for r in range(30))
+        assert protected <= solo * 1.1, (vets, protected, solo)
+    blocked = st.median(M.crowded_quest_time(6, False, seed_=r) for r in range(30))
+    assert blocked >= 3 * solo                              # the problem the pack exists to solve
 
 
 def test_newcomer_next_to_a_veteran_gets_the_drop():    # CORE-LOOP 8: shared monsters, personal loot

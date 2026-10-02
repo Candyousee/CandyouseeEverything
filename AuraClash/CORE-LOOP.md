@@ -1,6 +1,6 @@
 # AURA CLASH: Core Loop v5.1 (the rules and numbers of the two-zone test)
 
-**Authority:** this file is the single source for the core rules and numbers. Every number here is a constant in `econ/model.py` (run `python model.py` for the results, `python tests.py` for the 19 rule checks). If you change a rule, change the model constant and this file in the same commit. Systems outside the core loop (eggs in detail, aura, saving, playtest, later content) are in `CORE-GAME.md`.
+**Authority:** this file is the single source for the core rules and numbers. Every number here is a constant in `econ/model.py` (run `python model.py` for the results, `python tests.py` for the 21 rule checks). If you change a rule, change the model constant and this file in the same commit. Systems outside the core loop (eggs in detail, aura, saving, playtest, later content) are in `CORE-GAME.md`.
 
 **v5.1 decisions (owner, 2 Oct 2026):**
 - Power comes from **meditation** (the AFK half);
@@ -113,7 +113,7 @@ You meditate at the Shrine of the zone you're in.
 
 - **Combo:** each PERFECT moves it up one level: ×1 → ×1.25 → ×1.5 → ×1.75 → ×2. Any other release moves it **down one level** (not to zero). Flames on your fists show the level.
 - **OVERDRIVE:**
-  - **5 PERFECTs in a row** = **8 s** (+2 s per Surge level) where **every release counts as PERFECT at ×2**;
+  - **5 PERFECTs in a row** = **8 s of real time** (+2 s per Surge level) where **every release counts as PERFECT at ×2**. The timer keeps running while you walk, sell, hatch or meditate; only releases that land before it ends are boosted;
   - each blast also hits **at most 2 other monsters next to your target, for 50% each** (a pack of Shardlings has up to 3 nearby, Boars usually 1, Brutes stand alone). Damage beyond a monster's HP is lost: it never turns into extra kills;
   - afterwards the combo sits at ×1.5.
 - **One blast cycle is about 1.4 s** (hold + recovery).
@@ -141,7 +141,8 @@ The animals in each zone have been overgrown by crystals. When defeated they **c
 **Spawns:**
 - fixed spawn points: Shardling-type packs respawn every 5 s and Boar-types every 10 s;
 - **3 Brutes per zone, each respawning after 30 s**;
-- about 30 monsters per zone at most.
+- about 30 shared monsters per zone at most;
+- **plus your protected pack** while you're new to a zone (section 8).
 
 **Green HP bars:** a monster's HP bar turns **green** when you'd beat it in about 3 of your blasts (your pets included). That's the nudge to hunt bigger ones.
 
@@ -234,7 +235,7 @@ The pet card shows only the final Strength.
 | **Tank** | monsters attack whatever is closest, often a pet. A hit pet is **dazed for 2 s** (stars over its head). **Pets never die** |
 | **Meditate** | **+10% meditation per point of Strength** equipped |
 
-**Their share of the damage** grows from about 10% early to about half by the end of zone 2 (model: about 41% on average over a first run). Your blasts always matter.
+**Their share of the damage** grows from about 10% early to about half by the end of zone 2 (model: about 43% on average over a first run). Your blasts always matter.
 
 **Behaviour:**
 
@@ -367,10 +368,10 @@ So a weak player can always win by meditating a bit more.
 | ~3:15 | Quest 3 (hatch 5 → 10 food) and quest 4 (10 Boars → +1 slot) | ~95 | 3 |
 | 3:15-4:50 | Quest 5 needs 300 Power: **sit and Focus meditate about 1.5 min** | ~315 | 3 |
 | ~4:50 | **Boss gate opens** | | |
-| 4:50-5:40 | **Stone Golem** (about 45 s) | | |
-| ~5:40 | KO → **BLAZE**. The Lava Dojo opens with a free Fire egg | ~315 | 4 |
-| 5:40-6:40 | Zone 2 quest 1: Focus meditate for 60 s at the 4× Shrine | ~1,100 | 4 |
-| 6:40-8:00 | Ember Slimes; Magma Peppers; quest 2 (50 Ember Slimes) → a free Fire egg | ~1,100 | 5 |
+| 4:50-5:35 | **Stone Golem** (about 45 s) | | |
+| ~5:35 | KO → **BLAZE**. The Lava Dojo opens with a free Fire egg | ~315 | 4 |
+| 5:35-6:40 | Zone 2 quest 1: Focus meditate for 60 s at the 4× Shrine | ~1,000 | 4 |
+| 6:40-8:20 | Ember Slimes; Magma Peppers; quest 2 (50 Ember Slimes) → a free Fire egg | ~1,000 | 5 |
 
 This is one seeded run close to the median (`econ` seed 74). Single runs vary: the first Overdrive comes anywhere from 0:30 to 3:30, depending on timing luck.
 
@@ -378,9 +379,9 @@ This is one seeded run close to the median (`econ` seed 74). Single runs vary: t
 
 | Player | First sell | Boss 1 | Boss 2 | Time meditating | Pets' damage share |
 |---|---|---|---|---|---|
-| weak | 2.6 min | 8.8 min | 30 min | 27% | 52% |
-| **average** | **1.7 min** | **5.8 min** | **23 min** | **27%** | **41%** |
-| strong | 1.4 min | 4.9 min | 19 min | 27% | 36% |
+| weak | 2.6 min | 8.8 min | 30 min | 27% | 53% |
+| **average** | **1.8 min** | **5.8 min** | **23 min** | **27%** | **43%** |
+| strong | 1.5 min | 4.6 min | 20 min | 26% | 37% |
 
 These are **model targets, not promises**: the playtest decides. The model plays solo (crowded servers pay faster; see 8).
 
@@ -398,7 +399,8 @@ Log off on a mat to keep meditating offline.
 
 | Question | Rule |
 |---|---|
-| Several players hit the same monster? | **Shared monsters, personal loot:** everyone who damaged it gets **their own full drop** (shards, food, the mutation) **and quest credit**. Nothing is split, so a newcomer next to a veteran never loses a kill or quest progress. (Helping is rewarded: in a crowded zone everyone earns a bit faster. The model plays solo, so it's conservative; watch it in playtests) |
+| Several players hit the same monster? | **Shared monsters, personal loot:** everyone whose hit **landed** on it gets **their own full drop** (shards, food, the mutation) **and quest credit**. Nothing is split |
+| Can veterans block a beginner (killing everything before the beginner's blast lands)? | **No: the protected pack.** Until you've beaten a zone's boss, you have your own small pack nearby that **only you (and your pets) can damage**: 4 of the zone's small monster + 2 of the middle one, matched to your active kill quest. It respawns in 5 s, and other players don't see it (it's drawn only on your screen). So a beginner always progresses at least at the solo pace. Model: with shared monsters only, 3 veterans stop a beginner's "20 Shardlings" quest completely; with the pack it takes 42 s with 0, 3, 6 or 10 veterans (`econ/RESULTS.txt` section 7). **Crowded servers are not assumed to be faster** |
 | Shards from far away (pets, chains)? | They always reach you; the 12-stud pull is only the visual spiral |
 | Where can I meditate? | Only on Shrine mats |
 | Do pets attack on their own? | No: only from your first blast on a target until it dies |
@@ -411,7 +413,8 @@ Log off on a mat to keep meditating offline.
 
 ## 9. LAG BUDGET (mobile first)
 
-- About 30 monsters per zone; simple server logic (move, telegraph, hit), animation on the client.
+- About 30 shared monsters per zone; simple server logic (move, telegraph, hit), animation on the client.
+- **Protected packs:** at most 6 per new player, drawn only on that player's screen; the server runs them as simple numbers (no pathing beyond a short hop).
 - Pets are client-side visuals; the server computes their damage as numbers.
 - **Storm:**
   - yours is at most 12 meshes + 2 emitters, with mutated shards shown first;

@@ -109,7 +109,8 @@ class Player:
         self.rng = random.Random(seed(profile, run))
         self.t, self.power, self.coins = 0.0, START_POWER, 0
         self.food = [0, 0]                 # Soul Food pouch by origin zone (XP depends on where it dropped)
-        self.od_left, self.field, self.last_big = 0.0, [], -1e9
+        self.od_until, self.od_active = -1.0, False   # Overdrive ends at a TIMESTAMP: real time keeps running
+        self.field, self.last_big = [], -1e9
         self.kill_log = []                 # (time, monster, cause) for checks
         self.bag, self.bag_val = 0, 0
         self.bag_lv = self.mat_lv = self.surge_lv = 0
@@ -229,12 +230,20 @@ class Player:
             self.field.append(self.spawn(mi))
         del self.field[want:]
 
-    def blast_od(self):
-        """One release inside Overdrive: counts as a PERFECT at the top combo multiplier."""
-        self.od_left -= BLAST_TIME
-        return self.power * PERFECT_X * COMBO[4], BLAST_TIME, True
+    def start_overdrive(self):
+        self.od_until = self.t + OD_TIME + SURGE_STEP * self.surge_lv
+        self.od_active = True
+        self.note("overdrive", "first OVERDRIVE")
 
-    def loot(self, mon, cause):
+    def in_overdrive(self):
+        """A release counts as Overdrive only if it lands before the expiry timestamp. The timer runs through
+        walking, selling, hatching, fusing and meditating, because all of them advance self.t."""
+        if self.od_active and self.t + BLAST_TIME > self.od_until:
+            self.od_active = False
+            self.combo, self.streak = OD_AFTER, 0
+        return self.od_active
+
+    def loot(self, mon, cause, in_od=False):
         z, mi, mut = self.zone, mon["mi"], mon["mut"]
         name, hp, sh, br, gem, food, over = MONSTERS[z][mi]
         n_bright = int(br) + (1 if self.rng.random() < br - int(br) else 0)
@@ -253,21 +262,20 @@ class Player:
         if whole:
             self.feed()                                   # Auto-feed (on by default) runs as food drops
         self.kills[name] = self.kills.get(name, 0) + 1
-        self.kill_log.append((self.t, name, cause))
+        self.kill_log.append((self.t, name, cause, in_od))
 
     def hunt_blast(self, mi):
         """One blast at the field's target. Overdrive chains hit at most OD_CHAIN_N nearby monsters for 50%.
         Excess damage is lost (it never carries over into extra kills)."""
         self.fill_field(mi)
-        if self.od_left > 0:
-            d, dt, perf = self.blast_od()
+        if self.in_overdrive():
+            d, dt, perf = self.power * PERFECT_X * COMBO[4], BLAST_TIME, True
             in_od = True
         else:
             d, dt, perf = self.blast()
             in_od = False
             if self.streak >= OD_STREAK:
-                self.od_left = OD_TIME + SURGE_STEP * self.surge_lv
-                self.note("overdrive", "first OVERDRIVE")
+                self.start_overdrive()
                 self.streak = 0
         pet_d = self.team_str() * PET_HIT_X * self.power * (dt / PET_HIT_EVERY + (1 if perf else 0))
         target = self.field[0]
@@ -278,15 +286,13 @@ class Player:
             for mon in self.field[1:1 + OD_CHAIN_N]:
                 mon["hp"] -= d * OD_CHAIN_X
                 self.player_dmg += d * OD_CHAIN_X
-            if self.od_left <= 0:
-                self.combo, self.streak = OD_AFTER, 0
         self.t += dt
         self.hunt_time += dt
         dead = [m for m in self.field if m["hp"] <= 0]
         target_died = target["hp"] <= 0
         for m in dead:
             self.field.remove(m)
-            self.loot(m, "target" if m is target else "chain")
+            self.loot(m, "target" if m is target else "chain", in_od)
             if self.bag >= BAG[self.bag_lv]:
                 self.sell()
         if target_died:
@@ -544,6 +550,53 @@ def loot_recipients(damage_log):
     return sorted(pid for pid, dmg in damage_log.items() if dmg > 0)
 
 
+# ---------------- crowded servers: protected quest spawns ----------------
+PERSONAL_PACK = {"Shardling": 4, "Crystal Boar": 2, "Ember Slime": 4, "Lava Hound": 2}   # while that kill quest is active
+PERSONAL_RESPAWN = 5.0
+SHARED_POINTS, SHARED_RESPAWN = 8, 5.0
+
+
+def crowded_quest_time(veterans, personal, kills_needed=20, seed_=0, vet_kill_every=0.7, cap=900.0):
+    """A beginner (one-shots Shardlings, 1.4 s per blast + 0.6 s to retarget) does "Defeat 20 Shardlings"
+    next to `veterans` who each kill any shared Shardling in reach every `vet_kill_every` seconds.
+    Credit needs the beginner's hit to LAND on a living monster (personal loot, CORE-LOOP 8).
+    personal=True adds the protected quest pack: monsters only the beginner can damage.
+    Returns seconds to finish the quest (cap if never)."""
+    rng = random.Random(seed(veterans, personal, seed_))
+    dt = 0.1
+    shared = [0.0] * SHARED_POINTS                 # time each shared point is next alive
+    pack = [0.0] * (PERSONAL_PACK["Shardling"] if personal else 0)
+    vet_next = [rng.random() * vet_kill_every for _ in range(veterans)]
+    t, kills, aim = 0.0, 0, None                   # aim = (kind, index, lands_at)
+    while t < cap:
+        for v in range(veterans):                  # veterans clear shared monsters
+            if t >= vet_next[v]:
+                alive = [i for i, r in enumerate(shared) if r <= t]
+                if alive:
+                    i = rng.choice(alive)
+                    shared[i] = t + SHARED_RESPAWN
+                vet_next[v] = t + vet_kill_every
+        if aim is None:
+            alive_pack = [i for i, r in enumerate(pack) if r <= t]
+            alive_shared = [i for i, r in enumerate(shared) if r <= t]
+            if alive_pack:
+                aim = ("pack", alive_pack[0], t + BLAST_TIME)
+            elif alive_shared:
+                aim = ("shared", rng.choice(alive_shared), t + BLAST_TIME)
+        elif t >= aim[2]:
+            kind, i, _ = aim
+            pool = pack if kind == "pack" else shared
+            if pool[i] <= aim[2] - BLAST_TIME and pool[i] <= t:   # still the same living monster when the hit lands
+                pool[i] = t + (PERSONAL_RESPAWN if kind == "pack" else SHARED_RESPAWN)
+                kills += 1
+                if kills >= kills_needed:
+                    return t
+            aim = None
+            t += 0.6                               # retarget
+        t += dt
+    return cap
+
+
 def combo_avg(p):
     """Average combo multiplier on a PERFECT: stationary distribution of the +1 / -1 combo ladder."""
     pi = [1.0] * 5
@@ -656,7 +709,15 @@ def report():
     pl.pets = [Pet(1, 0, 0) for _ in range(5)]
     P(f"   zone 2 Shrine, 5 zone-2 Commons: AFK {pl.med_rate(1.0) * 3600:,.0f} Power/hour")
     P("")
-    P("7. AFK-only player (never hunts): Power keeps growing, but the boss gate never opens")
+    P("7. Crowded server: a beginner's \"Defeat 20 Shardlings\" next to veterans (median of 50 runs, seconds)")
+    P("   veterans:                 0      3      6     10")
+    for personal in (False, True):
+        cells = [st.median(crowded_quest_time(v, personal, seed_=r) for r in range(50)) for v in (0, 3, 6, 10)]
+        label = "with protected quest pack" if personal else "shared monsters only    "
+        P("   " + label + "  " + "  ".join(f"{c:5.0f}" for c in cells))
+    P("   (900 = never finished in 15 min. The protected pack keeps the beginner at the solo pace or better.)")
+    P("")
+    P("8. AFK-only player (never hunts): Power keeps growing, but the boss gate never opens")
     P("   (rank quests 2-4 need kills and hatches, which need coins, which only hunting gives).")
     return "\n".join(out), agg
 

@@ -179,21 +179,29 @@ A **pet simulator with two halves:**
 ### 8.2 Rules
 
 - **Session lock:** one server at a time per profile, so two servers can never both grant.
-- **Ordinary progress** (Power, coins, bag, kills, hatches, feeding): queued save + an autosave every 60 s, on leave and on server shutdown (`BindToClose`).
+- **Ordinary progress** (Power, coins, bag, kills, normal hatches, feeding): queued save + an autosave every 60 s, on leave and on server shutdown (`BindToClose`). **Honest limit:** if a server crashes, up to the last ~60 s of ordinary progress can be lost. That's accepted for ordinary progress; it's why the critical operations below use confirmed saving.
 - **Confirmed saving** (write first, show second):
   1. the server writes the change with `UpdateAsync`, together with a unique **operation id**;
   2. **success →** show the reward;
   3. **error or timeout → the result is UNKNOWN, not "nothing granted".** Roblox warns that a failed response can follow a write that actually succeeded. So the server shows "Saving…" and **reconciles**: it reads the profile (inside the next `UpdateAsync`) and checks whether the operation id is already stored:
      - **id found →** the write landed: show the reward, and never apply it again;
      - **id not found →** apply it in that same `UpdateAsync` (so it can't land twice);
-  4. up to 3 attempts with backoff. If the data store stays unreachable, the operation stays **pending** in the session (the server keeps retrying, and the UI says "Still saving, your reward is safe"). It's resolved by the same id check on the next successful access, including on the next join.
+  4. up to 3 attempts with backoff;
+  5. **if every attempt fails, the operation is cancelled in this session:** the server undoes it in memory (the egg's coins are back, the pets are unfused) and says **"Couldn't save, so nothing happened. Try again."** It never promises the reward is safe, because an operation that exists only in server memory is lost if the server crashes.
+     - The one exception is a write that **did** land but reported failure. It's already in the saved profile, so the reconcile check (step 3) finds its operation id on the next access, **including the next join on another server**, and shows it then. It's never applied twice.
+
+  **What this guarantees:** an operation is either saved exactly once, or it never happened. The player never sees a result that isn't saved, so there's nothing to lose and nothing to re-roll. (A crash before any save can't lose a reward the player was shown.)
+
+  **Each critical operation is ONE write that contains everything:** the cost, the result and the operation id together. That way, a failed hatch never keeps the coins without the pet, or the pet without the coins.
+
   
   Used for:
   - the offline meditation claim;
-  - Mythic / Secret hatches (the reward is saved before the cutscene plays);
+  - Mythic / Secret hatches: the egg's cost and the result are saved in one write **before** the cutscene plays. If the save fails, the hatch is cancelled and the coins are kept; the result was never shown, so it can't be re-rolled on purpose;
   - fusion of ★★ or Epic+ pets.
 - **Offline gain:**
   - computed once per session from `lastSeen` to now (server time, capped at 8 h), in **one write** with a new `offlineClaimId`;
+  - if that write fails, the gain isn't shown and `lastSeen` is unchanged, so the same span is offered again later (nothing is lost);
   - a rejoin can't claim the same span twice;
   - the device clock does nothing.
 - **AFK rejoin:** the rejoin teleport saves first, then puts you back on a mat (the gain continues).
@@ -208,7 +216,7 @@ A **pet simulator with two halves:**
 | P2 | Log off 1 h, rejoin twice quickly (two servers) | offline Power granted exactly once |
 | P3 | Change the device clock ±1 day | no effect on offline gains |
 | P4 | Kill the server during a Mythic hatch (forced shutdown) | after rejoin: the Mythic is there exactly once |
-| P5 | Studio mock: (a) the save fails before writing; (b) **the save writes, then reports a timeout**; (c) the data store is down for 2 min | (a) the retry grants once; (b) reconciliation finds the operation id and shows the reward **without granting it again**; (c) the reward stays pending, then is granted exactly once when saving recovers (also across a rejoin) |
+| P5 | Studio mock: (a) the save fails before writing; (b) **the save writes, then reports a timeout**; (c) the data store is down for 2 min | (a) the retry grants once; (b) reconciliation finds the operation id and shows the reward **without granting it again**; (c) after 3 failed attempts the operation is cancelled with "nothing happened, try again": no reward shown, nothing spent |
 | P6 | Rejoin before the 3rd hatch and after the tutorial egg | the guarantees happen exactly once, in order |
 | P7 | **Odds test:** 200,000 automated server-side hatches | each rarity within ±4 standard deviations (Mythic: 200 expected, accepted 144-256) |
 | P8 | Crack colour vs result over the same 200,000 hatches | 100% match |
@@ -216,7 +224,8 @@ A **pet simulator with two halves:**
 | P10 | Fill the bag in Overdrive with mutated shards | never above capacity; every mutated shard sells at its multiplier |
 | P11 | A newcomer (10% of the damage) and a veteran (90%) hit one monster | **both** get their own full drop and quest credit |
 | P12 | Spam SELL / Feed / Fuse (20 clicks), and two devices at once | exactly one sale, feed and fusion each |
-| P13 | A new player does zone 1 quests 2 and 4 in a full server next to veterans | the quests complete at the solo pace or faster |
+| P13 | A new player does zone 1 quests 2 and 4 in a full server next to veterans who kill everything shared | the quests complete at the solo pace or faster, thanks to the protected pack (CORE-LOOP 8). The model simulates this (`econ/RESULTS.txt` section 7); it must also be run in the game |
+| P14 | Studio mock: every save fails, then the server is shut down mid-session after a Mythic hatch attempt | on rejoin there's no Mythic and no coins spent (it was cancelled and never shown); with a write that landed but reported failure, the Mythic and the cost are both there exactly once |
 
 ## 9. PLAYTEST #1 (behaviour first)
 
@@ -292,5 +301,5 @@ Each must keep the core rules (**Power only from meditation, coins only from hun
   - monsters hitting the player (only time lost, assumed small);
   - other players sharing monsters (personal loot means crowded servers pay faster than the model);
   - walking between areas (beyond a per-kill overhead);
-  - saving (tests P1-P13 are for the real game).
+  - saving (tests P1-P14 are for the real game).
 - **Decisions** (like when to meditate) follow a simple "average player" policy. **The playtest is the real test.**
