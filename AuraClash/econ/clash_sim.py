@@ -18,28 +18,25 @@ T_LIMIT, DT = 45.0, 0.01
 def clash(ratio, p_perfect, p_counter, rnd):
     M, t, step = 50.0, 0.0, 0
     drift = max(-12.0, min(12.0, 12.0 * (math.sqrt(ratio) - 1.0)))
-    next_attack = 5.0
-    charge_end = None
+    next_attack, charge_end, busy_until = 5.0, None, 0.0
     while t < T_LIMIT:
-        if t >= next_attack:                        # boss attack: player stops, taps in the window
+        if t >= next_attack:                        # boss attack: player drops the charge and spends 1.5 s on the tap
             M += 4.0 if rnd.random() < p_counter else -4.0
-            M += drift * 1.5; t += 1.5
-            next_attack = t + (3.5 if M >= 70 else 5.0) - 1.5
-            charge_end = None
-        else:
+            busy_until = t + 1.5; charge_end = None
+            next_attack = t + (3.5 if M >= 70 else 5.0)
+        elif t >= busy_until:
             if charge_end is None:                  # start a charge and decide its outcome
                 r = rnd.random()
                 if r < p_perfect:   kind, hold = "P", rnd.uniform(1.02, 1.20)
                 elif r < p_perfect + (1 - p_perfect) * 0.7: kind, hold = "E", rnd.uniform(0.6, 1.0)
                 else:               kind, hold = "O", rnd.uniform(1.2, 1.6)
                 charge_end = t + hold
-                extra = 0.4 if kind == "O" else 0.0
             if t >= charge_end:
                 if kind == "P": M += 2.4 + 0.5 * step; step = min(step + 1, 4)
                 elif kind == "E": M += 0.5 * hold / 1.02; step = 0
                 else: M += 0.3; step = 0
-                t += 0.25 + extra; charge_end = None
-            M += drift * DT; t += DT
+                busy_until = t + 0.25 + (0.4 if kind == "O" else 0.0); charge_end = None
+        M += drift * DT; t += DT                    # the beam drifts continuously, including recovery and counters
         if M >= 100: return True, t
         if M <= 0: return False, t
     return False, t

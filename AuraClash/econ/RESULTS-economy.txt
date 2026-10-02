@@ -2,28 +2,28 @@ TRAINING RATES (base units / s): {'idle': 0.4, 'casual': 1.06, 'average': 1.97, 
 
 BALANCE TABLE (derived)
 zone stone base        egg   stone Lv2   stone Lv3          boss power    gold gate (1.1x) first-clear coins
-   1          1         29          79         240               1,100               1,200               350
-   2          6        180         470       1,400              79,000              87,000             2,100
-   3         36      1,100       2,800       8,500           3,400,000           3,700,000            13,000
-   4        216      6,400      17,000      51,000         130,000,000         140,000,000            76,000
+   1          1         29          79         240                 820                 900               350
+   2          6        180         470       1,400              56,000              62,000             2,100
+   3         36      1,100       2,800       8,500           2,700,000           3,000,000            13,000
+   4        216      6,400      17,000      51,000         120,000,000         130,000,000            76,000
    5      1,296     38,000     100,000     310,000       3,500,000,000       3,900,000,000           460,000
-   6      7,776    230,000     610,000   1,800,000      87,000,000,000      96,000,000,000         2,800,000
-   7     46,656  1,400,000   3,700,000  11,000,000   1,900,000,000,000   2,100,000,000,000        17,000,000
-   8    279,936  8,300,000  22,000,000  66,000,000  43,000,000,000,000  47,000,000,000,000                 0
+   6      7,776    230,000     610,000   1,800,000      89,000,000,000      98,000,000,000         2,800,000
+   7     46,656  1,400,000   3,700,000  11,000,000   2,000,000,000,000   2,200,000,000,000        17,000,000
+   8    279,936  8,300,000  22,000,000  66,000,000  46,000,000,000,000  51,000,000,000,000                 0
 
 ASCENSION REQUIREMENTS (depth to clear in the run; shards measured vs that boss's power)
-  Ascension  1: clear boss 4           (boss power 130,000,000; +1 shard per x100 beyond)
+  Ascension  1: clear boss 4           (boss power 120,000,000; +1 shard per x100 beyond)
   Ascension  2: clear boss 5           (boss power 3,500,000,000; +1 shard per x100 beyond)
   Ascension  3: clear boss 5           (boss power 3,500,000,000; +1 shard per x100 beyond)
-  Ascension  4: clear boss 6           (boss power 87,000,000,000; +1 shard per x100 beyond)
-  Ascension  5: clear boss 6           (boss power 87,000,000,000; +1 shard per x100 beyond)
-  Ascension  6: clear boss 7           (boss power 1,900,000,000,000; +1 shard per x100 beyond)
-  Ascension  7: clear boss 7           (boss power 1,900,000,000,000; +1 shard per x100 beyond)
-  Ascension  8: clear boss 8           (boss power 43,000,000,000,000; +1 shard per x100 beyond)
-  Ascension  9: clear boss 8           (boss power 43,000,000,000,000; +1 shard per x100 beyond)
-  Ascension 10: clear Infinity tier 1  (boss power 69,000,000,000,000; +1 shard per x100 beyond)
-  Ascension 11: clear Infinity tier 2  (boss power 110,000,000,000,000; +1 shard per x100 beyond)
-  Ascension 12: clear Infinity tier 3  (boss power 180,000,000,000,000; +1 shard per x100 beyond)
+  Ascension  4: clear boss 6           (boss power 89,000,000,000; +1 shard per x100 beyond)
+  Ascension  5: clear boss 6           (boss power 89,000,000,000; +1 shard per x100 beyond)
+  Ascension  6: clear boss 7           (boss power 2,000,000,000,000; +1 shard per x100 beyond)
+  Ascension  7: clear boss 7           (boss power 2,000,000,000,000; +1 shard per x100 beyond)
+  Ascension  8: clear boss 8           (boss power 46,000,000,000,000; +1 shard per x100 beyond)
+  Ascension  9: clear boss 8           (boss power 46,000,000,000,000; +1 shard per x100 beyond)
+  Ascension 10: clear Infinity tier 1  (boss power 74,000,000,000,000; +1 shard per x100 beyond)
+  Ascension 11: clear Infinity tier 2  (boss power 120,000,000,000,000; +1 shard per x100 beyond)
+  Ascension 12: clear Infinity tier 3  (boss power 190,000,000,000,000; +1 shard per x100 beyond)
 
 SPIRIT BONUS BY ZONE (added to the team multiplier; Gold x6, Rainbow x36, Shiny x1.5)
 zone       Common        Rare        Epic   Legendary      Mythic
@@ -41,54 +41,54 @@ FIRST RUN, 120 simulated players per profile (median [p10-p90])
     first hatch            0.0 min  [  0.0 min -   0.0 min]
     first Rare+            1.0 min  [  0.8 min -   1.0 min]
     Z1 stone Lv2           0.7 min  [  0.7 min -   0.7 min]
-    first Gold fusion      2.2 min  [  2.1 min -   2.3 min]
-    form 2 (tutorial)      1.2 min  [  1.1 min -   1.2 min]
-    boss 1                 3.5 min  [  3.3 min -   3.7 min]
-    boss 2                 9.1 min  [  8.4 min -   9.8 min]
-    boss 3                17.5 min  [ 16.1 min -  18.9 min]
-    boss 4                30.3 min  [ 28.3 min -  32.0 min]
-    boss 5                49.0 min  [ 45.8 min -  51.1 min]
-    boss 6                75.4 min  [ 69.9 min -  78.4 min]
-    boss 7               110.1 min  [104.0 min - 115.4 min]
-    boss 8                2.7 h  [ 2.5 h -  2.8 h]
+    first Gold fusion      1.6 min  [  1.4 min -   2.6 min]
+    form 2 (tutorial)      1.1 min  [  1.0 min -   1.1 min]
+    boss 1                 3.5 min  [  3.0 min -   3.8 min]
+    boss 2                 9.0 min  [  8.2 min -   9.7 min]
+    boss 3                17.4 min  [ 15.8 min -  18.4 min]
+    boss 4                29.9 min  [ 27.7 min -  31.6 min]
+    boss 5                48.4 min  [ 45.1 min -  51.2 min]
+    boss 6                74.1 min  [ 69.1 min -  78.6 min]
+    boss 7               108.9 min  [ 99.7 min - 115.4 min]
+    boss 8                2.7 h  [ 2.4 h -  2.9 h]
   [casual]
     first hatch            0.0 min  [  0.0 min -   0.0 min]
     first Rare+            1.8 min  [  1.5 min -   1.8 min]
     Z1 stone Lv2           1.3 min  [  1.3 min -   1.3 min]
-    first Gold fusion      4.0 min  [  3.8 min -   4.1 min]
-    form 2 (tutorial)      2.2 min  [  2.0 min -   2.2 min]
-    boss 1                 6.0 min  [  5.7 min -   6.5 min]
-    boss 2                15.2 min  [ 14.1 min -  16.2 min]
-    boss 3                29.9 min  [ 27.4 min -  31.5 min]
-    boss 4                53.8 min  [ 51.0 min -  56.6 min]
-    boss 5                90.8 min  [ 85.4 min -  94.0 min]
-    boss 6                2.4 h  [ 2.2 h -  2.5 h]
-    boss 7                3.6 h  [ 3.4 h -  3.8 h]
-    boss 8                5.4 h  [ 5.1 h -  5.6 h]
+    first Gold fusion      2.6 min  [  2.3 min -   4.4 min]
+    form 2 (tutorial)      1.9 min  [  1.8 min -   1.9 min]
+    boss 1                 5.8 min  [  5.2 min -   6.2 min]
+    boss 2                14.3 min  [ 13.0 min -  15.3 min]
+    boss 3                28.2 min  [ 25.7 min -  29.6 min]
+    boss 4                50.7 min  [ 47.3 min -  53.4 min]
+    boss 5                86.9 min  [ 79.4 min -  91.2 min]
+    boss 6                2.3 h  [ 2.0 h -  2.4 h]
+    boss 7                3.4 h  [ 3.1 h -  3.7 h]
+    boss 8                5.2 h  [ 4.5 h -  5.6 h]
   [skilled]
     first hatch            0.0 min  [  0.0 min -   0.0 min]
     first Rare+            0.6 min  [  0.5 min -   0.6 min]
     Z1 stone Lv2           0.4 min  [  0.4 min -   0.4 min]
-    first Gold fusion      1.3 min  [  1.3 min -   1.4 min]
-    form 2 (tutorial)      0.8 min  [  0.7 min -   0.8 min]
-    boss 1                 2.3 min  [  2.2 min -   2.4 min]
-    boss 2                 6.1 min  [  5.6 min -   6.4 min]
-    boss 3                11.7 min  [ 10.5 min -  12.5 min]
-    boss 4                19.1 min  [ 17.7 min -  20.5 min]
-    boss 5                29.4 min  [ 27.8 min -  31.1 min]
-    boss 6                43.2 min  [ 41.0 min -  45.4 min]
-    boss 7                61.9 min  [ 58.7 min -  64.8 min]
-    boss 8                88.8 min  [ 83.5 min -  92.0 min]
+    first Gold fusion      1.1 min  [  1.0 min -   2.6 min]
+    form 2 (tutorial)      0.7 min  [  0.6 min -   0.7 min]
+    boss 1                 2.3 min  [  1.9 min -   2.5 min]
+    boss 2                 6.4 min  [  5.4 min -   7.1 min]
+    boss 3                12.2 min  [ 10.9 min -  13.1 min]
+    boss 4                19.9 min  [ 18.3 min -  21.2 min]
+    boss 5                30.5 min  [ 28.1 min -  32.5 min]
+    boss 6                44.4 min  [ 41.8 min -  47.5 min]
+    boss 7                63.3 min  [ 59.8 min -  68.5 min]
+    boss 8                90.1 min  [ 83.5 min -  97.7 min]
   [idle]
     first hatch            0.0 min  [  0.0 min -   0.0 min]
     first Rare+            4.6 min  [  3.9 min -   4.6 min]
     Z1 stone Lv2           3.3 min  [  3.3 min -   3.3 min]
-    first Gold fusion     10.2 min  [  9.9 min -  10.6 min]
-    form 2 (tutorial)      5.6 min  [  5.2 min -   5.6 min]
-    boss 1                14.3 min  [ 13.5 min -  14.7 min]
-    boss 2                35.5 min  [ 32.9 min -  37.4 min]
-    boss 3                70.9 min  [ 66.3 min -  74.5 min]
-    boss 4                2.2 h  [ 2.1 h -  2.3 h]
+    first Gold fusion      6.1 min  [  5.5 min -  10.9 min]
+    form 2 (tutorial)      4.8 min  [  4.5 min -   4.8 min]
+    boss 1                13.4 min  [ 12.4 min -  14.0 min]
+    boss 2                32.4 min  [ 29.5 min -  34.3 min]
+    boss 3                64.2 min  [ 59.0 min -  67.6 min]
+    boss 4                2.0 h  [111.6 min -  2.1 h]
     boss 5               reached by 0/120
     boss 6               reached by 0/120
     boss 7               reached by 0/120

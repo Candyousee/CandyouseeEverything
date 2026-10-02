@@ -5,7 +5,8 @@ It plays the actual rules second by second with simulated players:
 Step 1 DERIVES the boss gates from target zone times (average player, first run).
 Step 2 VERIFIES with fresh stochastic players and prints the balance table + timelines.
 Step 3 compares Ascension strategies. Run: python economy.py  (about 1-2 minutes)."""
-import math, random, statistics as st
+import math, random, statistics as st, zlib
+from collections import Counter
 from training import rate as train_rate
 from clash_sim import clash as clash_fight
 
@@ -25,6 +26,9 @@ BASE_SLOTS, MAX_ASC_SLOTS = 3, 3
 EGG_SECONDS, LV2_SECONDS, LV3_SECONDS = 15, 40, 120         # prices = seconds of AVERAGE Lv1 coin income in that zone
 FIRST_CLEAR_SECONDS = 30                                    # boss first-clear coins = 30 s of next zone's Lv1 income
 HATCH_TIME = 2.0
+AUTO_FUSE_RARITIES = {0, 1}                                # auto-fuse default: Commons + Rares, unequipped only
+ALTAR_TRIP = 15.0                                          # seconds for a manual-fusion trip to the Plaza altar
+OVERPOWER, OVERPOWER_TIME = 3.0, 2.0
 TARGET_MIN = [3, 5, 8, 12, 18, 25, 35, 50]                  # DESIGN TARGET: minutes per zone, average player, first run
 ASC_DEPTH = [4, 5, 5, 6, 6, 7, 7, 8, 8]                     # depth needed for Ascension n+1; after the list: Infinity tier n-8
 ASC_REQ_DEPTH = lambda n: ASC_DEPTH[n] if n < len(ASC_DEPTH) else 8 + (n - len(ASC_DEPTH) + 1)
@@ -61,7 +65,7 @@ def win_prob(profile, ratio, rnd):
     key = (profile, round(min(ratio, 3.0), 2))
     if key not in _CL:
         pp, pc = PROFILES[profile]["clash"]
-        r2 = random.Random(hash(key) & 0xffff)
+        r2 = random.Random(zlib.crc32(repr(key).encode()))      # stable seed (no Python hash randomisation)
         res = [clash_fight(key[1], pp, pc, r2) for _ in range(300)]
         wins = [t for w, t in res if w]
         _CL[key] = (len(wins) / 300, (sum(wins) / len(wins)) if wins else 45.0)
@@ -87,15 +91,20 @@ class Player:
     # --- derived values
     def slots(self):
         return BASE_SLOTS + len(self.slots_zone) + min(self.asc, MAX_ASC_SLOTS)
-    def equipped(self):
+    def equipped_keys(self, inv=None):
+        inv = self.inv if inv is None else inv
         items = []
-        for (z, r, tier, sh), n in self.inv.items():
-            items += [bonus(z, r, tier, sh)] * n
-        items.sort(reverse=True)
+        for k, n in inv.items():
+            items += [k] * n
+        items.sort(key=lambda k: bonus(*k), reverse=True)
         return items[: self.slots()]
+    def equipped(self):
+        return [bonus(*k) for k in self.equipped_keys()]
+    def mult_of(self, inv):
+        return 1 + sum(bonus(*k) for k in self.equipped_keys(inv))
     def spirit_mult(self):
         if self._mult is None:
-            self._mult = 1 + sum(self.equipped())
+            self._mult = self.mult_of(self.inv); self._ev = None
         return self._mult
     def asc_mult(self):
         return 1 + ASC_PER_SHARD * self.shards
@@ -125,25 +134,67 @@ class Player:
         if r >= 1: self.mark("first Rare+")
         if r >= 2: self.mark("first Epic+")
         if r >= 3: self.mark("first Legendary+")
-        self.fuse(); self._mult = None
         self.t += HATCH_TIME
+        self._mult = None
+        self.auto_fuse(); self.manual_fuse()
 
-    def fuse(self):
+    @staticmethod
+    def fuse_all(inv):
+        """Every possible fusion (used to value an egg: fusing never lowers team power)."""
+        inv = dict(inv); changed = True
+        while changed:
+            changed = False
+            for (z, r, tier, sh), n in list(inv.items()):
+                if tier < 2 and n >= FUSE_N:
+                    inv[(z, r, tier, sh)] = n - FUSE_N
+                    k = (z, r, tier + 1, sh); inv[k] = inv.get(k, 0) + 1; changed = True
+        return {k: v for k, v in inv.items() if v > 0}
+
+    def _fuse_once(self, key):
+        z, r, tier, sh = key
+        self.inv[key] -= FUSE_N
+        k = (z, r, tier + 1, sh); self.inv[k] = self.inv.get(k, 0) + 1
+        self.inv = {k: v for k, v in self.inv.items() if v > 0}
+        self.mark("first Gold fusion" if tier == 0 else "first Rainbow fusion"); self._mult = None
+
+    def auto_fuse(self):
+        """Auto-fuse rule: enabled rarities only (Common, Rare), using UNEQUIPPED copies only. Runs anywhere."""
         changed = True
         while changed:
             changed = False
-            for (z, r, tier, sh), n in list(self.inv.items()):
-                if tier < 2 and n >= FUSE_N:
-                    self.inv[(z, r, tier, sh)] = n - FUSE_N
-                    k = (z, r, tier + 1, sh); self.inv[k] = self.inv.get(k, 0) + 1
-                    self.mark("first Gold fusion" if tier == 0 else "first Rainbow fusion"); changed = True
-        self.inv = {k: v for k, v in self.inv.items() if v > 0}
+            eq = Counter(self.equipped_keys())
+            for key, n in list(self.inv.items()):
+                z, r, tier, sh = key
+                if tier < 2 and r in AUTO_FUSE_RARITIES and n - eq[key] >= FUSE_N:
+                    self._fuse_once(key); changed = True; break
+
+    def manual_fuse(self):
+        """Manual fusion at the Plaza altar (any rarity, equipped allowed): the player makes the trip
+        when at least one fusion raises team power, and does every such fusion on that trip."""
+        trip = False
+        while True:
+            base = self.spirit_mult(); best = None
+            for key, n in self.inv.items():
+                if key[2] < 2 and n >= FUSE_N:
+                    trial = dict(self.inv); z, r, tier, sh = key
+                    trial[key] -= FUSE_N; k = (z, r, tier + 1, sh); trial[k] = trial.get(k, 0) + 1
+                    gain = self.mult_of({a: b for a, b in trial.items() if b > 0}) - base
+                    if gain > 1e-9 and (best is None or gain > best[0]): best = (gain, key)
+            if not best: break
+            if not trip: self.t += ALTAR_TRIP; trip = True
+            self._fuse_once(best[1])
 
     def egg_value(self):
-        z = self.zone; eq = self.equipped(); full = len(eq) >= self.slots()
-        weakest = eq[-1] if full else 0.0
-        gain = sum(p * max(0.0, bonus(z, r) - weakest) for r, p in enumerate(ODDS))
-        return gain / self.spirit_mult()
+        """Exact expected team-power gain of one hatch, INCLUDING fusions it completes (e.g. the 3rd Epic)."""
+        base = self.spirit_mult()
+        if getattr(self, "_ev", None) is not None and self._ev[0] == (self.zone, base, self.slots()):
+            return self._ev[1]
+        z, gain = self.zone, 0.0
+        for r, p in enumerate(ODDS):
+            trial = dict(self.inv); k = (z, r, 0, False); trial[k] = trial.get(k, 0) + 1
+            gain += p * (self.mult_of(self.fuse_all(trial)) - base)
+        self._ev = ((self.zone, base, self.slots()), gain / base)
+        return self._ev[1]
 
     def shop(self):
         z = self.zone
@@ -169,7 +220,7 @@ class Player:
         gate = self.gates[z] if inf < 0 else self.gates[7] * INFINITY_STEP ** (inf + 1)
         ratio = self.power / gate
         if ratio < PROFILES[self.p]["attempt"] or self.t < self.next_try: return False
-        p, dur = win_prob(self.p, ratio, self.rnd)
+        p, dur = (1.0, OVERPOWER_TIME) if ratio >= OVERPOWER else win_prob(self.p, ratio, self.rnd)
         self.t += dur
         if self.rnd.random() >= p:
             self.next_try = self.t + 30; return False

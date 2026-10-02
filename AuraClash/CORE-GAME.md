@@ -1,4 +1,4 @@
-# AURA CLASH: Core Game v2.1 (rules + one balance model)
+# AURA CLASH: Core Game v2.2 (rules + one balance model, audited)
 
 **No monetization here:** the owner designs that separately.
 
@@ -10,8 +10,9 @@
 | `clash_sim.py` | boss fights | `clash_results.txt` |
 | `economy.py` | prices, gates, eggs, fusion, first-run timelines | `RESULTS-economy.txt` |
 | `ascension.py` | Ascension strategies and the first 2 hours | `RESULTS-ascension.txt` |
+| `tests.py` | 7 rule checks that tie the model to this document | `python tests.py` → 7 passed |
 
-- **Verify:** `python economy.py && python ascension.py` (Python 3, standard library only, about 2 minutes).
+- **Verify:** `python tests.py && python economy.py && python ascension.py` (Python 3, standard library only, about 2 minutes). Seeds are fixed, so the results are identical on every run.
 - **Change a rule → change its constant → re-run.**
 - **All times are model outputs** for simulated players.
 - **Assumptions the times depend on:**
@@ -19,6 +20,22 @@
   - a hatch takes 2 s;
   - walking and menus are not modelled (add about 10-15%);
   - INDEX bonuses are not modelled (at most +50%, so the times are conservative).
+
+## Changes in v2.2 (audit: the model must follow the written rules)
+
+| # | Audit finding | Fix (model + doc) | Test |
+|---|---|---|---|
+| 1 | The beam didn't move during recovery; the 2 s Overpower took about 6.6 s | The drift now runs continuously (recovery, counters); Overpower = exactly 2 s in the model | `test_drift_continues_during_recovery`, `test_overpower_is_two_seconds` |
+| 2 | The model auto-fused every rarity, including equipped spirits | Auto-fuse = Commons + Rares, unequipped copies only. Everything else is a manual fusion at the Plaza altar (+15 s trip), and only when it raises team power | `test_auto_fuse_rules`, `test_manual_fusion_never_lowers_power` |
+| 3 | The buyer ignored fusions an egg would complete | The egg value is now the exact expected team gain **including the fusion it completes** | `test_egg_value_counts_fusion` |
+| 4 | The Fire-look playtest contradicted the Wardrobe | The new-look prompt + choosing the look at the Wardrobe Mirror is now what the playtest checks (4.2, 13) | — |
+| 5 | GAME-PLAN.md had an outdated build plan, monetization steps and a false "gold cracks → Epic" cue | GAME-PLAN.md is rewritten as market + pitch + the two-zone build only; **crack colour always equals the result** (3.1); old drafts deleted | — |
+| small | Unstable seeds; minimum shard; incubator / overflow details | Stable CRC seeds; the shard formula floors at 1; incubator / mailbox rules (10.2, 3.6) | `test_stable_seeds`, `test_min_one_shard` |
+
+**Effect on results:**
+- boss powers shifted slightly (boss 1 is now 820);
+- the average first run to boss 8 is still about 2.7 h;
+- the Ascension strategy picture is unchanged.
 
 ## Changes in v2.1 (second review)
 
@@ -116,7 +133,7 @@ Coins per release = gain × STONE BASE × STONE LEVEL
   - a free tutorial egg;
   - the 1st hatch is a Common;
   - the 3rd hatch is a Rare.
-- **Hatch:** 2 s (skippable to 1 s), with the coloured-crack tell.
+- **Hatch:** 2 s (skippable to 1 s), with the coloured-crack tell. **The crack colour is ALWAYS the real result's rarity.** No fake "almost" cues, ever.
 
 ### 3.2 Bonuses (normal spirits; each zone ×2.5 the last)
 
@@ -172,6 +189,8 @@ Coins per release = gain × STONE BASE × STONE LEVEL
 
 - **Auto-fuse:** a toggle, **default ON for Commons and Rares**. It runs **anywhere**, instantly, but only on spirits that are **unequipped and unfavourited**.
 - **Manual fusion** (any rarity, including equipped spirits) happens **only at the Fusion Altar in the Plaza**. It shows the team-power preview ("Team ×12.4 → ×13.1") and asks for confirmation.
+- **When manual fusion is possible,** the Spirits button shows a "Fusion ready" badge, so players know a Plaza trip is worth it.
+- **How the model plays it:** a trip to the altar (15 s) whenever any fusion would raise team power, doing every such fusion on that trip.
 - **Favourited spirits** are never used by fusion or deletion.
 
 ### 3.6 Inventory
@@ -180,7 +199,8 @@ Coins per release = gain × STONE BASE × STONE LEVEL
 - **When it's full:**
   - hatching is blocked, with a one-tap "Delete all unequipped Commons from old zones?" prompt;
   - **auto-delete rules** (per zone × rarity) clean up as you hatch;
-  - rewards that would overflow (incubator, tickets, Boss Spirits) wait in a **Plaza mailbox** (up to 50) until there's space.
+  - rewards that would overflow (incubator, tickets, Boss Spirits) wait in a **Plaza mailbox** (up to 50) until there's space;
+  - **if the mailbox is also full,** the incubator keeps its finished reward (shown as "Ready, make space") and doesn't start a new egg. Nothing is ever deleted automatically.
 
 ---
 
@@ -199,6 +219,9 @@ Coins per release = gain × STONE BASE × STONE LEVEL
 ### 4.2 Wardrobe (no downgrades) + Signature looks
 
 - **Every element × rarity you've ever hatched** is unlocked forever. **Auto** = the rarest one unlocked (ties go to the newest zone).
+- **New-look prompt:** the first time a hatch unlocks a look you don't have, the hatch card shows **"NEW LOOK: wear it?"** (one tap, or ignore). Saying yes sets that look (manual mode), and you can return to Auto at the Wardrobe Mirror.
+
+  This is how a player gets the Fire look from a zone-2 Common even though they already own a Light Rare: **they choose it**. Auto would keep the rarer Light Rare.
 - **Boss Spirits unlock Signature looks:** 8 unique shapes, separate from the element looks, with Mythic-level ornament:
 
 | Boss | Signature look |
@@ -267,11 +290,14 @@ Ascension resets the form part. The permanent part and the halo stay.
 
 | You ÷ boss | Casual (40% / 40%) | Average (60% / 65%) | Skilled (85% / 90%) |
 |---|---|---|---|
-| 0.9× | 0% | 2% | 80% |
-| 1.0× | 1% | 40% | 100% |
-| **1.1× (gold)** | 21% | **92%** | 100% |
-| 1.25× | **93%** | 100% | 100% |
-| 1.5× | 100% | 100% | 100% |
+| 0.9× | 0% | 2% | 74% |
+| 1.0× | 1% | 41% | 100% |
+| **1.1× (gold)** | 29% | **94%** | 100% |
+| 1.25× | **98%** | 100% | 100% |
+| 1.5× | 100% (16 s) | 100% (14 s) | 100% (12 s) |
+| 3.0× and above | Overpower: 2 s KO | 2 s | 2 s |
+
+The beam drifts continuously, including during recovery and counters (v2.2 fix).
 
 ### Clear rewards
 
@@ -293,8 +319,10 @@ Ascension resets the form part. The permanent part and the halo stay.
 - **Shards:**
 
   ```
-  shards = 1 + floor( log₁₀₀( peak run power ÷ power of the boss at D(n) ) )
+  shards = 1 + floor( log₁₀₀( max(peak run power, B) ÷ B ) )      B = power of the boss at D(n)
   ```
+
+  The `max` means a skilled player who beats the required boss **below** its power still gets exactly 1 shard.
 
   That's 1 for meeting the requirement, +1 for each ×100 beyond it. The Ascend button always shows "+X now; next at Y power".
 - **Why early-zone farming is impossible:** the requirement is a boss or tier you must clear, not a power number. From Ascension 2 on it's beyond zone 4, and from Ascension 10 on it **requires Infinity tiers**.
@@ -312,10 +340,10 @@ Ascension resets the form part. The permanent part and the halo stay.
 
 | Strategy | Ascensions | Shards | ASCENSION × | First boss 8 |
 |---|---|---|---|---|
-| Ascend ASAP (1 shard) | 15 | 15 | 8.5 | 2.7 h |
-| Wait for 2 shards | 7 | 14 | 8.0 | 2.2 h |
-| Wait for 3 shards | 5 | 15 | 8.5 | 2.8 h |
-| Wait for 4 shards | 1 | 4 | 3.0 | 2.7 h |
+| Ascend ASAP (1 shard) | 15 | 15 | 8.5 | 2.6 h |
+| Wait for 2 shards | 7 | 14 | 8.0 | 2.1 h |
+| Wait for 3 shards | 5 | 15 | 8.5 | 2.6 h |
+| Wait for 4 shards | 1 | 4 | 3.0 | 2.6 h |
 
 **Both paths work:**
 - **ASAP:** more Ascensions, so more slots, halos and ceremonies;
@@ -331,15 +359,15 @@ Ascension resets the form part. The permanent part and the halo stay.
 
 | Zone (element) | Stone base | Egg | Stone Lv2 | Stone Lv3 | Boss power | Gold gate | First-clear coins (once) |
 |---|---|---|---|---|---|---|---|
-| 1 Training Grounds (Light) | 1 | 29 | 79 | 240 | 1,100 | 1,200 | 350 |
-| 2 Lava Dojo (Fire) | 6 | 180 | 470 | 1,400 | 79,000 | 87,000 | 2,100 |
-| 3 Frozen Peak (Frost) | 36 | 1,100 | 2,800 | 8,500 | 3.4 M | 3.7 M | 13,000 |
-| 4 Storm Temple (Storm) | 216 | 6,400 | 17,000 | 51,000 | 130 M | 140 M | 76,000 |
+| 1 Training Grounds (Light) | 1 | 29 | 79 | 240 | 820 | 900 | 350 |
+| 2 Lava Dojo (Fire) | 6 | 180 | 470 | 1,400 | 56,000 | 62,000 | 2,100 |
+| 3 Frozen Peak (Frost) | 36 | 1,100 | 2,800 | 8,500 | 2.7 M | 3.0 M | 13,000 |
+| 4 Storm Temple (Storm) | 216 | 6,400 | 17,000 | 51,000 | 120 M | 130 M | 76,000 |
 | 5 Sakura Realm (Nature) | 1,296 | 38,000 | 100,000 | 310,000 | 3.5 B | 3.9 B | 460,000 |
-| 6 Sky Sanctuary (Light) | 7,776 | 230,000 | 610,000 | 1.8 M | 87 B | 96 B | 2.8 M |
-| 7 Void Rift (Void) | 46,656 | 1.4 M | 3.7 M | 11 M | 1.9 T | 2.1 T | 17 M |
-| 8 Galaxy Throne (Cosmic) | 279,936 | 8.3 M | 22 M | 66 M | 43 T | 47 T | — |
-| Infinity tier k | (zone 8) | (zone 8) | — | — | 43 T × 1.6ᵏ | ×1.1 | — |
+| 6 Sky Sanctuary (Light) | 7,776 | 230,000 | 610,000 | 1.8 M | 89 B | 98 B | 2.8 M |
+| 7 Void Rift (Void) | 46,656 | 1.4 M | 3.7 M | 11 M | 2.0 T | 2.2 T | 17 M |
+| 8 Galaxy Throne (Cosmic) | 279,936 | 8.3 M | 22 M | 66 M | 46 T | 51 T | — |
+| Infinity tier k | (zone 8) | (zone 8) | — | — | 46 T × 1.6ᵏ | ×1.1 | — |
 
 ---
 
@@ -373,13 +401,13 @@ Ascension resets the form part. The permanent part and the halo stay.
 | Event | Casual | Average | Skilled | Meditation + manual mgmt |
 |---|---|---|---|---|
 | First Rare | 1.8 m | 1.0 m | 0.6 m | 4.6 m |
-| First Gold | 4.0 m | 2.2 m | 1.3 m | 10.2 m |
-| Boss 1 | 6.0 m | 3.5 m [3.3-3.7] | 2.3 m | 14 m |
-| Boss 2 | 15 m | 9.1 m [8.4-9.8] | 6.1 m | 36 m |
-| Boss 3 | 30 m | 17.5 m [16.1-18.9] | 11.7 m | 71 m |
-| Boss 4 | 54 m | 30.3 m [28.3-32.0] | 19 m | 2.2 h |
-| Boss 5 | 91 m | 49 m | 29 m | — |
-| Boss 8 | 5.4 h | 2.7 h [2.5-2.8] | 1.5 h | — |
+| First Gold | 2.6 m | 1.6 m | 1.1 m | 6.1 m |
+| Boss 1 | 5.8 m | 3.5 m [3.0-3.8] | 2.3 m | 13 m |
+| Boss 2 | 14 m | 9.0 m [8.2-9.7] | 6.4 m | 32 m |
+| Boss 3 | 28 m | 17.4 m [15.8-18.4] | 12.2 m | 64 m |
+| Boss 4 | 51 m | 29.9 m [27.7-31.6] | 20 m | 2.0 h |
+| Boss 5 | 87 m | 48 m | 31 m | — |
+| Boss 8 | 5.2 h | 2.7 h [2.4-2.9] | 1.5 h | — |
 
 **First 2 hours** (average player, one seed, waits for 2 shards):
 
@@ -387,21 +415,19 @@ Ascension resets the form part. The permanent part and the halo stay.
 |---|---|
 | 0:00 | free egg |
 | 1:00 | Rare (guaranteed) |
-| 1:12 | FLAME |
-| 2:06 | first Gold |
-| 3:36 | boss 1 + 4th slot |
-| 5:48 | first Rainbow |
-| 9:36 | boss 2 |
-| 17:42 | boss 3 + 5th slot |
-| 30:12 | boss 4 |
-| 48:06 | boss 5 + 6th slot |
-| 51:48 | **Ascension 1** |
-| 71:24 | boss 6 |
-| 74:12 | **Ascension 2** |
-| 84:18 | **Ascension 3** |
-| 98:12 | boss 7 |
-| 101:06 | **Ascension 4** |
-| 110:12 | **Ascension 5** |
+| 1:06 | FLAME |
+| 1:24 | first Gold (auto-fuse, 3 Commons) |
+| 3:18 | boss 1 + 4th slot |
+| 6:24 | first Rainbow |
+| 9:24 | boss 2 |
+| 16:18 | boss 3 + 5th slot |
+| 28:12 | boss 4 |
+| 47:48 | boss 5 + 6th slot |
+| 51:24 | **Ascension 1** |
+| 70:36 | **Ascension 2** |
+| 80:12 | **Ascension 3** |
+| 96:36 | **Ascension 4** |
+| 106:30 | **Ascension 5** |
 
 ---
 
@@ -421,7 +447,8 @@ Ascension resets the form part. The permanent part and the halo stay.
 
 ### 10.2 Incubator (Plaza; built to be worth coming back for)
 
-- **Start:** pay one egg price of your deepest unlocked zone. It runs **8 h of real time** (counts offline). One slot.
+- **Start:** pay one egg price of your deepest zone **unlocked in the current run**. It runs **8 h of real time** (counts offline). One slot.
+- **The reward is fixed when you START it** (zone = that deepest zone). Ascending while it runs doesn't change it.
 - **Collect:**
   1. **one guaranteed Legendary-or-better** spirit of your deepest zone (Legendary 95% / Mythic 5%);
   2. a **20% chance it's a Dream variant:** ×1.25 bonus + the exclusive Dream Wardrobe look (only obtainable here);
@@ -458,7 +485,7 @@ One every 10 min online (up to 6 a day), each 1 Ticket.
 
 ## 11. ENDGAME
 
-- **The Infinity Gate:** tier k = 43 T × 1.6ᵏ. These tiers are **required** for Ascension 10+.
+- **The Infinity Gate:** tier k = 46 T × 1.6ᵏ. These tiers are **required** for Ascension 10+.
 - **Leaderboards:** server + global, with the top-3 statues in the Plaza.
 - **Halo stars never cap.**
 - **Collections:**
@@ -490,8 +517,8 @@ One every 10 min online (up to 6 a day), each 1 Ticket.
 - the stone, charge / release, combo, Overdrive and meditation;
 - the zone 1 egg (Light) and the zone 2 egg (Fire);
 - spirits orbiting;
-- **the Wardrobe changes when the first Rare arrives** (the ornament step);
-- **the element changes Light → Fire** on the first zone-2 hatch;
+- **Auto look upgrades when the first Rare arrives** (the ornament step: Light Common → Light Rare);
+- **the first zone-2 hatch shows "NEW LOOK: wear it?"** for Fire. The player can wear it, or pick it later at the Wardrobe Mirror;
 - boss 1 with the counter → BLAZE;
 - auto-fuse + the Fusion Altar;
 - the incubator.
@@ -504,7 +531,7 @@ One every 10 min online (up to 6 a day), each 1 Ticket.
 | 2 | Buys a stone upgrade **without being told** | yes, before boss 1 |
 | 3 | Taps on the red flash **without being told** | by the 2nd clash |
 | 4 | Keeps playing after boss 1 with no prompt | 10+ min |
-| 5 | Opens the zone-2 egg and **re-equips** for the Fire look or power | yes |
+| 5 | Opens the zone-2 egg, **chooses to wear the Fire look** (via the prompt or the Mirror) and lets Equip Best upgrade power | yes, without being told |
 | 6 | Starts the incubator before leaving day 1 | yes |
 | 7 | **Day 2: comes back and collects** the incubator / streak, then keeps playing | yes, 10+ min |
 | 8 | Timing behaviour at 10+ min: still aiming for PERFECTs, using Overdrive, idling when tired | not abandoning timing |
