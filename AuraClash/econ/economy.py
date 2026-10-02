@@ -1,0 +1,262 @@
+"""AURA CLASH economy model v2: ONE model for every number in CORE-GAME v2.
+It plays the actual rules second by second with simulated players:
+  training rates (training.py), coins, stone upgrades, eggs (real odds + guarantees), fusion,
+  equip-best, forms, boss clashes (win chance from clash_sim.py), slots, Ascension.
+Step 1 DERIVES the boss gates from target zone times (average player, first run).
+Step 2 VERIFIES with fresh stochastic players and prints the balance table + timelines.
+Step 3 compares Ascension strategies. Run: python economy.py  (about 1-2 minutes)."""
+import math, random, statistics as st
+from training import rate as train_rate
+from clash_sim import clash as clash_fight
+
+# ---------------- RULES (mirrors CORE-GAME v2) ----------------
+ZONES = 8
+STONE_BASE = [6 ** z for z in range(ZONES)]                 # base units per standard release, x6 per zone
+STONE_MULT = {1: 1, 2: 2, 3: 4}
+RARITIES = ["Common", "Rare", "Epic", "Legendary", "Mythic"]
+ODDS = [0.60, 0.28, 0.10, 0.019, 0.001]
+R_BONUS = [0.10, 0.25, 0.60, 1.50, 4.00]                    # zone-1 bonus by rarity
+SPIRIT_STEP = 2.5                                           # each zone's spirits are x2.5 the previous zone's
+GOLD, RAINBOW, SHINY, SHINY_P = 6.0, 36.0, 1.5, 0.01
+FORM_BONUS = 0.05
+SLOT_ZONES = {2, 4, 6}                                      # +1 slot the first time you reach these zones (permanent)
+BASE_SLOTS, MAX_ASC_SLOTS = 3, 3
+EGG_SECONDS, LV2_SECONDS, LV3_SECONDS = 15, 40, 120         # prices = seconds of AVERAGE Lv1 coin income in that zone
+FIRST_CLEAR_SECONDS = 30                                    # boss first-clear coins = 30 s of next zone's Lv1 income
+HATCH_TIME = 2.0
+TARGET_MIN = [3, 5, 8, 12, 18, 25, 35, 50]                  # DESIGN TARGET: minutes per zone, average player, first run
+ASC_STEP = 5.0                                              # Ascension n+1 needs peak run power >= boss-4 power x 5^n
+ASC_REQ = lambda n, g4: g4 * ASC_STEP ** n
+SHARD_STEP = 100.0
+SHARDS = lambda power, req: 1 + int(math.log(power / req, SHARD_STEP))   # +1 at the requirement, +1 per x100 beyond it
+ASC_PER_SHARD = 0.5
+INFINITY_STEP = 1.6                                         # Infinity tier k boss power = boss 8 x 1.6^k
+
+PROFILES = {  # training perfect%, clash (perfect, counter), boss attempt ratio
+    "idle":    dict(train=("idle", 0.0), clash=(0.40, 0.40), attempt=1.30),
+    "casual":  dict(train=("active", 0.40), clash=(0.40, 0.40), attempt=1.25),
+    "average": dict(train=("active", 0.60), clash=(0.60, 0.65), attempt=1.10),
+    "skilled": dict(train=("active", 0.85), clash=(0.85, 0.90), attempt=0.95),
+}
+G_RATE = {k: train_rate(v["train"][1], v["train"][0])[0] for k, v in PROFILES.items()}
+AVG_INCOME = [G_RATE["average"] * STONE_BASE[z] for z in range(ZONES)]   # coins/s at stone Lv1
+
+def nice(x):
+    if x < 10: return max(1, round(x))
+    mag = 10 ** (int(math.log10(x)) - 1)
+    return int(round(x / mag) * mag)
+
+EGG_PRICE = [nice(EGG_SECONDS * AVG_INCOME[z]) for z in range(ZONES)]
+LV2_PRICE = [nice(LV2_SECONDS * AVG_INCOME[z]) for z in range(ZONES)]
+LV3_PRICE = [nice(LV3_SECONDS * AVG_INCOME[z]) for z in range(ZONES)]
+FIRST_CLEAR = [nice(FIRST_CLEAR_SECONDS * AVG_INCOME[min(z + 1, ZONES - 1)]) for z in range(ZONES)]
+
+def bonus(z, r, tier=0, shiny=False):
+    return R_BONUS[r] * SPIRIT_STEP ** z * (GOLD if tier == 1 else RAINBOW if tier == 2 else 1.0) * (SHINY if shiny else 1.0)
+
+# ---------------- clash win table (from clash_sim) ----------------
+_CL = {}
+def win_prob(profile, ratio, rnd):
+    key = (profile, round(min(ratio, 3.0), 2))
+    if key not in _CL:
+        pp, pc = PROFILES[profile]["clash"]
+        r2 = random.Random(hash(key) & 0xffff)
+        res = [clash_fight(key[1], pp, pc, r2) for _ in range(300)]
+        wins = [t for w, t in res if w]
+        _CL[key] = (len(wins) / 300, (sum(wins) / len(wins)) if wins else 45.0)
+    return _CL[key]
+
+# ---------------- the player ----------------
+class Player:
+    def __init__(self, profile, gates, seed):
+        self.p, self.gates, self.rnd = profile, gates, random.Random(seed)
+        self.g = G_RATE[profile]
+        self.inv = {}                 # (zone, rarity, tier, shiny) -> count
+        self.asc, self.shards, self.best_zone_ever = 0, 0, 0
+        self.slots_zone = set(); self.hatches_total = 0
+        self.t, self.ev = 0.0, {}
+        self.reset_run()
+        self.hatch(0, free=True)                                # tutorial: a free egg waits at the stand
+
+    def reset_run(self):
+        self.zone, self.power, self.coins, self.deepest = 0, 0.0, 0.0, 0
+        self.stone = [1] * ZONES; self.form = 1; self.next_try = 0.0
+        self._mult = None
+
+    # --- derived values
+    def slots(self):
+        return BASE_SLOTS + len(self.slots_zone) + min(self.asc, MAX_ASC_SLOTS)
+    def equipped(self):
+        items = []
+        for (z, r, tier, sh), n in self.inv.items():
+            items += [bonus(z, r, tier, sh)] * n
+        items.sort(reverse=True)
+        return items[: self.slots()]
+    def spirit_mult(self):
+        if self._mult is None:
+            self._mult = 1 + sum(self.equipped())
+        return self._mult
+    def asc_mult(self):
+        return 1 + ASC_PER_SHARD * self.shards
+    def power_rate(self):
+        return self.g * STONE_BASE[self.zone] * STONE_MULT[self.stone[self.zone]] * self.spirit_mult() \
+               * (1 + FORM_BONUS * (self.form - 1)) * self.asc_mult()
+    def coin_rate(self):
+        return self.g * STONE_BASE[self.zone] * STONE_MULT[self.stone[self.zone]]
+
+    def mark(self, name):
+        self.ev.setdefault(name, self.t)
+
+    # --- actions
+    def hatch(self, z, free=False):
+        if not free: self.coins -= EGG_PRICE[z]
+        self.hatches_total += 1
+        if self.hatches_total == 1 and self.asc == 0: r = 0                       # guarantee: 1st hatch Common
+        elif self.hatches_total == 3 and self.asc == 0: r = 1                     # guarantee: 3rd hatch Rare
+        else:
+            x, r = self.rnd.random(), 0
+            for i, p in enumerate(ODDS):
+                if x < p: r = i; break
+                x -= p
+        sh = self.rnd.random() < SHINY_P
+        k = (z, r, 0, sh); self.inv[k] = self.inv.get(k, 0) + 1
+        self.mark("first hatch")
+        if r >= 1: self.mark("first Rare+")
+        if r >= 2: self.mark("first Epic+")
+        if r >= 3: self.mark("first Legendary+")
+        self.fuse(); self._mult = None
+        self.t += HATCH_TIME
+
+    def fuse(self):
+        changed = True
+        while changed:
+            changed = False
+            for (z, r, tier, sh), n in list(self.inv.items()):
+                if tier < 2 and n >= 5:
+                    self.inv[(z, r, tier, sh)] = n - 5
+                    k = (z, r, tier + 1, sh); self.inv[k] = self.inv.get(k, 0) + 1
+                    self.mark("first Gold fusion" if tier == 0 else "first Rainbow fusion"); changed = True
+        self.inv = {k: v for k, v in self.inv.items() if v > 0}
+
+    def egg_value(self):
+        z = self.zone; eq = self.equipped(); full = len(eq) >= self.slots()
+        weakest = eq[-1] if full else 0.0
+        gain = sum(p * max(0.0, bonus(z, r) - weakest) for r, p in enumerate(ODDS))
+        return gain / self.spirit_mult()
+
+    def shop(self):
+        z = self.zone
+        while True:
+            options = []
+            if self.stone[z] < 3:
+                price = LV2_PRICE[z] if self.stone[z] == 1 else LV3_PRICE[z]
+                options.append((1.0 / price, "stone", price))
+            ev = self.egg_value()
+            if ev > 0.002: options.append((ev / EGG_PRICE[z], "egg", EGG_PRICE[z]))
+            if not options: return
+            options.sort(reverse=True)
+            _, what, price = options[0]
+            if self.coins < price: return
+            if what == "stone":
+                self.coins -= price; self.stone[z] += 1; self.mark(f"Z{z+1} stone Lv{self.stone[z]}")
+            else:
+                self.hatch(z)
+
+    def boss(self):
+        z = self.zone
+        inf = self.deepest - 8 if self.deepest >= 8 else -1
+        gate = self.gates[z] if inf < 0 else self.gates[7] * INFINITY_STEP ** (inf + 1)
+        ratio = self.power / gate
+        if ratio < PROFILES[self.p]["attempt"] or self.t < self.next_try: return False
+        p, dur = win_prob(self.p, ratio, self.rnd)
+        self.t += dur
+        if self.rnd.random() >= p:
+            self.next_try = self.t + 30; return False
+        if inf >= 0:
+            self.deepest += 1; self.mark(f"infinity {inf+1}"); return True
+        self.deepest = max(self.deepest, z + 1)
+        self.form = max(self.form, z + 3); self.mark(f"boss {z+1}" + (f" (A{self.asc})" if self.asc else ""))
+        self.mark(f"form {self.form}")
+        if z + 1 < ZONES:
+            self.coins += FIRST_CLEAR[z]
+            self.zone = z + 1; self.hatch(self.zone, free=True)
+            if (self.zone + 1) in SLOT_ZONES and (self.zone + 1) not in self.slots_zone:
+                self.slots_zone.add(self.zone + 1); self._mult = None; self.mark(f"slot at zone {self.zone+1}")
+        return True
+
+    def can_ascend(self):
+        return self.deepest >= 4 and self.power >= ASC_REQ(self.asc, self.gates[3])
+    def shards_now(self):
+        return SHARDS(self.power, ASC_REQ(self.asc, self.gates[3])) if self.can_ascend() else 0
+
+    def ascend(self):
+        self.shards += self.shards_now(); self.asc += 1
+        self.mark(f"Ascension {self.asc}")
+        self.reset_run(); self._mult = None
+
+    def step(self, dt=1.0):
+        self.power += self.power_rate() * dt; self.coins += self.coin_rate() * dt; self.t += dt
+        if self.form == 1 and self.power >= 0.2 * self.gates[0]:
+            self.form = 2; self.mark("form 2 (tutorial)")
+        self.shop()
+
+# ---------------- step 1: derive gates ----------------
+def derive_gates(k=60):
+    gates = [1.0] * ZONES
+    players = [Player("average", gates, s) for s in range(k)]
+    for z in range(ZONES):
+        end = sum(TARGET_MIN[: z + 1]) * 60
+        for pl in players:
+            while pl.t < end:
+                pl.step()
+        gates[z] = nice(st.median(pl.power for pl in players) / 1.1)
+        for pl in players:                                   # forced first clear at the target time
+            pl.gates = gates
+            pl.deepest = z + 1; pl.form = max(pl.form, z + 3)
+            if z + 1 < ZONES:
+                pl.coins += FIRST_CLEAR[z]; pl.zone = z + 1; pl.hatch(pl.zone, free=True)
+                if (z + 2) in SLOT_ZONES: pl.slots_zone.add(z + 2); pl._mult = None
+    return gates
+
+def first_run(profile, gates, seed, stop_after_boss=8, limit_h=8):
+    pl = Player(profile, gates, seed)
+    while pl.deepest < stop_after_boss and pl.t < limit_h * 3600:
+        pl.step(); pl.boss()
+    return pl
+
+def pct(xs, q):
+    xs = sorted(xs); return xs[min(len(xs) - 1, int(q * len(xs)))]
+
+def fmt(sec):
+    if sec is None: return "-"
+    m = sec / 60
+    return f"{m:5.1f} min" if m < 120 else f"{m/60:4.1f} h"
+
+if __name__ == "__main__":
+    print("TRAINING RATES (base units / s):", {k: round(v, 2) for k, v in G_RATE.items()})
+    gates = derive_gates()
+    print("\nBALANCE TABLE (derived)")
+    print(f"{'zone':>4}{'stone base':>11}{'egg':>11}{'stone Lv2':>12}{'stone Lv3':>12}{'boss power':>20}{'gold gate (1.1x)':>20}{'first-clear coins':>18}")
+    for z in range(ZONES):
+        print(f"{z+1:>4}{STONE_BASE[z]:>11,}{EGG_PRICE[z]:>11,}{LV2_PRICE[z]:>12,}{LV3_PRICE[z]:>12,}{gates[z]:>20,}{nice(1.1*gates[z]):>20,}{(FIRST_CLEAR[z] if z < 7 else 0):>18,}")
+    print("\nASCENSION REQUIREMENTS (peak power this run)")
+    for n in range(12):
+        req = ASC_REQ(n, gates[3]); near = max([z for z in range(ZONES) if gates[z] <= req], default=0)
+        extra = "" if req <= gates[7] else f"  (Infinity tier ~{math.ceil(math.log(req / gates[7], INFINITY_STEP))})"
+        print(f"  Ascension {n+1:>2}: {nice(req):>24,}   ~ zone {near+1} boss{extra}")
+    print("\nSPIRIT BONUS BY ZONE (added to the team multiplier; Gold x6, Rainbow x36, Shiny x1.5)")
+    print("zone " + "".join(f"{r:>12}" for r in RARITIES))
+    for z in range(ZONES):
+        print(f"{z+1:>4} " + "".join(f"{'+'+format(bonus(z,r),',.2f'):>12}" for r in range(5)))
+
+    N = 120
+    print(f"\nFIRST RUN, {N} simulated players per profile (median [p10-p90])")
+    for prof in ["average", "casual", "skilled", "idle"]:
+        runs = [first_run(prof, gates, 1000 + i, stop_after_boss=4 if prof == "idle" else 8, limit_h=10) for i in range(N)]
+        keys = ["first hatch", "first Rare+", "Z1 stone Lv2", "first Gold fusion", "form 2 (tutorial)"] + [f"boss {i}" for i in range(1, 9)]
+        print(f"  [{prof}]")
+        for k in keys:
+            xs = [r.ev[k] for r in runs if k in r.ev]
+            if len(xs) < N * 0.5: print(f"    {k:<20} reached by {len(xs)}/{N}"); continue
+            print(f"    {k:<20} {fmt(st.median(xs))}  [{fmt(pct(xs,0.1))} - {fmt(pct(xs,0.9))}]")
+    import json; json.dump({"gates": gates}, open("gates.json", "w"))

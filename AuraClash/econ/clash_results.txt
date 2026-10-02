@@ -1,0 +1,11 @@
+power ratio |  casual (40% perf, 40% counter) |             average (60% / 65%) |             skilled (85% / 90%)
+        0.6 |           0% win,   0.0 s avg    |           0% win,   0.0 s avg    |           0% win,   0.0 s avg   
+        0.7 |           0% win,   0.0 s avg    |           0% win,   0.0 s avg    |           0% win,   0.0 s avg   
+        0.8 |           0% win,   0.0 s avg    |           0% win,   0.0 s avg    |           4% win,  42.2 s avg   
+        0.9 |           0% win,   0.0 s avg    |           2% win,  41.7 s avg    |          80% win,  36.9 s avg   
+        1.0 |           1% win,  40.9 s avg    |          40% win,  38.2 s avg    |         100% win,  28.1 s avg   
+        1.1 |          21% win,  38.7 s avg    |          92% win,  32.6 s avg    |         100% win,  22.3 s avg   
+       1.25 |          93% win,  31.6 s avg    |         100% win,  23.1 s avg    |         100% win,  17.1 s avg   
+        1.5 |         100% win,  19.1 s avg    |         100% win,  15.4 s avg    |         100% win,  12.7 s avg   
+        2.0 |         100% win,  11.2 s avg    |         100% win,  10.0 s avg    |         100% win,   8.8 s avg   
+        3.0 |         100% win,   6.7 s avg    |         100% win,   6.6 s avg    |         100% win,   6.5 s avg   

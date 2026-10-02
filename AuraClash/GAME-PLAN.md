@@ -1,5 +1,8 @@
 # AURA CLASH: Game Plan v3 (streamlined; 2 October 2026; for owner approval)
 
+> **Core rules and all numbers now live in CORE-GAME.md v2** (backed by the model in `econ/`). Sections 2-4 below are superseded where they differ. Monetization (section 5) is the owner's to redesign.
+
+
 v1 and v2 are in archive/. This replaces both.
 
 - **Pacing numbers:** `econ/model.py`.
