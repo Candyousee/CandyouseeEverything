@@ -56,6 +56,25 @@ Numbers in brackets, like [r45], are the old STANDING-RULES numbers. They are ke
 
 **P11.** **Use the internet for references, always.** Before designing anything, research the best examples online (top Roblox games in this style, game UI galleries, art sites, trailers). Save them with source URLs in the project's ART/refs/.
 
+**P12.** **Prove the concept before building the game.** The owner's last game failed because its core concept wasn't enough. So:
+- the concept must pass the **concept test** (GAME-PLAN section 2b);
+- then a **greybox prototype** of the core loop must pass the **fun gate** (PIPELINE section 3c);
+- only then do art, polish and content start.
+
+A concept that fails gets reworked or killed, and Winter tells the owner why. Never polish a weak concept.
+
+**P13.** **Simple: show, don't tell.** Players like to see, not read.
+- Every system is understood from one picture in under 10 seconds.
+- Labels are 1-3 words; icons + numbers over sentences; tutorials point and show, never lecture.
+- If something needs a paragraph to explain, the design is too complicated: simplify the design, don't add text.
+
+**P14.** **Winter is the judge.** The owner gives Winter the power to decide what's good and reviews only the finished product. So Winter's bar must BE the owner's bar:
+- the rules, the style sheet and the taste gallery;
+- every gate passed honestly, never waved through;
+- when unsure whether he'd like something, choose the higher bar.
+
+The owner seeing a weak concept or an unfinished-looking result at the final review is the worst failure. Gates exist so that never happens.
+
 ## 1. Hard limits
 
 1. **Never spend** money, Robux, credits or paid trials, and never buy anything. Owner, 2026-09-30: *"NO MONEY or NO ROBUX is to be spent, everything else is on the table."* [r2, r15]

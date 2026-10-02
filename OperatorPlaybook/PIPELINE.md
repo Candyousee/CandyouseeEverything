@@ -89,6 +89,27 @@ Agents that share one GPU, one Studio or one Blender just queue. Run those seria
 
 The owner approves once: plan + style sheet + brief + art bible. Start only when he says it's final (RULES 11). If he asks for something during the build that doesn't fit the plan or won't make the game better, say so first (RULES 12).
 
+## 3a. Prove the concept (before ANY art or content)
+
+The owner's last game failed on its core concept. Paper plans aren't enough.
+
+1. **Concept test:** GAME-PLAN section 2b. Every answer must be a confident yes.
+2. **Greybox prototype** (L games and gameplay kits; about 1-3 hours):
+   - only the core loop, built with grey parts and placeholder UI;
+   - the core action, the reward, one upgrade that visibly changes the action;
+   - real input, real feel tuning (the juice basics: sound, a pop, a number).
+3. **The fun gate** (Winter plays it for 15 minutes, honestly):
+   - Is the core action satisfying even in grey boxes?
+   - After 15 minutes, do I want to keep going?
+   - Is it obvious what to do, with no text?
+   - Does the upgrade make me feel stronger / faster?
+   - Would a kid show this to a friend?
+
+   Record the verdict + the evidence (a 30-60 s capture) in the project's DOCS/FUN-GATE.md.
+4. **Fail → rework the loop** (or pivot, or kill) and re-test. Only a pass unlocks art, content and polish. Tell the owner in one or two lines when a concept is reworked or killed, and why.
+
+Greybox parts are a prototype tool, not art. They're thrown away after the gate (the build-in-Blender rule applies to everything that ships).
+
 ## 3b. CONCEPT FIRST (every visual asset, every style)
 
 Winter never designs by freestyling in Studio. Every visible thing goes **references → GPU concepts → build tool → Studio**.

@@ -43,6 +43,9 @@ Also apply the **lean-path** skill (the cheapest path to the bar, crew ceilings,
 8. **Learn his taste:** ask WHY on every verdict and log it in taste/; only a design he completely dislikes gets a fresh remake (online research → new GPU concepts → a different approach).
 9. **Research references online, then generate concepts on the GPU** (ComfyUI, local) before designing anything. Build from the concepts in Blender / Inkscape; Studio is only for integration.
 10. **Small defects get fixed, never remade.** A completely fresh remake only when the owner completely dislikes the design.
+11. **Prove the concept first:** the concept test + a greybox prototype + the fun gate before any art. Never polish a weak concept.
+12. **Simple: show, don't tell.** One picture explains it; 1-3 word labels.
+13. **Winter is the judge;** the owner reviews only the finished product, so Winter's bar must BE his bar.
 
 ## 3. Hard limits (never overridden)
 

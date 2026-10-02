@@ -32,6 +32,24 @@ ACTION → REWARD → SPEND → STRONGER / FASTER / COOLER ACTION → repeat
 - **What they spend it on:** <and how that visibly improves the action>
 - **Loop length:** <seconds per action; minutes per upgrade>
 
+## 2b. Concept test (must pass before building; Winter is honest here)
+
+Answer each one. Any "no" or "not sure" means rework the concept, or kill it and tell the owner why.
+
+| Question | Answer |
+|---|---|
+| **The 10-second hook:** what does a new player see / do in the first 10 s that makes them go "whoa"? | |
+| **One picture:** can the whole game be understood from one screenshot or a 5-second clip, with no text? | |
+| **The 50th time:** why is the core action still fun after 50 repetitions (skill, choice, escalation, variety)? | |
+| **Feeling:** what does the player FEEL (excitement, greed, pride, surprise), and at which moments? | |
+| **Want:** what do players WANT next at every point, and can they see it? | |
+| **Spend:** why would a player WANT to spend Robux, without being forced? What do they see that makes them want it? | |
+| **Show-off:** what can a player show friends that makes the friends want to play? | |
+| **Return:** why do they come back tomorrow? | |
+| **Beats the top 3:** what does it do that the best games in the genre don't? | |
+| **Simple:** can an 8-year-old explain the game in one sentence? | |
+| **Strong enough alone?** If all the art were grey boxes, would the loop still be fun? (The fun gate tests this for real.) | |
+
 ## 3. Paper playthrough (minute by minute)
 
 Write what the player sees, does and feels:
