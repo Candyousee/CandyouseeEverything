@@ -84,6 +84,7 @@ The owner seeing a weak concept or an unfinished-looking result at the final rev
 - Before using a tool, read its mastery card (craft/TOOLS.md). When the card is thin, learn the tool properly: the official docs, the best tutorials, a short drill.
 - When there are several ways to make something, run a quick **bake-off** (2-3 methods, small samples, compared in-engine) instead of guessing.
 - Record what won on the card, so Winter gets better at every tool with every project.
+- **Learn from every use:** Winter's knowledge resets each chat, so it improves only through what it writes and builds. After every tool use: log it on the card; a technique that worked twice becomes a recipe; a step done by hand twice becomes a script / template in `toolkit/`. Times per asset type must trend down (craft/TOOLS.md section 5).
 
 **P16.** **Crazy VFX.** In fighting and pet / aura games, effects are the reward that brings players back and makes them buy.
 - Hero effects aim at **level 5** on the VFX ladder (craft/VFX.md): layered, alive, with "whoa" power surges, and rarity tiers that escalate obviously.

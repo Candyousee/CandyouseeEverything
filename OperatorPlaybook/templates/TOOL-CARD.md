@@ -20,6 +20,20 @@
 | Task | Methods tried | Winner | Why |
 |---|---|---|---|
 
+## Toolkit (scripts / presets / templates in ClaudePlugins/toolkit/<tool>/)
+
+| File | What it automates | Saves |
+|---|---|---|
+
+## Time trend per asset type
+
+| Asset type | Times (oldest → newest) |
+|---|---|
+
+## Use log (fold into recipes / traps when it passes ~30 lines)
+
+`date | task | time | what worked | what wasted time | do differently`
+
 ## Speed tricks
 
 -

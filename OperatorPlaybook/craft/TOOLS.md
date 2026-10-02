@@ -88,7 +88,31 @@ Skip the bake-off when a card already has a proven recipe for this exact kind of
 - **SoX:** layering, pitch variants, normalisation, fades, all scripted for batches.
 - **ffmpeg:** conversions (`-vn`), loudness normalisation, video assembly.
 
-## 5. Efficiency rules for every tool
+## 5. Getting faster with every use (how Winter "practises")
+
+Winter doesn't learn from use the way a person does: its knowledge resets every chat. **It gets better only through what it writes down and builds.** So every use of a tool must leave something behind that the next use picks up.
+
+**After every task that used a tool (2 minutes, never skipped):**
+1. **Log it** on the tool's card, in a "Use log" line: `date | task | time taken | what worked | what wasted time | what I'd do differently`.
+2. **Promote what worked:** a technique that worked twice becomes a **proven recipe** on the card.
+3. **Automate repeats (Winter's muscle memory):** a step done by hand twice becomes a script, preset, node graph or template in `ClaudePlugins/toolkit/<tool>/`, linked from the card. Examples:
+   - a Blender script that sets up a turnaround scene;
+   - a ComfyUI workflow for icon sheets;
+   - a flipbook packer;
+   - a Studio VFX preview place.
+
+   Next time, the step takes seconds.
+4. **Fix the slowest step:** looking at the use log, whatever took the most time gets a better method next time (a bake-off, a script, or a different tool).
+
+**Before every task:** read the card's recipes and the toolkit first, and start from the best existing script or template. Never start from scratch when a past version exists.
+
+**Prove it's working:**
+- each card keeps a time trend per asset type (e.g. "icon sheet: 90 → 55 → 30 min"), and the trend should go down without quality going down;
+- the kaizen retro checks the trends.
+
+**Keep cards sharp:** when a card's use log passes about 30 lines, fold the lessons into the recipes / traps sections and trim the log. A short, sharp card beats a long diary.
+
+## 6. Efficiency rules for every tool
 
 - **Script it** if it'll be done more than twice.
 - **Run long renders and generations in the background** while working on something else (one GPU job at a time, so they don't fight).

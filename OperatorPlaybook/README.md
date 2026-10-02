@@ -59,7 +59,7 @@ Every rule and lesson was kept. Duplicates were merged, contradictions fixed, an
 7. **Update path references in tools and briefs.** Anything pointing at `GUI-QA-GATE.md` now points at `craft/GUI.md`; `STANDING-RULES.md` → `RULES.md`; `OPERATOR-STATE.md` → `STATE.md`.
 8. **Pick one audit-tool name:** keep `tools/gui_audit.luau`. If `interaction_audit.luau` is older, retire it, or note what it still does that gui_audit doesn't.
 9. **Create the taste folders** (`taste/loved`, `taste/rejected`, `taste/INDEX.md`, `references/`). They start empty and grow only from work judged from now on (TASTE.md).
-9b. **Create `mastery/`** and write a first card for each core tool (ComfyUI, Blender, Krita, Inkscape, the Roblox VFX system, ACE-Step / SoX / ffmpeg) from craft/TOOLS.md section 4 + what Winter already knows from past projects + the installed versions.
+9b. **Create `mastery/` and `toolkit/`** and write a first card for each core tool (ComfyUI, Blender, Krita, Inkscape, the Roblox VFX system, ACE-Step / SoX / ffmpeg) from craft/TOOLS.md section 4 + what Winter already knows from past projects + the installed versions.
 10. **Trial run:** use the playbook on ONE small project first (a model pack or a small kit). Then run a full kaizen retro on the playbook itself: what confused Winter, what slowed it down, what was missing. Fix the files before the first full game.
 
 ## The persistent-game-studio plugin
