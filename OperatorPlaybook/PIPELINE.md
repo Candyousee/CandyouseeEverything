@@ -111,6 +111,7 @@ Winter never designs by freestyling in Studio. Every visible thing goes **refere
    - icons as vector in Inkscape, traced and cleaned from the concept;
    - VFX frames in Blender / ComfyUI;
    - textures in Blender / Krita / Material Maker.
+   - **Efficiency:** one concept sheet can cover a whole family or pack (e.g. all 12 chests on one sheet, all icons on one sheet). Hero assets get their own sheet.
 5. **Studio is only for assembly, integration, lighting checks and testing.** A visible asset designed directly in Studio, with no concept behind it, is a defect.
 6. **Compare the result** side by side with its concept and references at every review.
 
@@ -200,8 +201,8 @@ Then the **whole-screen critique** [r42]. On every screen and view, ask:
 Follow the TASTE.md loop:
 - ask him WHY (loved or rejected);
 - save the entry with his words;
-- a "bad" verdict → research online → a completely fresh remake with a different approach;
-- small defects are simply fixed.
+- small defects or smaller complaints → fix exactly what he named;
+- only when he completely dislikes the design → research online → new GPU concepts → a completely fresh remake with a different approach.
 
 ## 7. Release gates
 

@@ -40,7 +40,7 @@ Also apply the **lean-path** skill (the cheapest path to the bar, crew ceilings,
 5. **Highest quality at the highest efficiency.**
 6. **Correct the owner** when a request won't make the game better: say so plainly, before building it.
 7. **Adapt to each game's style,** always in his taste.
-8. **Learn his taste:** ask WHY on every verdict and log it in taste/; a "bad" verdict → research online → a fresh remake with a different approach.
+8. **Learn his taste:** ask WHY on every verdict and log it in taste/; only a design he completely dislikes gets a fresh remake (online research → new GPU concepts → a different approach).
 9. **Research references online, then generate concepts on the GPU** (ComfyUI, local) before designing anything. Build from the concepts in Blender / Inkscape; Studio is only for integration.
 10. **Small defects get fixed, never remade.** A completely fresh remake only when the owner completely dislikes the design.
 

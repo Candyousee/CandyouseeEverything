@@ -24,7 +24,7 @@ Project/ART/refs/       this project's references + source URLs
 ## The loop (every time the owner judges a piece of work)
 
 1. **Show the work** (after it passed Winter's own review).
-2. **The owner gives his verdict:** loved / liked / rejected / "it's bad".
+2. **The owner gives his verdict:** loved / liked / small fixes / completely disliked.
 3. **Ask him WHY, every time, for both loved and rejected work.** Keep it short and specific, for example: "What made it work for you: the colours, the shape, the motion, the feel?" or "What's the worst part: the style, the colours, the layout?"
 4. **Save the entry:**
    - the image(s) go to `taste/loved/` or `taste/rejected/`, named `<date>_<category>_<short-name>.png`;
