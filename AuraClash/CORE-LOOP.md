@@ -2,14 +2,15 @@
 
 ## The loop in one sentence
 
-**Blast crystals → absorb their energy (POWER) and coins → more Power breaks bigger crystals that pay more; coins hatch spirits that fight with you → you break even bigger crystals, faster → beat the zone boss → a new zone with bigger crystals → repeat.**
+**Blast crystals → absorb their energy (POWER) and fill your bag with SHARDS → SELL the shards for coins → more Power breaks bigger crystals that drop better shards; coins buy a bigger bag, upgrades and eggs (spirits that fight with you) → beat the zone boss → a new zone with bigger crystals → repeat.**
 
 ### The three numbers you track
 
 | Number | What it does | How you get it |
 |---|---|---|
 | **POWER** (shown above your head + as your aura size) | your blast damage | absorbing energy orbs from crystals you break. **Never spent, only grows** |
-| **COINS** | spending money | coins that burst out of crystals |
+| **SHARDS** (bag: 12 / 50) | carried loot | crystals drop them; they fill your bag |
+| **COINS** | spending money | **selling** shards at the Sell Altar |
 | **TEAM** (your spirits) | extra damage that hits with you | eggs (coins) |
 
 ---
@@ -47,27 +48,37 @@
 
 **Zone 1, the Training Grove (starting numbers):**
 
-| Crystal | HP | Coins | Energy (Power gained) | Respawn |
+| Crystal | HP | Drops | Energy (Power gained) | Respawn |
 |---|---|---|---|---|
-| **Shard** (knee-high) | 4 | 3 | +0.5 | 5 s |
-| **Crystal** (person-high) | 40 | 35 | +5 | 10 s |
-| **Geode** (house-high) | 400 | 400 | +55 | 30 s |
-| **Crystal Heart** (giant, one per server, every 3 min) | 30,000, shared by everyone hitting it | split by damage dealt, plus a guaranteed egg for every hitter | +300 | 3 min |
+| **Small Crystal** (knee-high) | 4 | 1 Shard (sells for 3) | +0.5 | 5 s |
+| **Crystal** (person-high) | 40 | 3 Shards + a 20% chance of a Bright Shard (sells for 10 / 40) | +5 | 10 s |
+| **Geode** (house-high) | 400 | 8 Shards + 2 Bright Shards + a 10% chance of a **Gem** (sells for 250) | +55 | 30 s |
 
-**Why you graduate:** bigger crystals pay **more per hit**, once you can break them quickly.
-- **At Power 2:** a Shard dies to one PERFECT (4 damage). A Crystal takes about 10 hits, which isn't worth it yet.
-- **At Power 15:** a Crystal dies in 1-2 PERFECTs and pays 12× a Shard. You naturally move up.
-- **The game nudges you:** a crystal's HP bar turns **green** when you can break it in 3 hits or fewer.
+**Why you graduate:**
+- **Bigger crystals drop better shards,** so each bag is worth more.
+- **At Power 2:** a Small Crystal dies to one PERFECT, while a Crystal takes about 10 hits.
+- **At Power 15:** a Crystal dies in 1-2 PERFECTs and fills the bag with much more value.
+- **The nudge:** a crystal's HP bar turns **green** when you can break it in 3 hits or fewer.
 
 **When a crystal breaks:**
-1. it shatters into shards (a physics burst, a crack sound);
-2. **coins burst out** and magnet to you, with a coin "ching";
-3. **energy orbs** in the zone's colour fly into your chest;
-4. your aura **pulses** as it absorbs them: the "drinking" moment.
+1. it shatters;
+2. **shards pop out and fly into your bag** (a clink; the bag counter ticks up);
+3. **energy orbs fly into your chest**: your aura pulses and grows, and "+5 POWER" pops.
 
-**The Power counter ticks up** and your aura grows (size comes from Power). A "+5 POWER" pops.
+## 2b. The bag and selling (the cash-in rhythm)
 
----
+- **The bag** holds **50 shards** to start (a counter by your character: "38 / 50").
+- **When it's full:**
+  - the counter flashes **FULL**;
+  - crystals still give Power, but drop no more shards;
+  - **an arrow points to the Sell Altar.**
+- **The Sell Altar:** a glowing shrine in the **middle of every zone**, never more than about 10 s away. Step on it:
+  - your shards **stream out of you into the altar**;
+  - the coin counter **rolls up**, a cha-ching plays, and a coin burst sprays out;
+  - Gems get their own bigger "GEM!" pop.
+
+  That's the cash-in moment.
+- **Why it works:** a rhythm (fill → sell → spend), a clear decision ("one more Geode before I sell?"), and a natural moment to stop at the shop and egg stand, which sit **next to** the altar.
 
 ## 3. Spirits (they fight with you)
 
@@ -97,43 +108,36 @@
 
 ---
 
-## 4. Coins: what you spend them on (zone 1)
+## 4. Coins: what you spend them on (zone 1; the shop + egg stand sit beside the Sell Altar)
 
 | Item | Price | What it does |
 |---|---|---|
 | **Zone 1 Egg** | 60 | a spirit (odds on the card: Common 60 / Rare 28 / Epic 10 / Legendary 1.9 / Mythic 0.1 / **??? Secret 1 in 500,000**) |
-| **Aura Forge: Force** (5 levels) | 50, 150, 400, 1,000, 2,500 | +20% blast damage per level |
-| **Aura Forge: Magnet** (3 levels) | 100, 400, 1,200 | wider coin / orb pickup, so you can keep blasting without walking |
-| **Aura Forge: Surge** (3 levels) | 200, 800, 2,000 | Overdrive +2 s per level |
+| **Bag** (5 levels) | 40, 150, 500, 1,500, 4,000 | 50 → 100 → 200 → 400 → 800 → 1,500 shards: fewer trips |
+| **Force** (5 levels) | 50, 150, 400, 1,000, 2,500 | +20% blast damage per level |
+| **Surge** (3 levels) | 200, 800, 2,000 | Overdrive +2 s per level |
 
-**Everything visibly makes the blasting better:** a bigger hit, less walking, a longer Overdrive, more spirits attacking.
-
----
+**Everything visibly makes the loop better:** bigger hits, fewer trips, longer Overdrive, more spirits attacking.
 
 ## 5. THE FIRST 5 MINUTES (exact script; average player)
 
 | Time | What happens | Numbers |
 |---|---|---|
-| 0:00 | Spawn in the Training Grove. Shards everywhere, a Crystal or two, one Geode in the middle (a visible goal). A pulsing **HOLD** hand over the nearest Shard | Power 2, Coins 0 |
-| 0:03 | First hold-release (probably early): the Shard cracks. Second: it breaks. Coins + an orb fly in. "+0.5 POWER" | — |
-| 0:10 | First PERFECT: a big blast, "PERFECT!", and the Shard dies in one hit. The hand moves to the next Shard | — |
-| 0:10-0:40 | Smashing Shards (each about 1.4 s). The combo flames grow | ~20 Shards → Power ~12, Coins ~60 |
-| ~0:30 | First **OVERDRIVE** (5 PERFECTs): chain blasts wipe 8-10 Shards in 8 s. Coins everywhere | a big jump |
-| 0:40 | **The egg stand glows** (60 coins). The hand points at it | — |
-| 0:45 | First hatch (the tutorial egg is always dramatic: lightning, levitation): a **Light Fox** | it's equipped, and you're asked "Bond it?" |
-| 0:50 | The Fox dashes at your target with you. The **Crystals' HP bars turn green**, and the hand points to a Crystal | Power ~13 |
-| 0:50-2:00 | Crystals: 2 PERFECTs + the Fox each. 35 coins and +5 Power per Crystal | Power ~60, Coins ~500 |
-| ~1:10 | First **rank quest:** "Break 30 crystals → +1 spirit slot" | — |
-| ~1:20 | **Aura Forge** (Force Lv1, 50 coins). The hand points at it | — |
-| ~1:40 | 2nd and 3rd eggs. Guaranteed **Rare** on the 3rd hatch: a blue crack and a glow burst | 3 spirits |
-| 2:00 | **CRYSTAL HEART** spawns (server alert + a beam). You and other players hit it together | a jackpot: coins + a free egg |
-| 2:30 | Geodes turn green. One Geode = +55 Power, 400 coins | Power ~150 |
+| 0:00 | Spawn beside the Sell Altar in the Training Grove. Small Crystals everywhere, a few Crystals, one Geode in view (a visible goal). A pulsing **HOLD** hand over the nearest Small Crystal | Power 2, Bag 0/50, Coins 0 |
+| 0:03 | First hold-release (probably early): it cracks. Second: it breaks; a shard flies into the bag, an orb into you. "+0.5 POWER" | — |
+| 0:10 | First PERFECT: a big blast, a one-hit kill | — |
+| ~0:30 | First **OVERDRIVE**: chain blasts wipe 8-10 crystals in 8 s; shards stream into the bag | — |
+| ~0:45 | **Bag FULL** (50 shards). The arrow points to the altar | Power ~14 |
+| 0:50 | **First sell:** shards stream out, the coins roll up, cha-ching | Coins ~150 |
+| 0:55 | The egg stand glows (60). The hand points at it. First hatch (the tutorial egg is always dramatic): a **Light Fox**. "Bond it?" | — |
+| 1:00 | The hand points at the shop: **Bag Lv1** (40) → 100 capacity | — |
+| 1:05-2:00 | The Crystals' HP bars are green; you smash Crystals with the Fox. Bright Shards. Two more sells | Power ~70 |
+| ~1:30 | First rank quest: "Break 30 crystals → +1 spirit slot". **Force** Lv1. 2nd + 3rd egg (guaranteed **Rare** on the 3rd: a blue crack + a glow burst) | 3 spirits |
+| 2:30 | Geodes turn green. The first **Gem** drop ("GEM!") | Power ~150 |
 | 3:00 | **The boss gate turns gold** (recommended Power 150) | — |
 | 3:00-4:15 | **Stone Golem** (below) | — |
-| 4:15 | KO → transform to **BLAZE** (a 2 s cinematic, the aura grows a layer). The zone 2 portal opens. A **free Zone-2 egg** waits | — |
-| 4:30 | **Lava Dojo:** bigger crystals (Ember Crystal HP 300, pays 250), Fire spirits, and a **Forge cap raise** (Force levels 6-10) | — |
-
----
+| 4:15 | KO → transform to **BLAZE**. The zone 2 portal opens. A **free Zone-2 egg** waits | — |
+| 4:30 | **Lava Dojo:** a new altar, bigger crystals, Fire spirits, a Bag / Force cap raise | — |
 
 ## 6. The boss fight, exactly (Stone Golem; recommended Power 150)
 
@@ -165,12 +169,13 @@
 
 | Second to second | Minute to minute | 5-10 minutes | Session |
 |---|---|---|---|
-| timing (PERFECT), combo flames, Overdrive bursts, hits popping, loot flying | the next crystal size turns green; the next egg; the next Forge level; the next rank quest | the boss | zone 2, Wild Spirits, events, Sanctum, Ascension |
+| timing (PERFECT), combo flames, Overdrive bursts, shards flying into the bag | bag full → **SELL** cash-in; the next crystal size turns green; the next egg / Bag / Force level; the next rank quest | the boss | zone 2, then later Ascension |
 
 Something always finishes soon, and the next bigger thing is always **visible** (green HP bars, the glowing egg stand, the gold gate).
 
 **Still to prove in playtest #1:**
 - whether hold-release blasting feels great for 20+ minutes;
-- whether graduating crystal sizes feels like progress.
+- whether graduating crystal sizes feels like progress;
+- whether the bag / sell trip feels satisfying, not like a chore (if it's a chore: bigger bags sooner, or an altar closer).
 
 If it doesn't, we adjust the timing and HP **before** art.

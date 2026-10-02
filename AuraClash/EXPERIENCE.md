@@ -301,14 +301,28 @@ The v2 beam clash alone was one-note. Each boss is now a **3-phase arena fight**
 
 **What actually matters:** the **execution quality** (the blast feel, aura spectacle, hatch cutscenes, polish) and the **playtest**, not novelty.
 
-### Updated two-zone test scope (v4)
+### Two-zone test scope (trimmed; owner: "you're adding too much")
 
-v3 scope **plus:**
-- **rank quests** (ranks 1-5);
-- a small Sanctum (idle income + display);
-- 1 global event (Blood Moon) on the global clock;
-- 1 mutation;
-- 1 Wild Spirit spawn type;
-- official trading.
+**IN (the core only):**
+- blast + combo + Overdrive;
+- crystals (3 sizes) → **shards in a bag → sell at the altar**;
+- Power;
+- shop (Bag / Force / Surge);
+- eggs with the hatch ladder;
+- spirits that fight + Bond;
+- fusion;
+- rank quests 1-5;
+- the Stone Golem + Magma Oni (3 phases);
+- saving.
 
-The World Boss and Infinity wait.
+**CUT:** the **Crystal Heart** (removed from the game).
+
+**LATER** (only after the core passes playtest):
+- Sanctum;
+- global events + mutations;
+- Wild Spirits;
+- trading;
+- incubator / streak;
+- World Boss;
+- Ascension;
+- Infinity.
