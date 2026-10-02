@@ -4,9 +4,11 @@ Assessed 2 October 2026 (cloud session "Stud Pets / Pet System / Stud Gear / ani
 
 **Read:**
 - roblox-game-pipeline (skill), OPERATOR-STATE.md, STANDING-RULES.md, CHECK-PLAN.md, GUI-QA-GATE.md, OVERNIGHT-2026-09-28/29.md, SENT-PHOTOS.txt;
-- the Revenue and Stage 1 research, and the Stage 1 template.
+- the Revenue and Stage 1 research, and the Stage 1 template;
+- the toolkit: gui_audit.luau (+ selftest, runner example, crops / zoom scripts), oc_upload.ps1, oc_products.ps1, MODEL-SPEC-TEMPLATE.xlsx;
+- the persistent-game-studio plugin: SKILL.md, the six reference protocols, marketplace.json, studio.test.mjs (41 tests; the plugin's scripts and role files were not sent).
 
-**Not read:** PIPELINE.md and RobloxLibrary/CATALOG.md. Check sections C and D against them.
+**Not read:** PIPELINE.md, RobloxLibrary/CATALOG.md, the lean-path skill. Check sections C and D against them.
 
 The owner's files stay the authority. Everything below is a proposal: add to them, don't replace them.
 
@@ -14,6 +16,7 @@ The owner's files stay the authority. Everything below is a proposal: add to the
 
 The system is strong and already learns from mistakes. The rules capture real owner taste, and there are concrete audits (overlap, support, functional surface, GUI gate), kaizen notes, save verification, PID-by-command-line checks and pruning. The biggest wins now are **not** more rules. They are:
 
+0. **Pick one operating system** (section G). The roblox-game-pipeline skill and the persistent-game-studio plugin are two full systems with rules that contradict each other.
 1. **Clean the files** so a reload is short and has no contradictions (section A).
 2. **Spend less usage on checking** (section B). The weekly limit was hit on 30 Sep and two Roadster lanes died.
 3. **Fix ITP's live problems and start measuring real players.** ITP went PUBLIC on 30 Sep, so real data now beats persona scores (section C).
@@ -99,8 +102,71 @@ The system is strong and already learns from mistakes. The rules capture real ow
 
 ## F. Suggested order
 
+0. G1 (decide pipeline vs studio plugin, and write the decision into both): 10 minutes, owner + operator.
 1. A (file clean-up): 30 minutes, operator only.
 2. C1 (live parcel bug) and C2 (analytics events) on ITP.
 3. B (event-driven watcher) before the next multi-lane night.
 4. E notes folded into PIPELINE.md and STANDING-RULES.md (as new rules or lean-path notes).
 5. D: the full Stage 1 template only when the owner names the next real full game.
+
+## G. The toolkit and the studio plugin
+
+### G1. Two systems, conflicting rules (the main finding)
+
+| Topic | Pipeline skill / STANDING-RULES | persistent-game-studio plugin |
+|---|---|---|
+| Crew size | Counts are ceilings; "down to the operator alone" (rules 16, 26; skill section 0) | Nine Opus roles by default; a package roster is an **exact** count that hooks enforce |
+| Usage | Rules 22-25 and lean-path: least usage; the weekly limit was hit on 30 Sep | Every role on the top model at medium effort; "never switch to a cheaper model"; a full team each session |
+| State | OPERATOR-STATE.md, CHECK-PLAN.md, overnight logs (hand-written markdown) | `.game-studio/` canonical JSON + ledgers, written only by scripts |
+| Done | Operator review + GUI gate + owner (rule 42) | Sentinel ACCEPTED + evidence on disk + `complete-check` |
+
+If both load in the same session, the operator gets two answers to "how many agents?" and "where is the truth?".
+
+**Proposal:**
+- Pipeline skill = master and default for packs, kits, fixes and ITP live work.
+- The studio plugin only for a new full game, started by the owner with `/studio start`.
+- Inside it, rule 26 still caps the roster (use a smaller roster JSON, e.g. lead + engineer + sentinel), and STANDING-RULES are imported as canon.
+- Add one line to each: "the other system defers to this rule when both apply".
+
+### G2. What the plugin gets right, to copy into the pipeline either way
+
+- **Status lifecycle with evidence:** BACKLOG ... READY_FOR_SENTINEL → ACCEPTED → DONE. This is the status separation from section D, already built.
+- **Independent acceptance:** the builder never accepts its own work. The pipeline's version is "operator reviews lanes", but the operator also builds in the endgame takeover (skill section 5). Then a fresh subagent should check against the rules.
+- **Measurable acceptance criteria:** a command, a threshold or exact steps, each with an evidence kind.
+- **Kept failures:** FAILED / HARMFUL strategies stay listed so they aren't retried. The pipeline's kaizen notes in OPERATOR-STATE do this informally and get buried.
+- **Memory limit:** 120 lines, highest value first. The same reason as the STATE.md split in section A.
+- **Licence intake record** before any external asset (source, author, licence, resale rights).
+
+### G3. GUI audit tools
+
+- **Strong:**
+  - 18 check ids covering every defect class in GUI-QA-GATE, plus hover growth, cramped text, small text, knobs and icon wash;
+  - a self-test with a CLEAN control that must give 0 findings;
+  - approvals that need a written reason.
+
+  This is better than most studios have.
+- **Gap 1, viewport sizes:** the gate says 1366x768 AND 844x390, but the audit measures whatever the current viewport is. Make the runner record the viewport size in the report header and fail if it doesn't match the label.
+- **Gap 2, the self-test runs only in Play:** run it once per Studio session before trusting a 0-findings report (a tool edit can silently break a check).
+- **Gap 3, stale approval patterns:** they match by path, so a renamed element loses its approval (noisy) or a broad pattern hides a new real overlap (dangerous). In each report, list approvals that matched nothing, and anything that matched more than about 3 elements.
+
+### G4. Open Cloud scripts
+
+- **Good:**
+  - the key comes only from the user env var and is passed through a temp header file that is deleted in `finally`;
+  - `oc_products` skips ids it already has, so a re-run doesn't duplicate products;
+  - `oc_upload` supports `-GroupId`.
+- **Fix in `oc_products.ps1`:**
+  - The key file is written *before* the `try`, so an error between write and `try` leaves it on disk. Move the write inside the `try`.
+  - "Pass vs product" is decided by row number (`N <= 9`). Adding a 10th pass silently creates a dev product. Put an explicit Kind column in MORNING-PRODUCTS.md.
+  - Write the ids to `PRODUCT-IDS.json` after each item (already done), and also log the FAIL lines to a file. A re-run then shows what failed without scrolling.
+- **ITP parcel bug link:** `oc_upload` defaults to the owner's **user** id. For anything shipping in a group game (ITP is under RougeAgent), pass `-GroupId`. Otherwise the asset needs permission granted, and invisible meshes on live are the symptom. Make group the default whenever the target universe is group-owned.
+
+### G5. Model spec workbook
+
+Very good: every acceptance row cites the rule it came from, and the gate is a formula.
+
+Two additions:
+- an **"Verified in live server"** row for anything in a group or public game (asset permission problems only show live);
+- a **"Studio-only primitives OK?"** row for kits sold on the Creator Store, since rule 45 (Blender only) can over-apply to simple functional kit parts like stands and pads.
+
+The same format would work as **GUI-SPEC** and **SYSTEM-SPEC** templates (save / purchase / remote contracts + the test that proves each).
