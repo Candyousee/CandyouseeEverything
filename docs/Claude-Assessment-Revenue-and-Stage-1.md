@@ -19,7 +19,7 @@ The system is strong and already learns from mistakes. The rules capture real ow
 0. **Pick one operating system** (section G). The roblox-game-pipeline skill and the persistent-game-studio plugin are two full systems with rules that contradict each other.
 1. **Clean the files** so a reload is short and has no contradictions (section A).
 2. **Spend less usage on checking** (section B). The weekly limit was hit on 30 Sep and two Roadster lanes died.
-3. **Fix ITP's live problems and start measuring real players.** ITP went PUBLIC on 30 Sep, so real data now beats persona scores (section C).
+3. **A live-game checklist that every game goes through before it goes public**, plus real-player measurement after launch (section C).
 4. Use the research **selectively, by project size** (section D).
 
 ## A. File hygiene (do first; cheap; helps every future chat)
@@ -31,7 +31,7 @@ The system is strong and already learns from mistakes. The rules capture real ow
 | "Build first, test at the end" vs per-lane audits | Rule 1 vs 37, 47, 51, 55, 57, GUI-QA-GATE | Restate rule 1: *code builds fast with light checks; art, GUI and spatial audits run at the end of each lane that touches them; save / purchase / security correctness is tested when built (cheap fixtures), not only in final QA.* This matches what actually works in the logs. |
 | Rule 11 missing; garbled characters (`â€”`, `Â±`) | STANDING-RULES | Renumber, or note "11 retired"; re-save the file as UTF-8. |
 | OPERATOR-STATE is about 450 lines of history | The whole file | Split it into **STATE.md**: a short "now" file (under 80 lines: active projects, running lanes, waiting-on-owner, next steps, limits) that is rewritten, not appended. Plus **LOG/<project>.md** for history. The skill reloads STATE.md every compaction. A 450-line reload burns context and buries the current state. |
-| CHECK-PLAN keeps finished ITP sections ("ignore below") | CHECK-PLAN.md | Move finished plans to LOG/; CHECK-PLAN holds only the active plan. |
+| CHECK-PLAN keeps finished ITP sections ("ignore below") | CHECK-PLAN.md | Move finished plans to LOG/ (ITP is finished: archive all of it); CHECK-PLAN holds only the active plan. |
 | Owner taste is spread over rules 20, 28, 30-57 | STANDING-RULES | Fine as rules. Optionally add a 10-line "taste at a glance" summary at the top for briefs (cartoony, clean, no lookalikes, no grey chips, shine sweeps, things sit on surfaces, hype stays, about 10% less saturation, no flag props, Blender for visible props). |
 
 ## B. Spend less usage, with no drop in quality
@@ -41,21 +41,39 @@ The system is strong and already learns from mistakes. The rules capture real ow
 3. **Short lane briefs, and a short STATE.md** (section A): every lane and every operator turn reads less.
 4. **One Play session per batch of checks**: already rule 22. Keep enforcing it.
 
-## C. Inspect the Package is LIVE: priorities that beat new features
+## C. Live-game checklist (every game, before it goes public)
 
-1. **Fix the parked bug now.** Belt parcels are invisible on live until they reach the station (likely 250 user-owned meshes under Asset Privacy in a group-owned game). On a public game this is player-facing. Fix: re-upload the meshes with `-GroupId` (the tool supports it) and `ApplyMesh` onto the templates. Then verify in a live server, not Studio.
-2. **Start measuring real players** (free, built in; this is the research's most useful point for ITP right now):
-   - Funnel events: join → first parcel → tutorial done → first license → first purchase prompt → first purchase.
-   - Economy events on committed coin changes.
-   - A few custom events (shift done, licence bought, boss cleared).
-   - Then compare D1 and D7 retention and the drop-off points after a week of cohorts.
+The owner decides when a game goes public. These checks make it ready when he does.
 
-   The FUN1 persona score (8.5) was correctly caveated. Real cohorts replace it now.
-3. **Audit prices and purchases against current APIs:**
+1. **Verify in a live server, not just Studio.** Some failures only show live:
+   - asset permissions in group games (upload with `-GroupId`);
+   - StreamingEnabled loading and unloading;
+   - analytics events actually reaching the dashboard;
+   - real-phone performance (one real-phone check per release; the owner's phone, free).
+2. **Measure real players** (free, built in):
+   - funnel events from join to the first purchase;
+   - economy events on committed currency changes;
+   - a few custom milestones;
+   - compare D1 and D7 retention after a week of cohorts.
+
+   Persona and bot scores test clarity, not demand. Label them that way.
+3. **Purchases:**
    - `GetProductInfoAsync`, not the older `GetProductInfo`;
-   - receipt handling: ProcessReceipt vs BindReceiptHandler; don't mix the two decision enums;
-   - "test mode" products can still spend real Robux, so test with fixtures.
-4. **Keep scarcity truthful.** The "THIS WEEK" label and the hard-capped legends are fine if they are literally true. Never use restarting timers or fake "last chance".
+   - one receipt handler, without mixing `ProcessReceipt` and `BindReceiptHandler` enums;
+   - check ownership before granting a pass;
+   - a support path that re-grants a missing purchase from the receipt log, without hand-editing DataStores;
+   - double-tap and in-flight purchase states in the UI;
+   - test with fixtures, never real Robux.
+4. **Saves:**
+   - every save carries a schema version, and old saves migrate on load;
+   - old and new servers running at the same time never corrupt each other's saves;
+   - trades and gifts that touch two players' records need a recovery step (one DataStore write is not atomic across records);
+   - Studio with API access off plays without saving instead of stalling.
+5. **Paid random items:** if a crate or roll is bought with Robux, or with currency Robux can buy:
+   - show the odds;
+   - gate it with `PolicyService` (`ArePaidRandomItemsRestricted`).
+6. **Truthful scarcity:** time-limited or capped labels must be literally true. Never use restarting timers.
+7. **Player text:** anything players type that others see goes through `TextService` filtering.
 
 ## D. The research and the Stage 1 template: adopt by project size
 
@@ -104,7 +122,7 @@ The system is strong and already learns from mistakes. The rules capture real ow
 
 0. G1 (decide pipeline vs studio plugin, and write the decision into both): 10 minutes, owner + operator.
 1. A (file clean-up): 30 minutes, operator only.
-2. C1 (live parcel bug) and C2 (analytics events) on ITP.
+2. C (live-game checklist) written into PIPELINE.md as a pre-public gate; the analytics events go into the reusable library.
 3. B (event-driven watcher) before the next multi-lane night.
 4. E notes folded into PIPELINE.md and STANDING-RULES.md (as new rules or lean-path notes).
 5. D: the full Stage 1 template only when the owner names the next real full game.
@@ -123,7 +141,7 @@ The system is strong and already learns from mistakes. The rules capture real ow
 If both load in the same session, the operator gets two answers to "how many agents?" and "where is the truth?".
 
 **Proposal:**
-- Pipeline skill = master and default for packs, kits, fixes and ITP live work.
+- Pipeline skill = master and default for packs, kits, fixes and live-game work.
 - The studio plugin only for a new full game, started by the owner with `/studio start`.
 - Inside it, rule 26 still caps the roster (use a smaller roster JSON, e.g. lead + engineer + sentinel), and STANDING-RULES are imported as canon.
 - Add one line to each: "the other system defers to this rule when both apply".
@@ -159,7 +177,7 @@ If both load in the same session, the operator gets two answers to "how many age
   - The key file is written *before* the `try`, so an error between write and `try` leaves it on disk. Move the write inside the `try`.
   - "Pass vs product" is decided by row number (`N <= 9`). Adding a 10th pass silently creates a dev product. Put an explicit Kind column in MORNING-PRODUCTS.md.
   - Write the ids to `PRODUCT-IDS.json` after each item (already done), and also log the FAIL lines to a file. A re-run then shows what failed without scrolling.
-- **ITP parcel bug link:** `oc_upload` defaults to the owner's **user** id. For anything shipping in a group game (ITP is under RougeAgent), pass `-GroupId`. Otherwise the asset needs permission granted, and invisible meshes on live are the symptom. Make group the default whenever the target universe is group-owned.
+- **Group games:** `oc_upload` defaults to the owner's **user** id. For a group-owned game, pass `-GroupId`, or the asset needs permission granted (meshes can be invisible on live). Make group the default whenever the target universe is group-owned.
 
 ### G5. Model spec workbook
 
@@ -173,18 +191,18 @@ The same format would work as **GUI-SPEC** and **SYSTEM-SPEC** templates (save /
 
 ## H. A second opinion (Gemini), sorted
 
-Most of it restates the same Revenue / Stage 1 research, so it is not independent confirmation. Kept only what is new or now urgent:
+Most of it restates the same Revenue / Stage 1 research, so it is not independent confirmation. Sorted for general games:
 
 | Point | Verdict |
 |---|---|
-| Parcels invisible on live; streaming not tested | **Check first.** "Invisible until they reach the station" may be StreamingEnabled, not asset privacy. A privacy failure doesn't fix itself when a parcel moves. Test in a live server with streaming on before re-uploading 250 meshes. |
-| Stuck-player recovery, a missing-purchase path, rollback | **Add for ITP now.** It is live: a support/admin path to re-grant a purchase from the receipt log, without hand-editing DataStores. |
-| Save-schema migration and mixed-version servers | **Add for ITP now.** Every save carries a version and old saves migrate on load; a new server must never corrupt a save an old server is still writing. |
-| Paid random items + PolicyService | **Check ITP crates.** If a crate is bought with Robux, or with currency that Robux can buy, show the odds and gate it with `PolicyService:GetPolicyInfoForPlayerAsync().ArePaidRandomItemsRestricted`. |
-| Analytics fired in Studio isn't proof | **Add:** verify the events in the live dashboard after a day. |
-| Studio device emulation isn't a phone | **Add:** one real-phone check per release (the owner's phone; free). |
-| UI states: loading / error / pending / cancelled, double-taps | **Add to GUI-QA-GATE:** rule 37 covers hover / disabled / owned / locked, but not a purchase in flight or a double-tapped BUY. |
-| Economy outliers (a 1% drop is still 0/100 for 36.6% of players) | **Use it in the economy model** (section D): report dry streaks and the 90th percentile, not only averages. |
-| Overlap screening, collision, travel time | Already covered by rules 47, 55 and 57. |
-| Core loop vs the whole game; bots aren't real demand | Already covered (section D statuses, the FUN1 caveat). |
+| Recovery: stuck players, missing purchases, rollback | **Adopt:** in section C3. |
+| Save migration, mixed-version servers, multi-record trades | **Adopt:** in section C4. |
+| Paid random items + PolicyService | **Adopt:** in section C5. |
+| Studio isn't live (analytics, streaming, phones) | **Adopt:** in section C1. |
+| UI states: loading / empty / error / pending / cancelled, double-taps, interrupted tweens, stacked modals | **Add to GUI-QA-GATE.** Rule 37 covers hover / disabled / owned / locked only. |
+| Prices or countdowns baked into images | **Add to GUI-QA-GATE:** dynamic text is always a TextLabel. |
+| Economy outliers (a 1% drop is still 0/100 for 36.6% of players) | **Adopt in the economy model** (section D): report dry streaks and the 90th percentile, not only averages. |
+| Core loop alone isn't the game: multi-session goals, return reasons, content runs out | **Add to the full-game brief:** what brings a player back tomorrow, and when content runs out. |
+| Overlap screening, collision, travel time | Already covered by rules 47, 55 and 57. Add one note: never "fix" clipping by turning collision off broadly. |
+| Bots aren't real demand; statuses kept separate | Already covered (section D statuses). |
 | Earnings accounting, localization, near-empty servers | Later. Matters at real revenue or international scale. |
