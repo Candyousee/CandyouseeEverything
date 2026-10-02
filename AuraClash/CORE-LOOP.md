@@ -199,9 +199,9 @@ They alternate between the halves, which teaches the rhythm:
 | 1:00 | First Overdrive chains through a Shardling pack | — |
 | 1:30 | **Storm full** (60). SELL → coins roll up. The first sell stays at the Shrine | Coins ~180 |
 | 1:40 | First egg (the tutorial egg is always dramatic): **Light Fox**. "Bond it?" Then 2 more eggs (guaranteed Rare on the 3rd) | 3 pets |
-| 2:00 | Rank quest 1 (Focus meditation) → +1 slot. Bag Lv1 | — |
-| 2:30-5:00 | Hunting Boars with the pets: the pets tank the charges. Two sells. Mat Lv1 | Power ~90 |
-| 5:00 | Sit, Focus meditate for about 1 minute with 4 pets | Power ~150 |
+| 2:00 | Rank quest 1: Focus meditate for 20 s with 3 pets → +1 slot | Power ~75 |
+| 2:30-5:00 | Hunting with 4 pets: Shardlings, then Boars (the pets tank the charges). Power stays put while hunting (it only comes from meditating). Two sells → Bag Lv1, Mat Lv1, 1-2 more eggs | Power ~75, coins spent |
+| 5:00 | The Boars feel slow now. Sit at the Shrine and Focus meditate for about 1 minute (Mat Lv1, 4-5 pets) | Power ~150 |
 | 6:00 | **The boss gate opens** (rank quest 5) | — |
 | 6:00-7:30 | **Stone Golem** (below) | — |
 | 7:30 | KO → transform to **BLAZE**. The zone 2 portal opens; a free Zone 2 egg | — |
