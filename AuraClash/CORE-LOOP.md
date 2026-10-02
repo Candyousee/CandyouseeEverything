@@ -62,8 +62,25 @@
 
 **When a crystal breaks:**
 1. it shatters;
-2. **shards pop out and fly into your bag** (a clink; the bag counter ticks up);
+2. **shards get sucked into your SHARD STORM** (section 2a): they spiral in like debris into a tornado, with a clink, and the bag counter ticks up;
 3. **energy orbs fly into your chest**: your aura pulses and grows, and "+5 POWER" pops.
+
+## 2a. The Shard Storm (your bag, made visible)
+
+**Your bag isn't a menu: it's a tornado of shards spinning around you.**
+- **Loose shards within 12 studs get pulled in** in a spiral, so you never walk to pick anything up.
+- **The fuller the bag, the bigger the storm:**
+
+| Bag | Storm |
+|---|---|
+| Empty | a faint swirl of dust at your feet |
+| Half full | a waist-high ring of shards |
+| Nearly full | a roaring, head-high tornado; Bright Shards and Gems glint inside it |
+| **FULL** | the storm turns gold and pulses, and the SELL button bounces |
+
+- **Bigger bag upgrades = a bigger possible storm.** A 1,500-shard storm is a show-off on its own: everyone can see you're carrying a fortune.
+- **On SELL,** the whole storm unwinds into the altar in one stream; the coins roll up while it drains.
+- **Built for performance:** the storm is a few layered particle rings and swirl textures plus at most ~40 real shard meshes (the glinting ones; Gems always shown), not one part per shard. Other players' storms render at lower density.
 
 ## 2b. The bag and selling (the cash-in rhythm)
 
@@ -74,7 +91,7 @@
   - the **SELL button** on the HUD bounces.
 - **The SELL button** (HUD, always available; key: G / gamepad Y):
   1. you **teleport to the zone's Sell Altar** (a quick flash);
-  2. your shards **stream out of you into the altar** while the coin counter **rolls up**, with a cha-ching and a coin burst (about 1.5 s; Gems get their own bigger "GEM!" pop);
+  2. your Shard Storm **unwinds into the altar in one stream** while the coin counter **rolls up**, with a cha-ching and a coin burst (about 1.5 s; Gems get their own bigger "GEM!" pop);
   3. **you're teleported straight back** to where you were.
 
   **No walking:** about 2-3 s total, and the cash-in moment stays.
@@ -83,7 +100,13 @@
 
 ## 3. Spirits (they fight with you)
 
-- **Each equipped spirit** flies at your current target and attacks **every 1.5 s** for **its % of your Power**:
+**Where they live: the eye of the storm.** Your spirits circle you on an inner ring at shoulder height, inside the Shard Storm, like guardians riding the wind. Your **Bonded** spirit floats above your head as the crown of the storm.
+- **To attack,** a spirit **launches out of the storm** at your target, hits with its signature move, and **slingshots back** into its orbit.
+- **On a PERFECT,** they all burst out at once (the team strike) and snap back together.
+- **When idle,** they slow down and play their own idle animations (the fox chases its tail, the imp juggles a fireball).
+- **Why here:** they're always visible and never lost behind you, they don't block your aim, and you, the spirits and the storm read as **one picture**.
+
+- **Each equipped spirit** attacks **every 1.5 s** for **its % of your Power**:
 
 | Rarity | Damage (% of your Power) |
 |---|---|
@@ -103,7 +126,7 @@
   You *feel* a new spirit. Crystals pop faster.
 - **Each species has one signature attack animation** (the fox dash, the imp fireball…). Rarer spirits are bigger, with bigger attack effects.
 - **Bond (your look):**
-  - in the spirit menu, tap **BOND** on any spirit: it rides your shoulder, and **your aura takes its element and rarity look**;
+  - in the spirit menu, tap **BOND** on any spirit: it floats above your head as the crown of the storm, and **your aura and storm take its element and rarity look** (fire tints the storm with embers, light makes it sparkle);
   - bonding is cosmetic only, so it never lowers damage;
   - the first time you hatch a new element, a prompt asks "Bond it?".
 
@@ -127,9 +150,9 @@
 | 0:00 | Spawn in the Training Grove. Small Crystals everywhere, a few Crystals, one Geode in view (a visible goal). A pulsing **HOLD** hand over the nearest Small Crystal | Power 2, Bag 0/50, Coins 0 |
 | 0:03 | First hold-release (probably early): it cracks. Second: it breaks; a shard flies into the bag, an orb into you. "+0.5 POWER" | — |
 | 0:10 | First PERFECT: a big blast, a one-hit kill | — |
-| ~0:30 | First **OVERDRIVE**: chain blasts wipe 8-10 crystals in 8 s; shards stream into the bag | — |
+| ~0:30 | First **OVERDRIVE**: chain blasts wipe 8-10 crystals in 8 s; the storm swells | — |
 | ~0:45 | **Bag FULL** (50 shards). The SELL button bounces; the hand points at it | Power ~14 |
-| 0:50 | **First SELL:** teleport, shards stream out, coins roll up, cha-ching. The first time, you stay (the tutorial shows the shop) | Coins ~150 |
+| 0:50 | **First SELL:** teleport, shards stream out, the storm unwinds into the altar, coins roll up, cha-ching. The first time, you stay (the tutorial shows the shop) | Coins ~150 |
 | 0:55 | The egg stand glows (60). The hand points at it. First hatch (the tutorial egg is always dramatic): a **Light Fox**. "Bond it?" | — |
 | 1:00 | The hand points at the shop: **Bag Lv1** (40) → 100 capacity | — |
 | 1:05-2:00 | The Crystals' HP bars are green; you smash Crystals with the Fox. Bright Shards. Two more sells | Power ~70 |
@@ -170,7 +193,7 @@
 
 | Second to second | Minute to minute | 5-10 minutes | Session |
 |---|---|---|---|
-| timing (PERFECT), combo flames, Overdrive bursts, shards flying into the bag | bag full → **SELL** cash-in; the next crystal size turns green; the next egg / Bag / Force level; the next rank quest | the boss | zone 2, then later Ascension |
+| timing (PERFECT), combo flames, Overdrive bursts, the Shard Storm growing | bag full → **SELL** cash-in; the next crystal size turns green; the next egg / Bag / Force level; the next rank quest | the boss | zone 2, then later Ascension |
 
 Something always finishes soon, and the next bigger thing is always **visible** (green HP bars, the glowing egg stand, the gold gate).
 
