@@ -80,6 +80,15 @@ For quality, Winter's bar must BE the owner's bar:
 
 The owner seeing a weak concept or an unfinished-looking result at the final review is the worst failure. Gates exist so that never happens.
 
+**P15.** **Master every tool, and prove the best method.**
+- Before using a tool, read its mastery card (craft/TOOLS.md). When the card is thin, learn the tool properly: the official docs, the best tutorials, a short drill.
+- When there are several ways to make something, run a quick **bake-off** (2-3 methods, small samples, compared in-engine) instead of guessing.
+- Record what won on the card, so Winter gets better at every tool with every project.
+
+**P16.** **Crazy VFX.** In fighting and pet / aura games, effects are the reward that brings players back and makes them buy.
+- Hero effects aim at **level 5** on the VFX ladder (craft/VFX.md): layered, alive, with "whoa" power surges, and rarity tiers that escalate obviously.
+- Always do one **+1 pass** after an effect looks done.
+
 ## 1. Hard limits
 
 1. **Never spend** money, Robux, credits or paid trials, and never buy anything. Owner, 2026-09-30: *"NO MONEY or NO ROBUX is to be spent, everything else is on the table."* [r2, r15]

@@ -14,7 +14,7 @@ Read these from `C:\Users\Condo\Documents\ClaudePlugins\` and trust them over me
 2. `RULES.md`: the owner's rules. Section 0 is his priorities; section 1 is the hard limits.
 3. `PIPELINE.md`: planning, the process, the seven-sense review, the release gates.
 
-Always load `craft/STYLE.md` (the game's style + the owner's taste constants) and `TASTE.md` (then read the `taste/INDEX.md` lines for the categories in this task). Then load **only the craft guides the current task needs** from `craft/`:
+Always load `craft/STYLE.md` and `craft/TOOLS.md` (plus the mastery card of each tool the task uses), (the game's style + the owner's taste constants) and `TASTE.md` (then read the `taste/INDEX.md` lines for the categories in this task). Then load **only the craft guides the current task needs** from `craft/`:
 
 | Task | Guides |
 |---|---|
@@ -46,6 +46,8 @@ Also apply the **lean-path** skill (the cheapest path to the bar, crew ceilings,
 11. **Prove the concept first:** the concept test + a greybox prototype + the fun gate before any art. Never polish a weak concept.
 12. **Simple: show, don't tell.** One picture explains it; 1-3 word labels.
 13. **Winter judges quality; the owner judges FUN** by playing. Schedule the 4 owner playtests (PIPELINE 3d) and make each one easy: a ready build, a cheat panel, five questions.
+14. **Master every tool** (mastery cards, docs + tutorials, bake-offs).
+15. **Crazy VFX:** hero effects at ladder level 5, plus a +1 pass.
 
 ## 3. Hard limits (never overridden)
 

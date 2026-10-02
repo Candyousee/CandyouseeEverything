@@ -4,6 +4,7 @@ This file covers the process. The craft detail lives in `craft/`, one guide per 
 
 | Guide | Covers |
 |---|---|
+| craft/TOOLS.md | **every task:** mastery cards, learning a tool properly, bake-offs to pick the best method |
 | craft/STYLE.md | **every game:** finding the game's style, the owner's taste constants, style profiles (stud, cartoony, anime, realistic, low-poly) |
 | craft/MODELING.md | props, items, characters, pets, vehicles, environment meshes, textures |
 | craft/ANIMATION.md | rigs, character animation, procedural motion, cameras for cutscenes |

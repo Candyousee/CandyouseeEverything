@@ -20,6 +20,7 @@ Every rule and lesson was kept. Duplicates were merged, contradictions fixed, an
 | `PIPELINE.md` | process: sizing, intake, planning the game, build, running lanes, seven-sense review, gates, retro | PIPELINE.md + the process parts of OPERATOR-STATE / CHECK-PLAN |
 | `craft/STYLE.md` | per-game style + the owner's taste constants (stud, cartoony, anime, realistic, low-poly) | the hard-coded "always cartoony" rule |
 | `craft/*.md` | 11 deep guides: MODELING, ANIMATION, VFX, WORLD, GUI, AUDIO, GAMEPLAY, SYSTEMS, MONETIZATION, VIDEO, CREATOR-STORE | GUI-QA-GATE.md (now craft/GUI.md) and the scattered craft notes |
+| `craft/TOOLS.md` + `templates/TOOL-CARD.md` | tool mastery: a card per tool on the PC (`mastery/`), docs + tutorials + drills, bake-offs to pick the best method | — (new) |
 | `TASTE.md` + `taste/` | the taste gallery: only our own judged work, with the owner's own why-notes; a fresh remake only when he completely dislikes a design | — (new) |
 | `references/` | inspiration the owner sends + references found online (never in taste/) | — (new) |
 | `LESSONS.md` | dated retros + the metric | the lessons buried in OPERATOR-STATE / PIPELINE |
@@ -58,6 +59,7 @@ Every rule and lesson was kept. Duplicates were merged, contradictions fixed, an
 7. **Update path references in tools and briefs.** Anything pointing at `GUI-QA-GATE.md` now points at `craft/GUI.md`; `STANDING-RULES.md` → `RULES.md`; `OPERATOR-STATE.md` → `STATE.md`.
 8. **Pick one audit-tool name:** keep `tools/gui_audit.luau`. If `interaction_audit.luau` is older, retire it, or note what it still does that gui_audit doesn't.
 9. **Create the taste folders** (`taste/loved`, `taste/rejected`, `taste/INDEX.md`, `references/`). They start empty and grow only from work judged from now on (TASTE.md).
+9b. **Create `mastery/`** and write a first card for each core tool (ComfyUI, Blender, Krita, Inkscape, the Roblox VFX system, ACE-Step / SoX / ffmpeg) from craft/TOOLS.md section 4 + what Winter already knows from past projects + the installed versions.
 10. **Trial run:** use the playbook on ONE small project first (a model pack or a small kit). Then run a full kaizen retro on the playbook itself: what confused Winter, what slowed it down, what was missing. Fix the files before the first full game.
 
 ## The persistent-game-studio plugin
