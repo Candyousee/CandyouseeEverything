@@ -100,11 +100,20 @@
 
 ## 3. Spirits (they fight with you)
 
-**Where they live: the eye of the storm.** Your spirits circle you on an inner ring at shoulder height, inside the Shard Storm, like guardians riding the wind. Your **Bonded** spirit floats above your head as the crown of the storm.
-- **To attack,** a spirit **launches out of the storm** at your target, hits with its signature move, and **slingshots back** into its orbit.
-- **On a PERFECT,** they all burst out at once (the team strike) and snap back together.
-- **When idle,** they slow down and play their own idle animations (the fox chases its tail, the imp juggles a fireball).
-- **Why here:** they're always visible and never lost behind you, they don't block your aim, and you, the spirits and the storm read as **one picture**.
+**Where they live: around you, on the ground, like real pets.** The storm spins above and around them; they hang out underneath it.
+
+| State | What they do |
+|---|---|
+| **Walking** | they **follow you** in a loose pack (2-6 studs behind and beside you), each at its own pace: small ones hop to keep up, fliers bob along at hip height. They spread around obstacles and never stack |
+| **Standing still (2 s+)** | they **huddle around you** and **relax**: the fox sits and scratches, the imp naps on a rock, two spirits play together. Each species has 2-3 idle "leisure" animations |
+| **You start charging a blast** | they **perk up**: ears up, a quick look at the target, a battle stance |
+| **Attacking** | a spirit **dashes to the target**, hits with its signature move, and **runs back** to its spot by you |
+| **Your PERFECT** | they all **pounce at once** (the team strike), then trot back |
+| **Sell teleport** | they teleport with you (a little poof each) |
+
+- **Your Bonded spirit** walks right at your side (or rides your shoulder if it's small), slightly bigger and glowing, and **your aura and storm take its element and look**.
+- **Why this way:** it's what players know from every top pet game, the pets feel alive and loyal, and the shift from relaxed to fighting the moment you act makes every blast feel like a team moment.
+- **Performance:** follow positions are simple formation slots solved on the client; other players' pets use a cheaper follow and fewer idle animations at a distance.
 
 - **Each equipped spirit** attacks **every 1.5 s** for **its % of your Power**:
 
@@ -126,7 +135,7 @@
   You *feel* a new spirit. Crystals pop faster.
 - **Each species has one signature attack animation** (the fox dash, the imp fireball…). Rarer spirits are bigger, with bigger attack effects.
 - **Bond (your look):**
-  - in the spirit menu, tap **BOND** on any spirit: it floats above your head as the crown of the storm, and **your aura and storm take its element and rarity look** (fire tints the storm with embers, light makes it sparkle);
+  - in the spirit menu, tap **BOND** on any spirit: it walks at your side (small ones ride your shoulder), and **your aura and storm take its element and rarity look** (fire tints the storm with embers, light makes it sparkle);
   - bonding is cosmetic only, so it never lowers damage;
   - the first time you hatch a new element, a prompt asks "Bond it?".
 
