@@ -8,7 +8,9 @@ Assessed 2 October 2026 (cloud session "Stud Pets / Pet System / Stud Gear / ani
 - the toolkit: gui_audit.luau (+ selftest, runner example, crops / zoom scripts), oc_upload.ps1, oc_products.ps1, MODEL-SPEC-TEMPLATE.xlsx;
 - the persistent-game-studio plugin: SKILL.md, the six reference protocols, marketplace.json, studio.test.mjs (41 tests; the plugin's scripts and role files were not sent).
 
-**Not read:** PIPELINE.md, RobloxLibrary/CATALOG.md, the lean-path skill. Check sections C and D against them.
+- PIPELINE.md (section I).
+
+**Not read:** RobloxLibrary/CATALOG.md, the lean-path skill.
 
 The owner's files stay the authority. Everything below is a proposal: add to them, don't replace them.
 
@@ -120,6 +122,7 @@ The owner decides when a game goes public. These checks make it ready when he do
 
 ## F. Suggested order
 
+0. I (PIPELINE.md clean-up) together with A.
 0. G1 (decide pipeline vs studio plugin, and write the decision into both): 10 minutes, owner + operator.
 1. A (file clean-up): 30 minutes, operator only.
 2. C (live-game checklist) written into PIPELINE.md as a pre-public gate; the analytics events go into the reusable library.
@@ -206,3 +209,45 @@ Most of it restates the same Revenue / Stage 1 research, so it is not independen
 | Overlap screening, collision, travel time | Already covered by rules 47, 55 and 57. Add one note: never "fix" clipping by turning collision off broadly. |
 | Bots aren't real demand; statuses kept separate | Already covered (section D statuses). |
 | Earnings accounting, localization, near-empty servers | Later. Matters at real revenue or international scale. |
+
+## I. PIPELINE.md
+
+It is the best of the files: the overnight "what made this efficient" section and the dated hindsight notes are real, reusable lessons. Its problems are the same as the other files: it was appended to, never rewritten.
+
+### Contradictions and stale text
+
+| Where | Problem | Fix |
+|---|---|---|
+| Header | "Read with STANDING-RULES (rules 1-19)"; there are 57 | "Read with STANDING-RULES" (no range). |
+| Section 2, team shape | Still says "8 agents: lead + 4 ART + 3 CODE"; the Crew size section at the bottom overrides it | Delete section 2's count; keep the 7 lane roles as a menu to pick from; move Crew size up into its place. |
+| Section 3 + section 6 | "One big QA at the end" vs the per-lane gates that actually worked | Same restatement as rule 1 (section A). |
+| Section 4, models | "Optional Hunyuan3D-2 base mesh" vs the model spec's "never shipped geometry in sale packs" | Add "shape guide only; never shipped in sale packs". |
+| Section 5 vs the overnight section | "Hourly" art checks vs "every 5 min awake / 25-30 min overnight" | One cadence, event-driven where possible (section B). |
+| Three GUI checklists | The "UI/art QA gate" block here, GUI-QA-GATE.md and rules 31-41 say similar things differently | Keep GUI-QA-GATE.md as the one checklist (merge any line it lacks), and replace the PIPELINE block with "every UI brief includes GUI-QA-GATE.md". |
+| Three audit-tool names | `interaction_audit.luau` (here), `gui_audit.luau` (GUI-QA-GATE), LIB-UI-08 (skill) | Use one name everywhere, and say whether the old one is retired. |
+
+### Structure
+
+The hindsight notes sit between sections in date order (Veilblade notes are in the middle of Crew size). A lane brief can't pull "just the mesh lessons" without reading everything. Regroup them under topic headings:
+- Studio / MCP / agents;
+- Meshes and import;
+- VFX;
+- GUI;
+- Saves and backups;
+- Uploads and Open Cloud;
+- Video;
+- Launch and monitoring.
+
+Keep the date on each line. Then a brief says "include PIPELINE: Meshes, GUI".
+
+### What is still missing (from sections C and E)
+
+None of these are in PIPELINE.md yet:
+- offline-built WeldConstraint offsets;
+- Creator Store packaging rules;
+- Studio-only stalls (DataStore with API access off, `WaitForChild` timeouts);
+- the video and cinematic route choice;
+- a diff review after scripted edits;
+- the live-game checklist (C).
+
+Section 6's "Released is not done until 0 open defects and a clean Play boot" should become: **0 open defects, a clean Play boot, and (for anything live) the section C checks done in a live server.**
