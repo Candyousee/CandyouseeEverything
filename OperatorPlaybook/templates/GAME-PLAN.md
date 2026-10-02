@@ -4,6 +4,14 @@ Know exactly how the game plays before a single part is built. If a section can'
 
 Owner approved on: <date>
 
+## 0. Market check (before anything else)
+
+- **Trending now** (Roblox charts / Creator Store): <genres and games rising>
+- **How crowded this genre is:** <number of serious competitors; how good the top 3 are>
+- **What players complain about in the top games:** <from reviews, comments, video comments>
+- **The gap we fill:** <one line>
+- **Verdict:** go / go with changes / don't. Why: <...>
+
 ## 1. The pitch
 
 - **One sentence:** <"You ... so that you can ...">

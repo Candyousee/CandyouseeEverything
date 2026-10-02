@@ -33,17 +33,25 @@ Agents that share one GPU, one Studio or one Blender just queue. Run those seria
 
 1. **Read** the owner's references and package (private, RULES 10).
 2. **Judge the idea** (RULES 12): agree / change / disagree, plus a better version if there is one. Expand seeds into one streamlined system (craft/GAMEPLAY.md section 1).
-3. **Feasibility check against the quality bar.** For each hero deliverable, name the route that can actually reach top-tier quality. If no free route reaches it, say so before building, not after. Examples:
+3. **Market check (about 10 minutes, games and store products):**
+   - what's trending on the Roblox charts and the Creator Store right now;
+   - how crowded this genre is, and how good the top entries are;
+   - what players complain about in the top games (reviews, comments, video comments);
+   - the gap we fill.
+
+   Write it into GAME-PLAN section 0. If the market says no, tell the owner before planning further.
+4. **Online reference research:** the best examples of this game's style and genre, saved to ART/refs/ with URLs. Plus the TASTE.md INDEX lines for the categories this project touches.
+5. **Feasibility check against the quality bar.** For each hero deliverable, name the route that can actually reach top-tier quality. If no free route reaches it, say so before building, not after. Examples:
    - code-posed animation can't reach "anime" quality; it needs Mixamo + polish, or hand-keyed animation;
    - procedural splashes lose to FLUX frames.
-4. **Toolchain: the best tool for the job, always.**
+6. **Toolchain: the best tool for the job, always.**
    - Winter has access to ANY free tool or anything on the owner's PC.
    - For each part, find the best free tool (web-search if not verified in the last month: quality, licence, export formats).
    - **Install it if it's missing.**
    - Tell the owner in a small table: part → tool → why it's the best free option → any licence catch.
    - Never default to what's already installed if something free is better.
-5. **Reuse:** check RobloxLibrary/CATALOG.md and D:\AI\STACK.md. Never rebuild what works.
-6. **Check the usage meter / plan limit** before committing to a multi-lane plan.
+7. **Reuse:** check RobloxLibrary/CATALOG.md and D:\AI\STACK.md. Never rebuild what works.
+8. **Check the usage meter / plan limit** before committing to a multi-lane plan.
 
 ## 3. Plan the game: the one approval round
 
@@ -147,7 +155,7 @@ Before anything reaches the owner, Winter reviews it with all seven senses. Each
 | **Ear** | Does every action have a sound? Is the mix balanced, nothing clipping or repeating so often it annoys? Silence where it should be? | loudness check, a listen pass with eyes closed, or flag "unheard" to the owner |
 | **Hand: feel** | Input → response under 100 ms? Camera comfortable? Controls restored after every mode? Satisfying after 50 repetitions? | real input tests (hold W, click the real path), play it |
 | **Clock: performance** | Frame time stable, no spikes on spawn or effects, memory flat over 20 minutes? Phone-safe? | a paused-runner baseline first, the MicroProfiler, a 20-min autoplay soak |
-| **Taste: style** | Does it match the style sheet? Does it pass the owner's taste constants (polished, readable, bright, clean, alive, worth it, original, truthful, simple)? | side-by-side against the target frames |
+| **Taste: style** | Does it match the style sheet? Does it pass the owner's taste constants (polished, readable, bright, clean, alive, worth it, original, truthful, simple)? Is it closer to the loved entries or the rejected ones? Does it repeat a rejected "why"? | side-by-side against the target frames + taste/ gallery |
 | **Head: clarity and value** | Would an 8-year-old know the next action? Is the first reward under 1 minute and the first purchase offer about 3 minutes in? Is every purchase worth it? Do the economy numbers hold up? | the noob walk-through, the economy table |
 
 Plus the **structural checks**, which are automated and always run:
@@ -159,6 +167,14 @@ Plus the **structural checks**, which are automated and always run:
 Then the **whole-screen critique** [r42]. On every screen and view, ask:
 - is the most important thing the most visible?
 - does anything look unfinished?
+
+### When the owner judges the work
+
+Follow the TASTE.md loop:
+- ask him WHY (loved or rejected);
+- save the entry with his words;
+- a "bad" verdict → research online → a completely fresh remake with a different approach;
+- small defects are simply fixed.
 
 ## 7. Release gates
 

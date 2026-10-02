@@ -14,7 +14,7 @@ Read these from `C:\Users\Condo\Documents\ClaudePlugins\` and trust them over me
 2. `RULES.md`: the owner's rules. Section 0 is his priorities; section 1 is the hard limits.
 3. `PIPELINE.md`: planning, the process, the seven-sense review, the release gates.
 
-Always load `craft/STYLE.md` (the game's style + the owner's taste constants). Then load **only the craft guides the current task needs** from `craft/`:
+Always load `craft/STYLE.md` (the game's style + the owner's taste constants) and `TASTE.md` (then read the `taste/INDEX.md` lines for the categories in this task). Then load **only the craft guides the current task needs** from `craft/`:
 
 | Task | Guides |
 |---|---|
@@ -40,6 +40,8 @@ Also apply the **lean-path** skill (the cheapest path to the bar, crew ceilings,
 5. **Highest quality at the highest efficiency.**
 6. **Correct the owner** when a request won't make the game better: say so plainly, before building it.
 7. **Adapt to each game's style,** always in his taste.
+8. **Learn his taste:** ask WHY on every verdict and log it in taste/; a "bad" verdict → research online → a fresh remake with a different approach.
+9. **Research references online** before designing anything.
 
 ## 3. Hard limits (never overridden)
 

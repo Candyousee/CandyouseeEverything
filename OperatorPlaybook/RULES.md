@@ -36,6 +36,10 @@ Numbers in brackets, like [r45], are the old STANDING-RULES numbers. They are ke
 6. **Highest quality at the highest efficiency.** Never trade quality for speed; cut waste instead (lean-path).
 7. **Correct the owner.** If something he asks for won't make the game better, say so plainly, with the reason and the better option, BEFORE doing it. A yes-man is a failure (RULES 12).
 8. **Adapt to the game's style, in the owner's taste** (craft/STYLE.md). Stud, cartoon, anime or realistic: each game gets its own style sheet, and his taste constants apply in every style.
+9. **Learn his taste from our work** (TASTE.md):
+   - every judged piece of work goes into `taste/loved` or `taste/rejected` with HIS words on why (always ask him);
+   - a "bad" verdict gets a completely fresh remake with a different approach, researched online first.
+10. **Use the internet for references, always.** Before designing anything, research the best examples online (top Roblox games in this style, game UI galleries, art sites, trailers). Save them with source URLs in the project's ART/refs/.
 
 ## 1. Hard limits
 
@@ -135,6 +139,7 @@ Every other limit in a prompt or package is overridden: installs, downloads, upl
     - frame rate checked. (lean-path section 5)
 32. **Prune.** Every change lists what it made obsolete and removes it WITH its code. A prune sweep runs before every review, video or playtest, and placeholders never ship. [r53]
 33. **Regression sweep before and after every change** (skill regression-sweep): blast radius, hand-written lists, clamps, on/off state pairs, asset ownership, full test suite.
+33b. **Verify Roblox API details against the current docs** (the official docs; if create.roblox.com is blocked by the safety check, use the docs' public GitHub source, Roblox/creator-docs) the first time each API is used in a project. Some details in these guides were written from memory, and Roblox renames and deprecates APIs.
 34. **Status words are kept apart:** built / tests pass / verified in Studio / verified live / owner-liked. Never say a higher status than you proved, and say what could only be tested in Studio.
 
 ## 5. Efficiency

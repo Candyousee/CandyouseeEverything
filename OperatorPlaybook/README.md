@@ -20,6 +20,8 @@ Every rule and lesson was kept. Duplicates were merged, contradictions fixed, an
 | `PIPELINE.md` | process: sizing, intake, planning the game, build, running lanes, seven-sense review, gates, retro | PIPELINE.md + the process parts of OPERATOR-STATE / CHECK-PLAN |
 | `craft/STYLE.md` | per-game style + the owner's taste constants (stud, cartoony, anime, realistic, low-poly) | the hard-coded "always cartoony" rule |
 | `craft/*.md` | 11 deep guides: MODELING, ANIMATION, VFX, WORLD, GUI, AUDIO, GAMEPLAY, SYSTEMS, MONETIZATION, VIDEO, CREATOR-STORE | GUI-QA-GATE.md (now craft/GUI.md) and the scattered craft notes |
+| `TASTE.md` + `taste/` | the taste gallery: only our own judged work, with the owner's own why-notes; a fresh remake on every "bad" verdict | — (new) |
+| `references/` | inspiration the owner sends + references found online (never in taste/) | — (new) |
 | `LESSONS.md` | dated retros + the metric | the lessons buried in OPERATOR-STATE / PIPELINE |
 | `templates/STATE.md` | the short "right now" file (under 80 lines) | OPERATOR-STATE.md (about 450 lines) |
 | `templates/GAME-PLAN.md` | plan the whole game before building: core loop, minute-by-minute playthrough, progression, monetization, economy, Winter's opinion | — (new) |
@@ -28,8 +30,22 @@ Every rule and lesson was kept. Duplicates were merged, contradictions fixed, an
 | `templates/MODEL-SPEC-TEMPLATE.xlsx` | unchanged copy of the owner's model spec | — |
 | `tools/oc_products.ps1` | generic version: `-Root` / `-Universe`, an explicit Kind column, the key file inside `try`, a fail log, `-WhatIf` | the ITP-specific version |
 
-## Install on the PC (Winter does this; about 15 minutes)
+## Install on the PC (Winter does this; about 20 minutes)
 
+0. **Self-check first, before adopting anything.** Read every file here, then compare it against the real PC:
+   - D:\AI\STACK.md (installed tools and versions);
+   - RobloxLibrary\CATALOG.md;
+   - ClaudePlugins\tools\;
+   - the installed skills;
+   - the current STATE.
+
+   Report to the owner, in one short list:
+   - contradictions with his setup;
+   - tool paths or names that don't match;
+   - tools these guides mention that aren't installed (and whether to install them);
+   - anything this playbook dropped that the old files still needed.
+
+   Fix the files, then continue.
 1. **Back up:** copy `C:\Users\Condo\Documents\ClaudePlugins\` to `ClaudePlugins-backup-<date>\`.
 2. **Copy** this folder's contents into `ClaudePlugins\`.
 3. **Archive the old files.** Move STANDING-RULES.md, GUI-QA-GATE.md and the old PIPELINE.md into `ClaudePlugins\LOG\old\`.
@@ -40,6 +56,8 @@ Every rule and lesson was kept. Duplicates were merged, contradictions fixed, an
 6. **Fix the lean-path skill's last line.** It says "never create real products for the owner", which contradicts the owner's 09-29 decision (RULES 1). Change it to "create passes / products for free via Open Cloud; never buy".
 7. **Update path references in tools and briefs.** Anything pointing at `GUI-QA-GATE.md` now points at `craft/GUI.md`; `STANDING-RULES.md` → `RULES.md`; `OPERATOR-STATE.md` → `STATE.md`.
 8. **Pick one audit-tool name:** keep `tools/gui_audit.luau`. If `interaction_audit.luau` is older, retire it, or note what it still does that gui_audit doesn't.
+9. **Create the taste folders** (`taste/loved`, `taste/rejected`, `taste/INDEX.md`, `references/`). They start empty and grow only from work judged from now on (TASTE.md).
+10. **Trial run:** use the playbook on ONE small project first (a model pack or a small kit). Then run a full kaizen retro on the playbook itself: what confused Winter, what slowed it down, what was missing. Fix the files before the first full game.
 
 ## The persistent-game-studio plugin
 
