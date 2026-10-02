@@ -10,7 +10,7 @@
 | `GAME-PLAN.md` | Market, pitch, research, concept test, **build order**, design targets | plan |
 | `HANDOFF-WINTER.md` | Winter's start sheet | plan |
 | `econ/model.py` | The balance model: plays the rules second by second with simulated players | the source of every number in CORE-LOOP |
-| `econ/tests.py` | 12 rule checks (`python tests.py`) | must pass |
+| `econ/tests.py` | 19 rule checks (`python tests.py`) | must pass |
 | `econ/RESULTS.txt` | The model's output (`python model.py`) | |
 | `archive/` | Old versions (v2.3 stone training, v4 crystal smashing, the v2 model) | **history only, not rules** |
 

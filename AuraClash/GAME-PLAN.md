@@ -45,7 +45,7 @@
 | Shallow, repetitive loops | two halves that feed each other; mutations; 3-phase bosses |
 | Becomes an "AFK sim" | AFK gives Power only; coins, quests and bosses need active play |
 | Walking chores | SELL is a 3 s teleport; the Shrine is the hub |
-| Permanent loss / griefing | nothing you own can be lost; knockouts cost only time; shared kills (15% rule) |
+| Permanent loss / griefing / kill-stealing | nothing you own can be lost; knockouts cost only time; shared monsters with personal loot (everyone who hits gets a full drop) |
 | Scams / dupes | server-authoritative everything; unique pet ids; safe trading later |
 | Lag on mobile | a capped bag, a capped storm, monster and particle budgets |
 | Pay-to-win pressure on kids | the owner's call; flagged: free players must still progress |
@@ -71,14 +71,14 @@ Everything gameplay-facing is built from scratch. **Steps 1-4 are first proved i
 | Step | Build | Done when |
 |---|---|---|
 | 1 | **Timing core:** hold-release blast (early / PERFECT / late / tap), combo ±1, Overdrive + chains, auto-aim on mobile / gamepad; the **Focus ring** sharing the same timing feel (CORE-LOOP 1, 2.1) | Server validation matches the rules; it feels right on PC, mobile and gamepad |
-| 2 | **Monsters zones 1-2:** 3 types each, AI (wander, telegraph, hit), green HP bars, spawns + the Brute cap, light damage + knockout to Shrine, **mutations** with their looks, shared-kill 15% rule (CORE-LOOP 2.2-2.3) | P9 + P11 pass; ≤ 30 monsters, 60 fps on mobile |
+| 2 | **Monsters zones 1-2:** 3 types each, AI (wander, telegraph, hit), green HP bars, spawns + the Brute cap, light damage + knockout to Shrine, **mutations** with their looks (one exact roll per spawn), shared monsters with personal loot (CORE-LOOP 2.2-2.3, 8) | P9, P11, P13 pass; ≤ 30 monsters, 60 fps on mobile |
 | 3 | **Shard Storm + SELL + Shrine hub:** the capped bag (4 looks, ≤ 12 meshes), SELL teleport + Stay, the shop (Egg / Bag / Mat / Surge) (CORE-LOOP 2.4-2.5, 4) | P10 + P12 pass |
 | 4 | **Meditation:** mats, AFK, Focus, the rate formula, offline (server time, once), AFK idle-rejoin (CORE-LOOP 1) | P2, P3, P5 pass; **greybox fun gate on steps 1-4** |
 | 5 | **Eggs:** odds card, honest cracks, guarantees, the hatch ladder incl. Mythic / Secret cutscenes (CORE-GAME 3) | P6-P8 pass |
 | 6 | **Pets:** follow / idle / charge / fight / tank / meditate behaviour, Strength, slots + Equip Best, star fusion + the Fusion Altar, Soul Food + Feed / Auto-feed, inventory + mailbox (CORE-LOOP 3) | Model rule tests mirrored in-game; 7 pets × full server at 60 fps |
 | 7 | **Rank quests + tutorial** (the first 8 minutes; the hand pointer) (CORE-LOOP 5, 7; CORE-GAME 6) | A new player reaches boss 1 unaided |
 | 8 | **Bosses:** Stone Golem + Magma Oni (3 phases, beam clash), forms Spark → BLAZE → INFERNO, transformation cutscenes (CORE-LOOP 6; CORE-GAME 4) | Scripted-bot win rates resemble `econ/RESULTS.txt` section 3 |
-| 9 | **Saving** (CORE-GAME 8) | P1-P12 pass in the real game |
+| 9 | **Saving** (CORE-GAME 8) | P1-P13 pass in the real game |
 | 10 | **Test tools:** cheat panel, session log, Low effects | The owner can run playtest #1 without help |
 
 **Quality bar for the test: representative art, not greybox** (after the step 4 fun gate):
@@ -96,10 +96,12 @@ All of it follows STYLE-SHEET (GPU concepts → Blender, outlines, smooth plasti
 
 ## 6. Design targets (checked by `econ/tests.py`)
 
+These are **model targets for a solo player, not promises.** The two-zone test's session log measures the real values; the model is re-tuned to them.
+
 | Target | Model (average player) |
 |---|---|
-| Boss 1 at 4-9 min | 5.9 min |
+| Boss 1 at 4-9 min | 5.8 min |
 | Boss 2 at 18-35 min | 23 min |
-| 15-40% of play time meditating | 24% |
-| Pets 30-60% of damage over the run | 44% |
+| 15-40% of play time meditating | 27% |
+| Pets 30-60% of damage over the run | 41% |
 | Average player wins the clash ≥ 90% at recommended Power; weak player ≥ 60%; under-powered (½) average ≤ 40% | 100% / 79% / 23% |

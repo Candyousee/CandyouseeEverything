@@ -18,19 +18,101 @@ def test_egg_odds():                      # CORE-GAME 3.1: odds as shown on the 
     assert counts[5] <= 6                  # Secret: 0.4 expected
 
 
-def test_mutation_odds():                 # CORE-LOOP 2: mutation chances per spawn
-    rng, n = random.Random(2), 200_000
+def test_mutation_odds_are_the_advertised_odds():   # CORE-LOOP 2.3: the real chance = the shown chance
+    pl, n = M.Player("average", 2), 400_000
     counts = {m[0]: 0 for m in M.MUTATIONS}
     for _ in range(n):
-        for m in M.MUTATIONS:
-            if rng.random() < m[1]:
-                counts[m[0]] += 1
-                break
-    p_left = 1.0
-    for m in M.MUTATIONS[:4]:
-        p = p_left * m[1]
-        assert within_4sd(counts[m[0]], n, p), (m[0], counts[m[0]])
-        p_left *= 1 - m[1]
+        m = pl.roll_mutation()
+        if m:
+            counts[m[0]] += 1
+    for m in M.MUTATIONS[:5]:
+        assert within_4sd(counts[m[0]], n, m[1]), (m[0], counts[m[0]], n * m[1])   # advertised p, not a reduced one
+    assert counts["Celestial"] <= n / 10000 + 4 * math.sqrt(n / 10000)
+
+
+def _od_run(chain_n, power, mi):
+    old = M.OD_CHAIN_N
+    M.OD_CHAIN_N = chain_n
+    try:
+        pl = M.Player("average", 9)
+        pl.power, pl.quest, pl.t = power, 1, 100
+        pl.milestones["mut_tutorial"] = 0
+        pl.spend = lambda: None
+        pl.od_left = M.OD_TIME
+        n0, blasts = len(pl.kill_log), 0
+        while pl.od_left > 0:
+            pl.hunt_blast(mi)
+            blasts += 1
+        return blasts, pl.kill_log[n0:]
+    finally:
+        M.OD_CHAIN_N = old
+
+
+def test_overdrive_kills_respect_the_chain_limit():   # CORE-LOOP 2.1: target + at most 2 chained monsters per blast
+    for power, mi in ((50, 0), (5000, 0), (150, 1), (5000, 2)):
+        blasts, kills = _od_run(2, power, mi)
+        assert len(kills) <= blasts * (1 + min(2, M.NEARBY[mi])), (power, mi, blasts, len(kills))
+        assert sum(1 for k in kills if k[2] == "chain") <= blasts * min(2, M.NEARBY[mi])
+
+
+def test_overdrive_without_chains_kills_only_targets():   # the reviewer's check: chain limit 0 -> no extra kills
+    for power, mi in ((50, 0), (5000, 0), (150, 1)):
+        blasts, kills = _od_run(0, power, mi)
+        assert len(kills) <= blasts and all(k[2] == "target" for k in kills), (power, mi, blasts, len(kills))
+
+
+def test_auto_fuse_never_touches_equipped_or_epics():   # CORE-LOOP 3a: auto = unequipped Commons + Rares only
+    pl = M.Player("average", 0)
+    pl.slots = 3
+    pl.pets = [M.Pet(0, 2, 0) for _ in range(3)]           # 3 equipped Epics
+    pl.auto_fuse()
+    assert len(pl.pets) == 3 and all(p.stars == 0 for p in pl.pets)
+    pl.pets = [M.Pet(0, 2, 0) for _ in range(6)]           # 3 equipped + 3 spare Epics: still manual only
+    pl.auto_fuse()
+    assert len(pl.pets) == 6
+    pl.slots = 1
+    pl.pets = [M.Pet(0, 3, 0)] + [M.Pet(0, 0, 0) for _ in range(3)]   # Legendary equipped, 3 spare Commons
+    pl.auto_fuse()
+    assert sorted((p.r, p.stars) for p in pl.pets) == [(0, 1), (3, 0)]
+
+
+def test_manual_fusion_needs_the_altar():               # Epic+ fusion happens only on an altar visit (after a sell)
+    pl = M.Player("average", 0)
+    pl.slots = 3
+    pl.pets = [M.Pet(0, 2, 0) for _ in range(3)]
+    pl.hatch(free=True)                                    # hatching never fuses Epics
+    assert sum(1 for p in pl.pets if p.r == 2 and p.stars == 0) == 3
+    t0 = pl.t
+    pl.bag, pl.bag_val = 1, 3
+    pl.spend = lambda: None
+    pl.sell()
+    assert any(p.r == 2 and p.stars == 1 for p in pl.pets) and pl.t >= t0 + M.SELL_TIME + M.ALTAR_TIME
+
+
+def test_auto_feed_runs_when_food_drops():             # CORE-LOOP 3b
+    pl = M.Player("average", 1)
+    pl.pets, pl.slots = [M.Pet(0, 0, 0)], 3
+    pl.power, pl.quest = 1000, 1
+    pl.spend = lambda: None
+    pl.hunt_session(1, seconds=60)                        # Boars always drop 1 food
+    assert sum(pl.food) == 0 and pl.pets[0].lv > 1
+
+
+def test_food_xp_follows_its_origin():                 # a zone-1 Berry is 1 XP even after reaching zone 2
+    pl = M.Player("average", 1)
+    pl.pets, pl.slots, pl.zone = [M.Pet(1, 0, 0)], 3, 1
+    pl.food = [1, 0]
+    pl.feed()
+    assert pl.pets[0].xp == 1 and pl.pets[0].lv == 1
+    pl.food = [0, 1]
+    pl.feed()
+    assert pl.pets[0].lv == 2 and pl.pets[0].xp == 2      # 1 + 3 = 4 XP; Lv 1 -> 2 costs 2
+
+
+def test_newcomer_next_to_a_veteran_gets_the_drop():    # CORE-LOOP 8: shared monsters, personal loot
+    assert M.loot_recipients({"newcomer": 0.10 * 200, "veteran": 0.90 * 200}) == ["newcomer", "veteran"]
+    assert M.loot_recipients({"newcomer": 1, "veteran": 10**9}) == ["newcomer", "veteran"]
+    assert M.loot_recipients({"bystander": 0, "veteran": 200}) == ["veteran"]
 
 
 def test_star_fusion():                   # CORE-LOOP 3: 3 same -> star x3, keeps the highest level

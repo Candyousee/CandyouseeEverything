@@ -1,6 +1,6 @@
 # AURA CLASH: Core Loop v5.1 (the rules and numbers of the two-zone test)
 
-**Authority:** this file is the single source for the core rules and numbers. Every number here is a constant in `econ/model.py` (run `python model.py` for the results, `python tests.py` for the 12 rule checks). If you change a rule, change the model constant and this file in the same commit. Systems outside the core loop (eggs in detail, aura, saving, playtest, later content) are in `CORE-GAME.md`.
+**Authority:** this file is the single source for the core rules and numbers. Every number here is a constant in `econ/model.py` (run `python model.py` for the results, `python tests.py` for the 19 rule checks). If you change a rule, change the model constant and this file in the same commit. Systems outside the core loop (eggs in detail, aura, saving, playtest, later content) are in `CORE-GAME.md`.
 
 **v5.1 decisions (owner, 2 Oct 2026):**
 - Power comes from **meditation** (the AFK half);
@@ -114,7 +114,7 @@ You meditate at the Shrine of the zone you're in.
 - **Combo:** each PERFECT moves it up one level: ×1 → ×1.25 → ×1.5 → ×1.75 → ×2. Any other release moves it **down one level** (not to zero). Flames on your fists show the level.
 - **OVERDRIVE:**
   - **5 PERFECTs in a row** = **8 s** (+2 s per Surge level) where **every release counts as PERFECT at ×2**;
-  - each blast **chains to the 2 nearest monsters for 50%**;
+  - each blast also hits **at most 2 other monsters next to your target, for 50% each** (a pack of Shardlings has up to 3 nearby, Boars usually 1, Brutes stand alone). Damage beyond a monster's HP is lost: it never turns into extra kills;
   - afterwards the combo sits at ×1.5.
 - **One blast cycle is about 1.4 s** (hold + recovery).
 
@@ -177,6 +177,7 @@ Any monster can spawn **mutated**: the same monster with different crystals. A m
   - each still takes **1 bag slot**;
   - they sell with a bigger pop ("RAINBOW ×25!").
 - **Mutated monsters drop 3× Soul Food.**
+- **Odds are exact:** each spawn makes **one roll** against the table, so every mutation's real chance is exactly the shown chance (7.6% of spawns are mutated in total).
 - **On average,** mutations add about **+58%** to shard value per kill.
 - **Tutorial:** a **Gold Shardling is guaranteed** about 1 minute in, to teach mutations.
 - **Later hook:** events can raise mutation chances ("Fire ×5 this hour").
@@ -233,7 +234,7 @@ The pet card shows only the final Strength.
 | **Tank** | monsters attack whatever is closest, often a pet. A hit pet is **dazed for 2 s** (stars over its head). **Pets never die** |
 | **Meditate** | **+10% meditation per point of Strength** equipped |
 
-**Their share of the damage** grows from about 10% early to about half by the end of zone 2 (model: about 44% on average over a first run). Your blasts always matter.
+**Their share of the damage** grows from about 10% early to about half by the end of zone 2 (model: about 41% on average over a first run). Your blasts always matter.
 
 **Behaviour:**
 
@@ -264,7 +265,7 @@ The pet card shows only the final Strength.
   - **Auto-feed** (on by default) feeds equipped pets as food arrives;
   - the pet gobbles it with a bounce and hearts, and a level-up bursts with "Lv 7!".
 - **XP:**
-  - 1 Crystal Berry = 1 XP, 1 Magma Pepper = 3 XP;
+  - 1 Crystal Berry = 1 XP, 1 Magma Pepper = 3 XP (a food's XP depends on the food, wherever you feed it);
   - level n → n+1 costs **2 × n XP**;
   - level 30 (the maximum) is 870 XP in total.
 - **Why it matters:**
@@ -357,28 +358,31 @@ So a weak player can always win by meditating a bit more.
 | 0:00 | Spawn at the Training Grove Shrine. A glowing mat and a **MEDITATE** hand | 10 | 0 |
 | 0:00-0:20 | **Tutorial meditation:** Focus taps, the aura swells, "+40 POWER!" | 50 | 0 |
 | 0:20 | The hand points at the Shardlings. First blast; PERFECTs one-shot them | 50 | 0 |
-| ~0:55 | First **Overdrive** chains through a pack | 50 | 0 |
 | ~1:00 | The guaranteed **Gold Shardling**: "MUTATION!". Gold shards spin in the storm | 50 | 0 |
-| ~1:35 | **Storm full** → first **SELL** (about 300 coins). The first sell stays at the Shrine | 50 | 0 |
-| ~1:40 | Eggs: the **Light Fox** first (it hops to your side), the 3rd egg is a guaranteed Rare. **Bag Lv1** | 50 | 3 |
-| ~2:00 | Quest 1: Focus meditate for 20 s → +1 slot | ~90 | 3 |
-| ~2:30 | Quest 2 (20 Shardlings) → a free egg; the first **★ fusion** (3 Commons) | ~90 | 3-4 |
-| 2:30-4:00 | Crystal Boars, with the pets tanking the charges. 2nd sell → **Mat Lv1** + eggs. First Soul Food levels | ~90 | 6 |
-| ~4:05 | Quest 3 (hatch 5 → 10 food) and quest 4 (10 Boars → +1 slot) | ~90 | 6 |
-| 4:05-5:15 | The Boars feel slow and quest 5 needs 300 Power: **sit and Focus meditate about 70 s** | ~300 | 6 |
-| ~5:15 | **Boss gate opens** | | |
-| 5:15-5:55 | **Stone Golem** (about 40 s) | | |
-| ~5:55 | KO → **BLAZE**. The Lava Dojo opens with a free Fire egg | ~300 | 7 |
-| 6:00-7:00 | Zone 2 quest 1: Focus meditate for 60 s at the 4× Shrine | ~1,200 | 7 |
-| 7:00+ | Ember Slimes; Magma Peppers; the first Fire pets | | |
+| ~1:55 | **Storm full** → first **SELL** (about 400 coins with the gold shards). The first sell stays at the Shrine | 50 | 0 |
+| ~2:00 | Eggs: the **Light Fox** first (it hops to your side), the 3rd egg is a guaranteed Rare; a 4th egg. **Bag Lv1 + Mat Lv1** | 50 | 4 |
+| ~2:10 | The tutorial points at the **Fusion Altar**: 3 Light Foxes → a **★ Light Fox** | 50 | 2 |
+| ~2:30 | Quest 1: Focus meditate for 20 s → +1 slot | ~95 | 2 |
+| 2:30-3:15 | Shardlings, then Crystal Boars (the pets tank the charges). First **Overdrive** (strong players get it in the first minute). Quest 2 (20 Shardlings) → a free egg; Soul Food levels the team | ~95 | 3 |
+| ~3:15 | Quest 3 (hatch 5 → 10 food) and quest 4 (10 Boars → +1 slot) | ~95 | 3 |
+| 3:15-4:50 | Quest 5 needs 300 Power: **sit and Focus meditate about 1.5 min** | ~315 | 3 |
+| ~4:50 | **Boss gate opens** | | |
+| 4:50-5:40 | **Stone Golem** (about 45 s) | | |
+| ~5:40 | KO → **BLAZE**. The Lava Dojo opens with a free Fire egg | ~315 | 4 |
+| 5:40-6:40 | Zone 2 quest 1: Focus meditate for 60 s at the 4× Shrine | ~1,100 | 4 |
+| 6:40-8:00 | Ember Slimes; Magma Peppers; quest 2 (50 Ember Slimes) → a free Fire egg | ~1,100 | 5 |
+
+This is one seeded run close to the median (`econ` seed 74). Single runs vary: the first Overdrive comes anywhere from 0:30 to 3:30, depending on timing luck.
 
 **Model medians (200 players per profile):**
 
 | Player | First sell | Boss 1 | Boss 2 | Time meditating | Pets' damage share |
 |---|---|---|---|---|---|
-| weak | 2.7 min | 8.6 min | 30 min | 26% | 52% |
-| **average** | **1.9 min** | **5.9 min** | **23 min** | **24%** | **44%** |
-| strong | 1.6 min | 5.1 min | 21 min | 22% | 39% |
+| weak | 2.6 min | 8.8 min | 30 min | 27% | 52% |
+| **average** | **1.7 min** | **5.8 min** | **23 min** | **27%** | **41%** |
+| strong | 1.4 min | 4.9 min | 19 min | 27% | 36% |
+
+These are **model targets, not promises**: the playtest decides. The model plays solo (crowded servers pay faster; see 8).
 
 **A normal session after the tutorial:**
 1. hunt until the storm is full, then sell;
@@ -394,7 +398,7 @@ Log off on a mat to keep meditating offline.
 
 | Question | Rule |
 |---|---|
-| Several players hit the same monster? | Monsters are shared. **Everyone who dealt at least 15% of its HP gets the full drop** (shards, food, mutation). Nobody can steal a kill |
+| Several players hit the same monster? | **Shared monsters, personal loot:** everyone who damaged it gets **their own full drop** (shards, food, the mutation) **and quest credit**. Nothing is split, so a newcomer next to a veteran never loses a kill or quest progress. (Helping is rewarded: in a crowded zone everyone earns a bit faster. The model plays solo, so it's conservative; watch it in playtests) |
 | Shards from far away (pets, chains)? | They always reach you; the 12-stud pull is only the visual spiral |
 | Where can I meditate? | Only on Shrine mats |
 | Do pets attack on their own? | No: only from your first blast on a target until it dies |

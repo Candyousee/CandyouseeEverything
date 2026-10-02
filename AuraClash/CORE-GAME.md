@@ -159,7 +159,7 @@ A **pet simulator with two halves:**
   - Focus taps are limited to one per breath;
   - Focus can't exceed ×3;
   - offline gains use server timestamps only.
-- **Loot:** the server rolls mutations, drops and eggs. Shared kills use the server's damage log (15% rule).
+- **Loot:** the server rolls mutations, drops and eggs. Shared monsters use the server's damage log: **every player who damaged a monster gets their own full drop and quest credit** (CORE-LOOP 8).
 - **Pets:** each pet has a unique id. Fusion is one server transaction (3 removed + 1 added in the same save).
 
 ## 8. Saving (build requirement for the two-zone test)
@@ -180,7 +180,15 @@ A **pet simulator with two halves:**
 
 - **Session lock:** one server at a time per profile, so two servers can never both grant.
 - **Ordinary progress** (Power, coins, bag, kills, hatches, feeding): queued save + an autosave every 60 s, on leave and on server shutdown (`BindToClose`).
-- **Confirmed saving** (write first, show second; `UpdateAsync` with a unique operation id; up to 3 retries; on failure nothing is granted and "Couldn't save, try again" is shown; a retry checks the stored ids so it never grants twice):
+- **Confirmed saving** (write first, show second):
+  1. the server writes the change with `UpdateAsync`, together with a unique **operation id**;
+  2. **success →** show the reward;
+  3. **error or timeout → the result is UNKNOWN, not "nothing granted".** Roblox warns that a failed response can follow a write that actually succeeded. So the server shows "Saving…" and **reconciles**: it reads the profile (inside the next `UpdateAsync`) and checks whether the operation id is already stored:
+     - **id found →** the write landed: show the reward, and never apply it again;
+     - **id not found →** apply it in that same `UpdateAsync` (so it can't land twice);
+  4. up to 3 attempts with backoff. If the data store stays unreachable, the operation stays **pending** in the session (the server keeps retrying, and the UI says "Still saving, your reward is safe"). It's resolved by the same id check on the next successful access, including on the next join.
+  
+  Used for:
   - the offline meditation claim;
   - Mythic / Secret hatches (the reward is saved before the cutscene plays);
   - fusion of ★★ or Epic+ pets.
@@ -200,14 +208,15 @@ A **pet simulator with two halves:**
 | P2 | Log off 1 h, rejoin twice quickly (two servers) | offline Power granted exactly once |
 | P3 | Change the device clock ±1 day | no effect on offline gains |
 | P4 | Kill the server during a Mythic hatch (forced shutdown) | after rejoin: the Mythic is there exactly once |
-| P5 | Force a failing / timing-out save during the offline claim (Studio mock) | no grant + "try again"; the retry grants exactly once |
+| P5 | Studio mock: (a) the save fails before writing; (b) **the save writes, then reports a timeout**; (c) the data store is down for 2 min | (a) the retry grants once; (b) reconciliation finds the operation id and shows the reward **without granting it again**; (c) the reward stays pending, then is granted exactly once when saving recovers (also across a rejoin) |
 | P6 | Rejoin before the 3rd hatch and after the tutorial egg | the guarantees happen exactly once, in order |
 | P7 | **Odds test:** 200,000 automated server-side hatches | each rarity within ±4 standard deviations (Mythic: 200 expected, accepted 144-256) |
 | P8 | Crack colour vs result over the same 200,000 hatches | 100% match |
 | P9 | **Mutation test:** 200,000 automated spawns | each mutation within ±4 SD of its chance (CORE-LOOP 2.3) |
 | P10 | Fill the bag in Overdrive with mutated shards | never above capacity; every mutated shard sells at its multiplier |
-| P11 | Two players hit one monster (one 10%, one 90%) | only the 90% player gets the drop (15% rule) |
+| P11 | A newcomer (10% of the damage) and a veteran (90%) hit one monster | **both** get their own full drop and quest credit |
 | P12 | Spam SELL / Feed / Fuse (20 clicks), and two devices at once | exactly one sale, feed and fusion each |
+| P13 | A new player does zone 1 quests 2 and 4 in a full server next to veterans | the quests complete at the solo pace or faster |
 
 ## 9. PLAYTEST #1 (behaviour first)
 
@@ -281,7 +290,7 @@ Each must keep the core rules (**Power only from meditation, coins only from hun
   - rank quests, boss HP and the beam clash.
 - **It doesn't cover:**
   - monsters hitting the player (only time lost, assumed small);
-  - other players sharing kills;
+  - other players sharing monsters (personal loot means crowded servers pay faster than the model);
   - walking between areas (beyond a per-kill overhead);
-  - saving (tests P1-P12 are for the real game).
+  - saving (tests P1-P13 are for the real game).
 - **Decisions** (like when to meditate) follow a simple "average player" policy. **The playtest is the real test.**

@@ -43,6 +43,9 @@ MONSTERS = [[("Shardling",    20,   1, 0.0, 0.0, 0.1, 0.6),
              ("Lava Hound",   4000, 3, 0.2, 0.0, 1.0, 1.5),
              ("Obsidian Brute", 40000, 8, 2.0, 0.1, 3.0, 3.0)]]
 BIG_MIN_CYCLE = 10.0                           # 3 Brutes per zone, 30 s respawn -> at most one every ~10 s
+NEARBY = [3, 1, 0]                             # other monsters of the same type within chain range (packs / pairs / alone)
+ALTAR_TIME = 5.0                               # a manual-fusion visit to the Fusion Altar ("Stay" after a sell)
+AUTO_FUSE_MAX_RARITY = 1                       # auto-fuse: Commons + Rares, unequipped copies only
 SHARD_VAL = [(3, 40, 250), (30, 400, 2500)]    # shard, bright, gem coins by zone
 #             name        chance      value  HP
 MUTATIONS = [("Gold",      1 / 25,     5,  2),
@@ -104,7 +107,10 @@ class Player:
     def __init__(self, profile, run=0, log=False):
         self.pf, self.name = PROFILES[profile], profile
         self.rng = random.Random(seed(profile, run))
-        self.t, self.power, self.coins, self.food = 0.0, START_POWER, 0, 0.0
+        self.t, self.power, self.coins = 0.0, START_POWER, 0
+        self.food = [0, 0]                 # Soul Food pouch by origin zone (XP depends on where it dropped)
+        self.od_left, self.field, self.last_big = 0.0, [], -1e9
+        self.kill_log = []                 # (time, monster, cause) for checks
         self.bag, self.bag_val = 0, 0
         self.bag_lv = self.mat_lv = self.surge_lv = 0
         self.upg_i = 0
@@ -199,101 +205,112 @@ class Player:
                 best, best_rate = i, rate
         return best
 
-    def hunt_one(self, mi, carry):
-        """Defeat one monster of type mi. carry = chain damage already dealt to it by Overdrive."""
-        z = self.zone
-        name, hp, sh, br, gem, food, over = MONSTERS[z][mi]
-        mut = None
+    def roll_mutation(self):
+        """ONE roll against exclusive bands, so each mutation's real chance is exactly its advertised chance."""
+        x, acc = self.rng.random(), 0.0
         for m in MUTATIONS:
-            if self.rng.random() < m[1]:
-                mut = m
-                break
-        if self.milestones.get("mut_tutorial") is None and z == 0 and self.t > 60:
-            mut = MUTATIONS[0]          # the guaranteed tutorial Gold Shardling
-            mi, name, hp, sh, br, gem, food, over = 0, *MONSTERS[0][0]
+            acc += m[1]
+            if x < acc:
+                return m
+        return None
+
+    def spawn(self, mi):
+        mut = self.roll_mutation()
+        if self.milestones.get("mut_tutorial") is None and self.zone == 0 and self.t > 60:
+            mi, mut = 0, MUTATIONS[0]                        # the guaranteed tutorial Gold Shardling
             self.note("mut_tutorial", "the tutorial Gold Shardling")
-        hp *= mut[3] if mut else 1
-        dmg_taken = carry
-        start = self.t
-        chained = []
-        while dmg_taken < hp:
-            d, dt, perf = self.blast()
-            if self.streak >= OD_STREAK:
-                od_dmg, od_t, chained = self.overdrive(hp - dmg_taken)
-                dmg_taken += od_dmg
-                self.t += od_t
-                continue
-            pet_d = self.team_str() * PET_HIT_X * self.power * (dt / PET_HIT_EVERY + (1 if perf else 0))
-            dmg_taken += d + pet_d
-            self.player_dmg += d
-            self.pet_dmg += pet_d
-            self.t += dt
-        fight = self.t - start
-        extra = over
-        if mi == 2:
-            extra = max(over, BIG_MIN_CYCLE - fight)
-        self.t += extra
-        self.hunt_time += self.t - start
-        # drops
+        hp = MONSTERS[self.zone][mi][1] * (mut[3] if mut else 1)
+        return {"mi": mi, "hp": hp, "mut": mut}
+
+    def fill_field(self, mi):
+        """The target plus the monsters of the same type standing close enough to be chained."""
+        want = 1 + NEARBY[mi]
+        while len(self.field) < want:
+            self.field.append(self.spawn(mi))
+        del self.field[want:]
+
+    def blast_od(self):
+        """One release inside Overdrive: counts as a PERFECT at the top combo multiplier."""
+        self.od_left -= BLAST_TIME
+        return self.power * PERFECT_X * COMBO[4], BLAST_TIME, True
+
+    def loot(self, mon, cause):
+        z, mi, mut = self.zone, mon["mi"], mon["mut"]
+        name, hp, sh, br, gem, food, over = MONSTERS[z][mi]
         n_bright = int(br) + (1 if self.rng.random() < br - int(br) else 0)
         n_gem = 1 if self.rng.random() < gem else 0
-        items = [(SHARD_VAL[z][0], sh), (SHARD_VAL[z][1], n_bright), (SHARD_VAL[z][2], n_gem)]
         vx = mut[2] if mut else 1
-        for val, n in items:
+        for val, n in ((SHARD_VAL[z][0], sh), (SHARD_VAL[z][1], n_bright), (SHARD_VAL[z][2], n_gem)):
             for _ in range(n):
-                if self.bag < BAG[self.bag_lv]:
+                if self.bag < BAG[self.bag_lv]:          # 1 shard = 1 slot, whatever its mutation
                     self.bag += 1
                     self.bag_val += val * vx
                     if mut:
                         self.mut_coins += val * (vx - 1)
         f = food * (MUT_FOOD_X if mut else 1)
-        self.food += f
+        whole = int(f) + (1 if self.rng.random() < f - int(f) else 0)
+        self.food[z] += whole
+        if whole:
+            self.feed()                                   # Auto-feed (on by default) runs as food drops
         self.kills[name] = self.kills.get(name, 0) + 1
-        if self.bag >= BAG[self.bag_lv]:
-            self.sell()
-        return chained
+        self.kill_log.append((self.t, name, cause))
 
-    def overdrive(self, hp_left):
-        """Overdrive: every release PERFECT at max combo, chaining to 2 nearby monsters at 50%."""
-        dur = OD_TIME + SURGE_STEP * self.surge_lv
-        self.note("overdrive", "first OVERDRIVE")
-        blasts = int(dur / BLAST_TIME)
-        per = self.power * PERFECT_X * COMBO[4]
-        pet = self.team_str() * PET_HIT_X * self.power * (BLAST_TIME / PET_HIT_EVERY + 1)
-        dmg = 0.0
-        chained = 0.0
-        t = 0.0
-        for _ in range(blasts):
-            dmg += per + pet
-            self.player_dmg += per
-            self.pet_dmg += pet
-            chained += per * OD_CHAIN_X
-            t += BLAST_TIME
-        self.streak = 0
-        self.combo = OD_AFTER
-        self._od_chain = chained  # damage spread over neighbours; turned into kills by the caller
-        return dmg, t, chained
+    def hunt_blast(self, mi):
+        """One blast at the field's target. Overdrive chains hit at most OD_CHAIN_N nearby monsters for 50%.
+        Excess damage is lost (it never carries over into extra kills)."""
+        self.fill_field(mi)
+        if self.od_left > 0:
+            d, dt, perf = self.blast_od()
+            in_od = True
+        else:
+            d, dt, perf = self.blast()
+            in_od = False
+            if self.streak >= OD_STREAK:
+                self.od_left = OD_TIME + SURGE_STEP * self.surge_lv
+                self.note("overdrive", "first OVERDRIVE")
+                self.streak = 0
+        pet_d = self.team_str() * PET_HIT_X * self.power * (dt / PET_HIT_EVERY + (1 if perf else 0))
+        target = self.field[0]
+        target["hp"] -= d + pet_d
+        self.player_dmg += d
+        self.pet_dmg += pet_d
+        if in_od:
+            for mon in self.field[1:1 + OD_CHAIN_N]:
+                mon["hp"] -= d * OD_CHAIN_X
+                self.player_dmg += d * OD_CHAIN_X
+            if self.od_left <= 0:
+                self.combo, self.streak = OD_AFTER, 0
+        self.t += dt
+        self.hunt_time += dt
+        dead = [m for m in self.field if m["hp"] <= 0]
+        target_died = target["hp"] <= 0
+        for m in dead:
+            self.field.remove(m)
+            self.loot(m, "target" if m is target else "chain")
+            if self.bag >= BAG[self.bag_lv]:
+                self.sell()
+        if target_died:
+            # walk to the next target; Brutes are limited by their respawns
+            over = MONSTERS[self.zone][mi][6]
+            if mi == 2:
+                over = max(over, self.last_big + BIG_MIN_CYCLE - self.t)
+                self.last_big = self.t + over
+            self.t += over
+            self.hunt_time += over
 
     def hunt_session(self, mi, seconds=None, until_sells=None):
         end = self.t + seconds if seconds else None
         start_sells = self.milestones.get("_sells", 0)
-        carry = 0.0
+        if self.field and self.field[0]["mi"] != mi:
+            self.field = []
         while True:
-            self._od_chain = 0.0
-            self.hunt_one(mi, carry)
-            # Overdrive chain damage becomes free damage on the next monsters of this type
-            hp = MONSTERS[self.zone][mi][1]
-            chain = getattr(self, "_od_chain", 0.0)
-            while chain >= hp and mi != 2:
-                self.t -= MONSTERS[self.zone][mi][6] * 0.5   # chained kills save walking time
-                self.hunt_one(mi, hp)
-                chain -= hp
-            carry = 0.0
+            before = len(self.kill_log)
+            self.hunt_blast(mi)
             if end and self.t >= end:
                 return
             if until_sells and self.milestones.get("_sells", 0) - start_sells >= until_sells:
                 return
-            if self.quest_check():
+            if len(self.kill_log) > before and self.quest_check():
                 return
 
     # ---------- money ----------
@@ -306,6 +323,9 @@ class Player:
         self.bag, self.bag_val = 0, 0
         self.sells_since_med += 1
         self.spend()
+        if self.fuse(manual=True, dry_run=True):        # "Stay" at the Shrine and use the Fusion Altar
+            self.t += ALTAR_TIME
+            self.fuse(manual=True)
 
     def upgrade_cost(self):
         while self.upg_i < len(UPGRADE_ORDER):
@@ -359,42 +379,73 @@ class Player:
             sp = self.rng.randrange(SPECIES[r])
         self.pets.append(Pet(z, r, sp))
         self.note("first_hatch", "first hatch")
-        self.fuse()
+        self.auto_fuse()
         self.feed()
 
-    def fuse(self):
+    def auto_fuse(self):
+        """Auto-fuse (on by default): Commons + Rares, UNEQUIPPED copies only. Never touches the team."""
+        changed = True
+        while changed:
+            changed = False
+            team = set(map(id, self.team()))
+            groups = {}
+            for p in self.pets:
+                if p.r <= AUTO_FUSE_MAX_RARITY and p.stars < 2 and id(p) not in team:
+                    groups.setdefault((p.z, p.r, p.sp, p.stars), []).append(p)
+            for (z, r, sp, st_), lst in groups.items():
+                if len(lst) >= 3:
+                    lst.sort(key=lambda p: -p.lv)
+                    for p in lst[:3]:
+                        self.pets.remove(p)
+                    new = Pet(z, r, sp)
+                    new.stars, new.lv = st_ + 1, lst[0].lv
+                    self.pets.append(new)
+                    self.note("first_star", "first star fusion")
+                    changed = True
+                    break
+
+    def fuse(self, manual=True, dry_run=False):
+        """Manual fusion at the Fusion Altar: any rarity, equipped copies allowed, only if the team gets stronger."""
+        did = False
         changed = True
         while changed:
             changed = False
             groups = {}
             for p in self.pets:
                 groups.setdefault((p.z, p.r, p.sp, p.stars), []).append(p)
-            for (z, r, sp, s), lst in groups.items():
-                if len(lst) >= 3 and s < 2:
-                    lst.sort(key=lambda p: -p.lv)
-                    before = self.team_str()
-                    keep = lst[:3]
-                    for p in keep:
-                        self.pets.remove(p)
-                    new = Pet(z, r, sp)
-                    new.stars, new.lv = s + 1, keep[0].lv
-                    self.pets.append(new)
-                    if self.team_str() + 1e-9 < before:          # never lowers the team: undo
-                        self.pets.remove(new)
-                        self.pets.extend(keep)
-                        continue
-                    self.note("first_star", "first star fusion")
-                    changed = True
-                    break
+            for (z, r, sp, st_), lst in groups.items():
+                if len(lst) < 3 or st_ >= 2:
+                    continue
+                lst.sort(key=lambda p: -p.lv)
+                before = self.team_str()
+                keep = lst[:3]
+                for p in keep:
+                    self.pets.remove(p)
+                new = Pet(z, r, sp)
+                new.stars, new.lv = st_ + 1, keep[0].lv
+                self.pets.append(new)
+                better = self.team_str() > before + 1e-9
+                if dry_run or not better:
+                    self.pets.remove(new)
+                    self.pets.extend(keep)
+                    if dry_run and better:
+                        return True
+                    continue
+                self.note("first_star", "first star fusion")
+                did = changed = True
+                break
+        return did
 
     def feed(self):
+        """Feed All / Auto-feed: equipped pets, lowest level first. Each item gives the XP of the zone it dropped in."""
         team = self.team()
-        while self.food >= 1 and team:
+        while team and sum(self.food) > 0:
             pet = min(team, key=lambda p: p.lv)
             if pet.lv >= MAX_LEVEL:
                 break
-            self.food -= 1
-            pet.xp += FOOD_XP[self.zone]
+            fz = 0 if self.food[0] > 0 else 1
+            self.food[fz] -= 1
+            pet.xp += FOOD_XP[fz]
             while pet.lv < MAX_LEVEL and pet.xp >= XP_TO_NEXT(pet.lv):
                 pet.xp -= XP_TO_NEXT(pet.lv)
                 pet.lv += 1
@@ -431,7 +482,7 @@ class Player:
         elif r == "egg":
             self.hatch(free=True)
         elif r and r.startswith("food"):
-            self.food += int(r[4:])
+            self.food[z] += int(r[4:])
             self.feed()
 
     def boss_fight(self):
@@ -487,6 +538,12 @@ class Player:
         return self
 
 
+def loot_recipients(damage_log):
+    """Shared monsters, personal loot: EVERY player who damaged the monster gets their own full drop
+    (shards, food, the mutation) and quest credit. Nothing is split, so a newcomer next to a veteran never loses out."""
+    return sorted(pid for pid, dmg in damage_log.items() if dmg > 0)
+
+
 def combo_avg(p):
     """Average combo multiplier on a PERFECT: stationary distribution of the +1 / -1 combo ladder."""
     pi = [1.0] * 5
@@ -535,8 +592,8 @@ def report():
     out = []
     P = out.append
     P("AURA CLASH v5.1 model results (python model.py)\n")
-    P("1. Average player, first run, one seeded playthrough (milestones)")
-    pl = Player("average", 0, log=True).run()
+    P("1. Average player, first run, one seeded playthrough close to the median (seed 74; the CORE-LOOP 7 script)")
+    pl = Player("average", 74, log=True).run()
     keys = [("tutorial", "tutorial meditation done"), ("first_sell", "first SELL"), ("first_hatch", "first hatch"),
             ("mut_tutorial", "tutorial Gold Shardling"), ("overdrive", "first Overdrive"),
             ("quest_z0_0", "quest 1 (Focus 20 s)"), ("bag1", "Bag Lv1"), ("mat1", "Mat Lv1"),

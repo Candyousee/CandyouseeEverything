@@ -4,7 +4,7 @@
 
 **Status:**
 - the design is v5.1 (meditation + crystal-monster hunting + pets);
-- the numbers come from `econ/model.py`, and `python tests.py` passes 12/12;
+- the numbers come from `econ/model.py`, and `python tests.py` passes 19/19;
 - the art style is chosen (STYLE-SHEET).
 
 **Don't rewrite the concept.** The next evidence must come from the real game.
@@ -15,7 +15,7 @@
 2. **`CORE-LOOP.md`:** the core rules and numbers. **It wins on any conflict.**
 3. **`CORE-GAME.md`:**
    - eggs, the pet catalogue, aura, HUD, tutorial, server authority;
-   - **section 8 (saving tests P1-P12)** and **section 9 (playtest #1)** are the **acceptance criteria**.
+   - **section 8 (saving tests P1-P13)** and **section 9 (playtest #1)** are the **acceptance criteria**.
 4. **`GAME-PLAN.md` section 5:** the 10 build steps and the quality bar.
 5. **`STYLE-SHEET.md`:** glossy toon anime.
 6. **`econ/`:** the reference model.
@@ -46,7 +46,10 @@
 - **The combo drops one level on a miss,** not to zero.
 - **Fusion = stars,** keeps the highest level, and never lowers the team. "Gold" only ever means a mutation.
 - **The crack colour always equals the result.** No fake near-misses.
-- **Shared kills:** 15% of HP = the full drop.
+- **Shared monsters, personal loot:** everyone who damaged a monster gets their own full drop and quest credit.
+- **Overdrive chains** hit at most 2 monsters next to the target; overkill damage is lost.
+- **Mutation odds:** one roll per spawn against the table; the shown chances are the real chances.
+- **Saving:** a timeout is **unknown**, not a failure. Reconcile by operation id (CORE-GAME 8.2).
 - **The boss gate** = all zone quests done (the last one is the Power target).
 - **Offline:** server time, 25% of AFK, 8 h cap, claimed once (confirmed save).
 - **No Bond, no Force.** No monetization in this build.
@@ -64,7 +67,7 @@ You're entitled to every free tool, app and resource on the owner's PC, and to i
 ## Done means
 
 - steps 1-10 built, at representative quality;
-- tests P1-P12 pass **in the game**;
+- tests P1-P13 pass **in the game**;
 - the greybox fun gate and the seven-sense review passed;
 - the owner runs playtest #1 (day 1 + invited day 2) with the cheat panel and session log ready.
 
