@@ -1,6 +1,6 @@
 # GAMEPLAY: core loop, feel, progression, economy, onboarding, retention
 
-## 1. Expand the owner's seed into one streamlined system
+## 1. Expand the owner's seed into one streamlined system (written up in templates/GAME-PLAN.md before building)
 
 The owner gives seeds ("open the parcels", "speed coils that actually work"). First judge the seed (RULES 12), then expand it:
 

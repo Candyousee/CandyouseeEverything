@@ -17,10 +17,13 @@ Every rule and lesson was kept. Duplicates were merged, contradictions fixed, an
 |---|---|---|
 | `SKILL.md` | the roblox-game-pipeline skill: the loader | the old skill body |
 | `RULES.md` | the owner's rules, grouped (limits, operator, taste, quality, efficiency, memory) | STANDING-RULES.md |
-| `PIPELINE.md` | process: sizing, intake, approval, build, running lanes, six-sense review, gates, retro | PIPELINE.md + the process parts of OPERATOR-STATE / CHECK-PLAN |
+| `PIPELINE.md` | process: sizing, intake, planning the game, build, running lanes, seven-sense review, gates, retro | PIPELINE.md + the process parts of OPERATOR-STATE / CHECK-PLAN |
+| `craft/STYLE.md` | per-game style + the owner's taste constants (stud, cartoony, anime, realistic, low-poly) | the hard-coded "always cartoony" rule |
 | `craft/*.md` | 11 deep guides: MODELING, ANIMATION, VFX, WORLD, GUI, AUDIO, GAMEPLAY, SYSTEMS, MONETIZATION, VIDEO, CREATOR-STORE | GUI-QA-GATE.md (now craft/GUI.md) and the scattered craft notes |
 | `LESSONS.md` | dated retros + the metric | the lessons buried in OPERATOR-STATE / PIPELINE |
 | `templates/STATE.md` | the short "right now" file (under 80 lines) | OPERATOR-STATE.md (about 450 lines) |
+| `templates/GAME-PLAN.md` | plan the whole game before building: core loop, minute-by-minute playthrough, progression, monetization, economy, Winter's opinion | — (new) |
+| `templates/STYLE-SHEET.md` | this game's look, approved once | — (new) |
 | `templates/LANE-BRIEF.md` | the brief + handoff template | ad-hoc briefs |
 | `templates/MODEL-SPEC-TEMPLATE.xlsx` | unchanged copy of the owner's model spec | — |
 | `tools/oc_products.ps1` | generic version: `-Root` / `-Universe`, an explicit Kind column, the key file inside `try`, a fail log, `-WhatIf` | the ITP-specific version |
@@ -53,7 +56,9 @@ It is a second full operating system, with rules that clash with these (nine Opu
 - **Rule 1 restated:** build fast, but correctness-critical code (saves, purchases, security, setup) is tested when built, and every lane ends with its own gate.
 - **Team-size rules merged** into one ceiling rule (old rules 5, 16 and 26 contradicted each other).
 - **The stale "no passes / products" line removed.**
-- **Six-sense review added:** eye (shape), eye (motion), ear, hand, clock, head.
+- **The owner's priorities are now at the top of RULES.md:** no spend, plan first, the core loop is the game, monetization designed in, the best tools (any free tool, installed if missing), quality + efficiency, correct the owner, adapt the style.
+- **Seven-sense review added:** eye (shape), eye (motion), ear, hand, clock, taste (style), head.
+- **Style adapts per game:** a style sheet per game, with the owner's taste constants in every style. Brick / stud games may use part-built models when the sheet says so.
 - **New gates:**
   - a feasibility check at intake;
   - the live-server gate;

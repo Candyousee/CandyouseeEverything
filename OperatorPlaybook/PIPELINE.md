@@ -4,6 +4,7 @@ This file covers the process. The craft detail lives in `craft/`, one guide per 
 
 | Guide | Covers |
 |---|---|
+| craft/STYLE.md | **every game:** finding the game's style, the owner's taste constants, style profiles (stud, cartoony, anime, realistic, low-poly) |
 | craft/MODELING.md | props, items, characters, pets, vehicles, environment meshes, textures |
 | craft/ANIMATION.md | rigs, character animation, procedural motion, cameras for cutscenes |
 | craft/VFX.md | particles, beams, trails, flipbooks, impacts, auras, screen effects |
@@ -35,13 +36,32 @@ Agents that share one GPU, one Studio or one Blender just queue. Run those seria
 3. **Feasibility check against the quality bar.** For each hero deliverable, name the route that can actually reach top-tier quality. If no free route reaches it, say so before building, not after. Examples:
    - code-posed animation can't reach "anime" quality; it needs Mixamo + polish, or hand-keyed animation;
    - procedural splashes lose to FLUX frames.
-4. **Toolchain:** the best FREE tool per part, licence re-checked (lean-path section 1). Tell the owner in a small table.
+4. **Toolchain: the best tool for the job, always.**
+   - Winter has access to ANY free tool or anything on the owner's PC.
+   - For each part, find the best free tool (web-search if not verified in the last month: quality, licence, export formats).
+   - **Install it if it's missing.**
+   - Tell the owner in a small table: part → tool → why it's the best free option → any licence catch.
+   - Never default to what's already installed if something free is better.
 5. **Reuse:** check RobloxLibrary/CATALOG.md and D:\AI\STACK.md. Never rebuild what works.
 6. **Check the usage meter / plan limit** before committing to a multi-lane plan.
 
-## 3. The one approval round
+## 3. Plan the game: the one approval round
 
-- **Brief** (1-2 pages):
+**Nothing is built until the game is planned and the owner approves the plan.** Planning is the cheapest place to make the game great: a weak loop or bad monetization found here costs minutes; found after building, it costs days.
+
+- **GAME-PLAN.md** (templates/GAME-PLAN.md), for every game:
+  - the pitch and the best games in the genre studied;
+  - the **core loop** spelled out second by second, and why it's fun the 50th time;
+  - a **minute-by-minute paper playthrough** (first 30 s, first minute, 3 / 5 / 20 minutes, 1 hour, day 2, day 7);
+  - progression;
+  - the **monetization plan** (every pass and product, price, why it's worth it);
+  - the economy numbers;
+  - the build plan;
+  - **Winter's honest opinion**, including what should change.
+
+  If any section can't be filled in, the game isn't understood yet: fix the plan, not the build. Kits and assets use the short version: what it does, how a buyer uses it, why it beats the alternatives.
+- **STYLE-SHEET.md** (templates/STYLE-SHEET.md + craft/STYLE.md): this game's look in the owner's taste.
+- **Brief** (1-2 pages, for the lanes):
   - the core loop and feel;
   - exact numbers;
   - scope and non-goals;
@@ -49,7 +69,7 @@ Agents that share one GPU, one Studio or one Blender just queue. Run those seria
   - hero assets;
   - crew and why;
   - risks.
-- **Art bible:** 5-10 target images (the owner's references + local FLUX / SDXL / Qwen frames). It also sets:
+- **Art bible** (part of the style sheet): 5-10 target images (the owner's references + local FLUX / SDXL / Qwen frames). It also sets:
   - the palette (≈10% under first instinct);
   - the shape language;
   - the material rules;
@@ -59,7 +79,7 @@ Agents that share one GPU, one Studio or one Blender just queue. Run those seria
   - the GUI concept (HUD + shop front + one modal);
   - the economy table for L-size projects.
 
-The owner approves once. Start only when he says it's final (RULES 11).
+The owner approves once: plan + style sheet + brief + art bible. Start only when he says it's final (RULES 11). If he asks for something during the build that doesn't fit the plan or won't make the game better, say so first (RULES 12).
 
 ## 4. Build: two speeds, gates per lane
 
@@ -116,9 +136,9 @@ Lanes read their brief only at the start: queue new notes for the NEXT lane inst
   - never leave Studio in Play after a failed run.
 - **Stop helper servers** when done. For `upload_image` URLs, serve PNGs with `python -m http.server <unique port>`.
 
-## 6. The operator's review: six senses
+## 6. The operator's review: seven senses
 
-Before anything reaches the owner, Winter reviews it with all six senses. Each sense has a checklist in its craft guide; this is the summary.
+Before anything reaches the owner, Winter reviews it with all seven senses. Each sense has a checklist in its craft guide; this is the summary.
 
 | Sense | Ask | Tools |
 |---|---|---|
@@ -127,6 +147,7 @@ Before anything reaches the owner, Winter reviews it with all six senses. Each s
 | **Ear** | Does every action have a sound? Is the mix balanced, nothing clipping or repeating so often it annoys? Silence where it should be? | loudness check, a listen pass with eyes closed, or flag "unheard" to the owner |
 | **Hand: feel** | Input → response under 100 ms? Camera comfortable? Controls restored after every mode? Satisfying after 50 repetitions? | real input tests (hold W, click the real path), play it |
 | **Clock: performance** | Frame time stable, no spikes on spawn or effects, memory flat over 20 minutes? Phone-safe? | a paused-runner baseline first, the MicroProfiler, a 20-min autoplay soak |
+| **Taste: style** | Does it match the style sheet? Does it pass the owner's taste constants (polished, readable, bright, clean, alive, worth it, original, truthful, simple)? | side-by-side against the target frames |
 | **Head: clarity and value** | Would an 8-year-old know the next action? Is the first reward under 1 minute and the first purchase offer about 3 minutes in? Is every purchase worth it? Do the economy numbers hold up? | the noob walk-through, the economy table |
 
 Plus the **structural checks**, which are automated and always run:
@@ -146,7 +167,7 @@ Then the **whole-screen critique** [r42]. On every screen and view, ask:
 - a clean Play boot of the BUILT file (not the source);
 - every lane gate passed;
 - the prune sweep done;
-- the six-sense review done;
+- the seven-sense review done;
 - KNOWN-ISSUES written.
 
 **Live gate** (anything players join), run in a live private server, not Studio:

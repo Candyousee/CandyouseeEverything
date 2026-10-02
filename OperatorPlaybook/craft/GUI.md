@@ -2,9 +2,11 @@
 
 Every UI brief includes this whole file. No UI screenshot reaches the owner before it passes section 5 (the gate). The goal: a clean UI on the FIRST delivery, from just the concept.
 
-## 1. The bar: a top front-page Roblox simulator, 9/10
+## 1. The bar: a top front-page Roblox game in this game's style, 9/10
 
-**Style** (the owner's taste):
+The game's STYLE-SHEET sets the look (craft/STYLE.md). What follows is the **default cartoony-simulator** version. Adapt the style parts (font, outlines, colours, ribbons) to the sheet; the life, hype, streamlining and every rule from section 3 on apply in every style.
+
+**Style** (default):
 - cartoony simulator style;
 - a chunky rounded font with a dark stroke;
 - thick outside strokes;
@@ -33,7 +35,7 @@ Every UI brief includes this whole file. No UI screenshot reaches the owner befo
 
 ## 2. Icons
 
-- Flat cartoon icons: a thick uniform dark outline, flat cel shading (base + one shadow + one small highlight), simple chunky shapes, cute faces where fitting.
+- Default: flat cartoon icons (other styles follow their style sheet; always one consistent set, readable at 48 px, made fresh): a thick uniform dark outline, flat cel shading (base + one shadow + one small highlight), simple chunky shapes, cute faces where fitting.
 - Readable at 48 px. One consistent set per project, made fresh.
 - Made as vector SVG → PNG (Inkscape), or a cleaned image-gen output.
 - **Never built from stacked Frames or rotated bars** in Studio: no check marks, arrows, X marks or fingers made of parts.

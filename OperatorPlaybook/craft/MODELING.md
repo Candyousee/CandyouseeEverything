@@ -2,7 +2,7 @@
 
 ## The bar
 
-Top Roblox front-page quality in the game's own style:
+Top Roblox front-page quality in **this game's style sheet** (craft/STYLE.md): stud, cartoony, anime or realistic. Always:
 - a clear silhouette at a glance;
 - chunky readable forms with real bevels;
 - materials that read correctly under the game's lighting;
