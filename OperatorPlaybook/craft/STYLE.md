@@ -43,7 +43,7 @@ These came from his corrections. They apply to brick, cartoon, anime and realist
 
 - **Shapes:** chunky brick forms, visible studs on top surfaces, classic proportions, bright primary + candy colours.
 - **Materials:** plastic with a soft specular highlight; studs as real geometry or a crisp stud texture, never a blurry decal.
-- **Build route:** part-built or mesh-built models ARE the look here. The style sheet must say this explicitly, approved by the owner (it's an exception to RULES 17). The clean-geometry, support and joinery rules still apply strictly.
+- **Build route:** Blender like every style: brick forms, real modeled studs and bevelled plastic edges, from GPU concept sheets. The clean-geometry, support and joinery rules apply strictly.
 - **Effects:** brick-shaped or stud-shaped particles, confetti, pop bursts; classic Roblox sounds re-imagined (not ripped).
 - **UI:** bold blocky font, brick-plate panels with studs, chunky outlines.
 

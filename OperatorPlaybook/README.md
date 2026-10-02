@@ -76,7 +76,7 @@ It is a second full operating system, with rules that clash with these (nine Opu
 - **The stale "no passes / products" line removed.**
 - **The owner's priorities are now at the top of RULES.md:** no spend, plan first, the core loop is the game, monetization designed in, the best tools (any free tool, installed if missing), quality + efficiency, correct the owner, adapt the style.
 - **Seven-sense review added:** eye (shape), eye (motion), ear, hand, clock, taste (style), head.
-- **Style adapts per game:** a style sheet per game, with the owner's taste constants in every style. Brick / stud games may use part-built models when the sheet says so.
+- **Style adapts per game:** a style sheet per game, with the owner's taste constants in every style. Every visual starts as GPU-generated concepts (ComfyUI, local) and is built in Blender / Inkscape from them; Studio is only for integration.
 - **New gates:**
   - a feasibility check at intake;
   - the live-server gate;

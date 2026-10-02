@@ -89,6 +89,33 @@ Agents that share one GPU, one Studio or one Blender just queue. Run those seria
 
 The owner approves once: plan + style sheet + brief + art bible. Start only when he says it's final (RULES 11). If he asks for something during the build that doesn't fit the plan or won't make the game better, say so first (RULES 12).
 
+## 3b. CONCEPT FIRST (every visual asset, every style)
+
+Winter never designs by freestyling in Studio. Every visible thing goes **references → GPU concepts → build tool → Studio**.
+
+1. **Gather references:**
+   - online (top Roblox games in this style, game UI galleries, art sites, trailers);
+   - the owner's references;
+   - the style sheet;
+   - the loved / rejected entries in taste/.
+2. **Generate concepts locally on the GPU:** ComfyUI + FLUX.1 / SDXL / Qwen-Image (RTX 4070, free).
+   - Use the references as image inputs (IP-Adapter / img2img / ControlNet) where they help.
+   - Make several variations, then curate the best 2-4. Prompts and seeds are saved next to the images, so a direction can be reproduced.
+   - **Models:** a turnaround sheet (front / side / back / 3/4) plus a detail callout. For hero pieces, orthographic front and side views to model against.
+   - **UI:** full-screen mockups (HUD, shop, one modal) at phone and PC aspect ratios, plus an icon sheet.
+   - **VFX:** frame sheets of the effect's key moments (anticipation, peak, dissipation).
+   - **World:** a key-art painting of each zone, plus a lighting / mood frame.
+3. **Pick a direction:** Winter picks the strongest concept against the style sheet and the taste gallery, or shows the owner 2-3 options at the approval round.
+4. **Build from the concept in the right tool:**
+   - models in Blender, with the concepts loaded as reference / background images and proportions checked against them;
+   - icons as vector in Inkscape, traced and cleaned from the concept;
+   - VFX frames in Blender / ComfyUI;
+   - textures in Blender / Krita / Material Maker.
+5. **Studio is only for assembly, integration, lighting checks and testing.** A visible asset designed directly in Studio, with no concept behind it, is a defect.
+6. **Compare the result** side by side with its concept and references at every review.
+
+Concepts are style guides, never shipped art: generated images aren't put in the game as-is, except for flipbook textures and painted decals made for that purpose.
+
 ## 4. Build: two speeds, gates per lane
 
 - **Code:**

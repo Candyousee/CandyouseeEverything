@@ -8,6 +8,7 @@
 
 ## Layout
 
+0. **Concept first:** a GPU key-art painting of each zone (ComfyUI) from online references + the style sheet, plus a lighting / mood frame. Build the zone to match it.
 1. **Start from the loop.** Mark the places the player spends 80% of their time (the station, the arena, the hub). Build those first at full quality; everything else supports them.
 2. **Spawn:**
    - safe (no hazards, never inside geometry or another player);

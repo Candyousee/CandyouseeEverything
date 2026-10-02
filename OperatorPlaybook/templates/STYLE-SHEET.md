@@ -23,7 +23,8 @@ Approved by the owner on: <date>. Every lane brief quotes the key lines below.
 | Palette (hex) + saturation target | |
 | Materials | |
 | Lighting + grade | |
-| Build route for visible models | Blender (default) / part-built (brick styles only; owner-approved exception to RULES 17) |
+| Concept generation (GPU) | models / prompts / LoRAs / reference inputs used in ComfyUI for this game |
+| Build route for visible models | Blender, from the GPU concept sheets (every style) |
 | UI: panels, font, outline weight, icon style | |
 | VFX: shapes, colours, motion feel | |
 | Sound: palette, music genre | |

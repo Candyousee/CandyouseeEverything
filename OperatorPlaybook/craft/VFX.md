@@ -37,6 +37,10 @@ Effects that read as **energy**: flowing, wispy, translucent, additive. Never as
 - **Lights:** a short PointLight flash on big impacts (≤ 0.15 s), then off.
 - **Screen effects:** a camera shake (small, decaying, under 0.3 s), a brief FOV punch, a ColorCorrection flash for hero moments only.
 
+## Concept first
+
+Generate a frame sheet of the effect's key moments on the GPU (anticipation, peak, dissipation) from online references (top games, VFX reels) before building any emitter. Then build the textures and emitters to match it.
+
 ## Anatomy of a hero effect (layers, in order)
 
 1. **Anticipation:** a small charge / gather (particles pulled inward, a glow rising).

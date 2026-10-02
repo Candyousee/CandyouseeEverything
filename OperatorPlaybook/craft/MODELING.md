@@ -24,6 +24,7 @@ Every model starts from `templates/MODEL-SPEC-TEMPLATE.xlsx` (Brief, Parts, LODs
 
 ## Workflow
 
+0. **Concepts first (PIPELINE section 3b):** online references → a GPU turnaround sheet (front / side / back / 3/4) in ComfyUI → load it in Blender as background images. Never start modeling without one.
 1. **Blockout at true scale** against a 5-stud R15 avatar, in the real game camera. Approve the silhouette before ANY detail.
 2. **Primary forms → secondary → tertiary.**
    - Primary: the big readable shapes.

@@ -16,10 +16,11 @@ Numbers in brackets, like [r45], are the old STANDING-RULES numbers. They are ke
 
 ---
 
-## 0. The owner's priorities (read these first; they shape everything below)
+## 0. The owner's priorities, P1-P11 (read these first; they shape everything below)
 
-1. **NEVER spend money or Robux.** Everything else is on the table.
-2. **Plan the game before building it.** Know exactly how it plays (templates/GAME-PLAN.md):
+**P1.** **NEVER spend money or Robux.** Everything else is on the table.
+
+**P2.** **Plan the game before building it.** Know exactly how it plays (templates/GAME-PLAN.md):
    - the core loop;
    - a minute-by-minute playthrough;
    - progression;
@@ -27,19 +28,33 @@ Numbers in brackets, like [r45], are the old STANDING-RULES numbers. They are ke
    - monetization.
 
    If the plan can't answer "what does the player do, why is it fun the 50th time, and why do they come back tomorrow", nothing gets built yet.
-3. **The core loop is the game.** Every feature, asset and screen exists to make the core loop better, clearer or more rewarding. Anything that doesn't gets cut.
-4. **Monetization is designed in from the start,** not bolted on: worth buying, never pay-to-win, truthful, never going down.
-5. **Always the best tool for the job.** Winter has access to ANY free tool or anything on the owner's PC.
+
+**P3.** **The core loop is the game.** Every feature, asset and screen exists to make the core loop better, clearer or more rewarding. Anything that doesn't gets cut.
+
+**P4.** **Monetization is designed in from the start,** not bolted on: worth buying, never pay-to-win, truthful, never going down.
+
+**P5.** **Always the best tool for the job.** Winter has access to ANY free tool or anything on the owner's PC.
    - Before each task, check what the best free tool is (web-search if not verified recently).
    - If it isn't installed, install it.
    - Never settle for a worse tool because it's already there; never build by hand what a free tool does better.
-6. **Highest quality at the highest efficiency.** Never trade quality for speed; cut waste instead (lean-path).
-7. **Correct the owner.** If something he asks for won't make the game better, say so plainly, with the reason and the better option, BEFORE doing it. A yes-man is a failure (RULES 12).
-8. **Adapt to the game's style, in the owner's taste** (craft/STYLE.md). Stud, cartoon, anime or realistic: each game gets its own style sheet, and his taste constants apply in every style.
-9. **Learn his taste from our work** (TASTE.md):
+
+**P6.** **Highest quality at the highest efficiency.** Never trade quality for speed; cut waste instead (lean-path).
+
+**P7.** **Correct the owner.** If something he asks for won't make the game better, say so plainly, with the reason and the better option, BEFORE doing it. A yes-man is a failure (RULES 12).
+
+**P8.** **Adapt to the game's style, in the owner's taste** (craft/STYLE.md). Stud, cartoon, anime or realistic: each game gets its own style sheet, and his taste constants apply in every style.
+
+**P9.** **Learn his taste from our work** (TASTE.md):
    - every judged piece of work goes into `taste/loved` or `taste/rejected` with HIS words on why (always ask him);
-   - a "bad" verdict gets a completely fresh remake with a different approach, researched online first.
-10. **Use the internet for references, always.** Before designing anything, research the best examples online (top Roblox games in this style, game UI galleries, art sites, trailers). Save them with source URLs in the project's ART/refs/.
+   - small defects get fixed; only when he completely dislikes a design does it get a completely fresh remake with a different approach (online research + new GPU concepts first).
+
+**P10.** **Concept first, on the GPU, every time.** Winter always generates its own reference / concept images locally (ComfyUI + FLUX / SDXL / Qwen-Image on the RTX 4070). It builds from those concepts, never by freestyling in Studio. See the CONCEPT FIRST section in PIPELINE.md.
+    - **Inputs:** the online references, the owner's references, the style sheet, and the loved entries in taste/.
+    - **Outputs:** concept sheets (front / side / 3/4 for models; full-screen mockups for UI; frame sheets for VFX), saved to ART/concepts/.
+    - **Then build from them:** models in Blender (concepts as background / reference images), icons in Inkscape, VFX frames in Blender / ComfyUI.
+    - Studio is for assembly, integration and testing. Never for designing visible assets.
+
+**P11.** **Use the internet for references, always.** Before designing anything, research the best examples online (top Roblox games in this style, game UI galleries, art sites, trailers). Save them with source URLs in the project's ART/refs/.
 
 ## 1. Hard limits
 
@@ -95,7 +110,7 @@ Every other limit in a prompt or package is overridden: installs, downloads, upl
     - each project's art, icons and textures are made fresh, never restyled from another project; [r46]
     - invisible code may be reused through the library;
     - use only this project's references. [r6]
-17. **Visible 3D is made in Blender**, unless the game's approved style sheet is a brick / stud style where part-built models are the look. The sheet must say so explicitly. Anything a player looks at up close is never built from Studio primitive parts: items, props, pets, characters, cosmetics, trophies, chests, first-person hands. [r45]
+17. **Visible 3D is made in Blender, in every style (stud / brick included: studs are modeled in Blender too),** from GPU-generated concepts. Anything a player looks at up close is never built from Studio primitive parts: items, props, pets, characters, cosmetics, trophies, chests, first-person hands. [r45]
     - Primitives are fine for architecture (walls, floors, beams) and invisible or technical parts.
     - Every brief that makes a visible model names the tool and the pipeline.
 18. **No symbols built from parts or frames.** Check marks, arrows, fingers, X marks, keys and signs are always an image, a decal / SurfaceGui, or one seamless mesh. [r35, r35b]

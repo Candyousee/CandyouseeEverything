@@ -33,6 +33,10 @@ The game's STYLE-SHEET sets the look (craft/STYLE.md). What follows is the **def
 - the balance always visible;
 - at most 4-5 HUD buttons.
 
+## 1b. Concept first
+
+Before building any screen, generate full-screen mockups on the GPU (ComfyUI) from online references (top games in this style, game UI galleries) + the style sheet + the taste gallery. Make several options, pick the strongest, then build the UI to match it. Icons start as a generated icon sheet, then get traced and cleaned as vectors in Inkscape.
+
 ## 2. Icons
 
 - Default: flat cartoon icons (other styles follow their style sheet; always one consistent set, readable at 48 px, made fresh): a thick uniform dark outline, flat cel shading (base + one shadow + one small highlight), simple chunky shapes, cute faces where fitting.
