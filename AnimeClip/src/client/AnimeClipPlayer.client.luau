@@ -86,7 +86,36 @@ local function buildGear(name: string, style: string)
 	if name == "hero" then
 		sheath, sheathLocal = make(Props.Sheath())
 	end
-	return { parts = parts, local_ = locals, sheath = sheath, sheathLocal = sheathLocal, folder = folder }
+	-- an invisible part at the sword's origin carrying the motion trail
+	local trailRoot = Instance.new("Part")
+	trailRoot.Name = "TrailRoot"
+	trailRoot.Anchored = true
+	trailRoot.CanCollide = false
+	trailRoot.CanQuery = false
+	trailRoot.CanTouch = false
+	trailRoot.Transparency = 1
+	trailRoot.Size = Vector3.new(0.2, 0.2, 0.2)
+	trailRoot.Parent = folder
+	local a0 = Instance.new("Attachment")
+	a0.Position = Vector3.new(0, 1.0, 0)
+	a0.Parent = trailRoot
+	local a1 = Instance.new("Attachment")
+	a1.Position = Vector3.new(0, 4.4, 0)
+	a1.Parent = trailRoot
+	local trail = Instance.new("Trail")
+	trail.Attachment0, trail.Attachment1 = a0, a1
+	trail.Lifetime = 0.16
+	trail.MinLength = 0.05
+	trail.LightEmission = 1
+	trail.FaceCamera = false
+	trail.Enabled = false
+	local c = if style == "rival" then Color3.fromRGB(255, 80, 90) else Color3.fromRGB(140, 230, 255)
+	trail.Color = ColorSequence.new(Color3.new(1, 1, 1), c)
+	trail.Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.1), NumberSequenceKeypoint.new(1, 1) })
+	trail.Parent = trailRoot
+	table.insert(parts, trailRoot)
+	table.insert(locals, { cf = CF.new() })
+	return { parts = parts, local_ = locals, sheath = sheath, sheathLocal = sheathLocal, folder = folder, trail = trail }
 end
 
 local function setupFighter(name: string, source: Model, style: string): Fighter
@@ -218,6 +247,93 @@ local function drawPrims(prims)
 		end
 	end
 	workspace:BulkMoveTo(moveParts, moveCFs, Enum.BulkMoveMode.FireCFrameChanged)
+end
+
+---------------------------------------------------------------------------
+-- Particle bursts on the big beats
+---------------------------------------------------------------------------
+local burstPart = Instance.new("Part")
+burstPart.Anchored = true
+burstPart.CanCollide = false
+burstPart.CanQuery = false
+burstPart.CanTouch = false
+burstPart.Transparency = 1
+burstPart.Size = Vector3.new(0.2, 0.2, 0.2)
+burstPart.Parent = localFolder
+local function emitter(props): ParticleEmitter
+	local at = Instance.new("Attachment")
+	at.Parent = burstPart
+	local e = Instance.new("ParticleEmitter")
+	e.Enabled = false
+	for k, v in props do
+		(e :: any)[k] = v
+	end
+	e.Parent = at
+	return e
+end
+local NS, NK = NumberSequence.new, NumberSequenceKeypoint.new
+local EMITTERS = {
+	sparks = emitter({
+		Texture = "rbxasset://textures/particles/sparkles_main.dds",
+		Color = ColorSequence.new(Color3.fromRGB(255, 240, 200), Color3.fromRGB(255, 170, 60)),
+		LightEmission = 1,
+		Lifetime = NumberRange.new(0.3, 0.8),
+		Speed = NumberRange.new(25, 55),
+		SpreadAngle = Vector2.new(180, 180),
+		Acceleration = Vector3.new(0, -40, 0),
+		Drag = 3,
+		Size = NS({ NK(0, 0.5), NK(1, 0) }),
+	}),
+	dust = emitter({
+		Texture = "rbxasset://textures/particles/smoke_main.dds",
+		Color = ColorSequence.new(Color3.fromRGB(220, 200, 175)),
+		LightInfluence = 1,
+		Lifetime = NumberRange.new(0.6, 1.2),
+		Speed = NumberRange.new(8, 18),
+		SpreadAngle = Vector2.new(80, 10),
+		EmissionDirection = Enum.NormalId.Top,
+		Drag = 4,
+		Size = NS({ NK(0, 1), NK(1, 4) }),
+		Transparency = NS({ NK(0, 0.4), NK(1, 1) }),
+	}),
+	light = emitter({
+		Texture = "rbxasset://textures/particles/sparkles_main.dds",
+		Color = ColorSequence.new(Color3.new(1, 1, 1), Color3.fromRGB(110, 220, 255)),
+		LightEmission = 1,
+		Lifetime = NumberRange.new(0.4, 1.0),
+		Speed = NumberRange.new(10, 40),
+		SpreadAngle = Vector2.new(180, 180),
+		Drag = 4,
+		Size = NS({ NK(0, 0.9), NK(1, 0) }),
+	}),
+	petals = emitter({
+		Color = ColorSequence.new(Color3.fromRGB(255, 182, 206), Color3.fromRGB(255, 220, 232)),
+		Lifetime = NumberRange.new(1.0, 2.0),
+		Speed = NumberRange.new(8, 22),
+		SpreadAngle = Vector2.new(180, 180),
+		Drag = 2,
+		Acceleration = Vector3.new(4, -3, -2),
+		Rotation = NumberRange.new(0, 360),
+		RotSpeed = NumberRange.new(-300, 300),
+		Size = NS({ NK(0, 0.3), NK(1, 0.25) }),
+	}),
+}
+local lastCueTime = -1
+local function fireCues(t: number)
+	if t < lastCueTime then
+		lastCueTime = -1 -- replay
+	end
+	for _, c in T.CUES do
+		if c.t > lastCueTime and c.t <= t then
+			local e = EMITTERS[c.kind]
+			if e then
+				local at = e.Parent :: Attachment
+				at.WorldPosition = Vector3.new(c.pos[1], c.pos[2], c.pos[3])
+				e:Emit(c.count)
+			end
+		end
+	end
+	lastCueTime = t
 end
 
 ---------------------------------------------------------------------------
@@ -506,6 +622,11 @@ local function step()
 			end
 		end
 		workspace:BulkMoveTo(gear.parts, cfs, Enum.BulkMoveMode.FireCFrameChanged)
+		local trailOn = false
+		for _, w2 in T.TRAILS[name] or {} do
+			trailOn = trailOn or (t >= w2[1] and t < w2[2])
+		end
+		gear.trail.Enabled = trailOn and s.sword == "hand"
 		if #gear.sheath > 0 then
 			local sheathBase = CF.mul(w.LowerTorso, Props.SHEATH)
 			local scfs = {}
@@ -530,6 +651,7 @@ local function step()
 		end
 	end
 	drawPrims(prims)
+	fireCues(t)
 
 	-- impact frames
 	local ink = if impact == 1 then Color3.new(1, 1, 1) else Color3.new(0, 0, 0)

@@ -33,11 +33,9 @@ scene.display.light_direction = (-0.75, 0.15, 0.35)  # low sun from +X (Blender 
 
 # the set, once
 stage = json.load(open(os.path.join(ROOT, "stage.json")))
-stage_objs = []
 static_pool = P.Pool()
 P.draw(static_pool, stage["prims"])
-for objs in static_pool.used.values():
-    stage_objs.extend(objs)
+stage_objs = list(static_pool.all())
 
 pool = P.Pool()
 out_dir = os.path.join(ROOT, "render")

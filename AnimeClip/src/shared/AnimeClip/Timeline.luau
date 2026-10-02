@@ -104,6 +104,24 @@ for _, k in {
 end
 
 T.TRACKS = { hero = HERO, rival = RIVAL }
+
+-- Moments for real particle bursts in the game (the preview draws these as prims instead):
+-- { t, kind, position, count }
+T.CUES = {
+	{ t = 3.3, kind = "dust", pos = { -8.6, 0.4, 0 }, count = 30 },
+	{ t = 3.3, kind = "dust", pos = { 8.6, 0.4, 0 }, count = 30 },
+	{ t = 4.42, kind = "sparks", pos = { 0, 4.55, 0 }, count = 140 },
+	{ t = 4.42, kind = "dust", pos = { 0, 0.4, 0 }, count = 60 },
+	{ t = 6.0, kind = "dust", pos = { 0, 0.4, 0 }, count = 50 },
+	{ t = 6.84, kind = "sparks", pos = { -4.6, 6.0, 0 }, count = 70 },
+	{ t = 8.62, kind = "light", pos = { 4.6, 3.8, 0 }, count = 90 },
+	{ t = 9.58, kind = "petals", pos = { 4.6, 3.0, 0 }, count = 80 },
+}
+-- When the sword trails show: { from, to }
+T.TRAILS = {
+	hero = { { 3.0, 4.45 }, { 6.0, 7.1 }, { 8.5, 9.3 } },
+	rival = { { 3.3, 4.45 }, { 6.0, 7.2 } },
+}
 T.STYLE = { hero = "hero", rival = "rival" }
 
 local function ease(kind: string?, k: number): number

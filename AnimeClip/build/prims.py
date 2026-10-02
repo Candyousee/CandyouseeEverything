@@ -14,6 +14,7 @@ from mathutils import Matrix, Vector
 sys.path.insert(0, os.path.dirname(__file__))
 os.environ.setdefault("PREVIEW_ENGINE", "workbench")
 import render_preview as rp  # noqa: E402
+from mathutils import Matrix  # noqa: E402,F811
 
 SHAPES = {"block": None, "ball": "ball", "cyl": "cylinder", "sphere": "sphere"}
 
@@ -23,46 +24,55 @@ def lin(c):
 
 
 class Pool:
-    """Objects per (shape, size) key, reused frame to frame."""
+    """One unit-size mesh per shape; objects are reused frame to frame and scaled to size."""
 
     def __init__(self):
-        self.free = {}
-        self.used = {}
+        self.objs = {}
+        self.count = {}
         self.meshes = {}
 
-    def _mesh(self, shape, size):
-        key = (shape, tuple(round(s, 3) for s in size))
-        m = self.meshes.get(key)
+    def _mesh(self, shape):
+        m = self.meshes.get(shape)
         if m is None:
-            m = rp.part_mesh({"name": "p", "class": "Part", "size": list(size), "color": [0, 0, 0], "shape": SHAPES[shape]})
-            self.meshes[key] = m
-        return key, m
+            m = rp.part_mesh({"name": "p", "class": "Part", "size": [1, 1, 1], "color": [0, 0, 0], "shape": SHAPES[shape]})
+            self.meshes[shape] = m
+        return m
 
     def begin(self):
-        for key, objs in self.used.items():
-            self.free.setdefault(key, []).extend(objs)
-        self.used = {}
+        self.count = {}
 
-    def take(self, shape, size):
-        key, mesh = self._mesh(shape, size)
-        lst = self.free.get(key)
-        if lst:
-            obj = lst.pop()
+    def take(self, shape):
+        n = self.count.get(shape, 0)
+        lst = self.objs.setdefault(shape, [])
+        if n < len(lst):
+            obj = lst[n]
         else:
-            obj = bpy.data.objects.new("prim", mesh)
+            obj = bpy.data.objects.new("prim", self._mesh(shape))
             bpy.context.scene.collection.objects.link(obj)
-        self.used.setdefault(key, []).append(obj)
+            lst.append(obj)
+        self.count[shape] = n + 1
+        obj.hide_render = False
         return obj
 
     def end(self):
-        # park anything unused this frame far away
-        for objs in self.free.values():
-            for o in objs:
-                o.location = (0, 0, -9999)
+        for shape, lst in self.objs.items():
+            for obj in lst[self.count.get(shape, 0):]:
+                obj.hide_render = True
+
+    def all(self):
+        for lst in self.objs.values():
+            yield from lst
 
 
-def place(obj, cf, alpha=0.0):
-    obj.matrix_world = rp.CONV @ rp.cf_matrix(cf)
+def scaled(shape, size):
+    sx, sy, sz = size
+    if shape == "ball":
+        d = min(sx, sy, sz)
+        return Matrix.Diagonal((d, d, d, 1))
+    if shape == "cyl":
+        d = min(sy, sz)
+        return Matrix.Diagonal((sx, d, d, 1))
+    return Matrix.Diagonal((sx, sy, sz, 1))
 
 
 def draw(pool, prims):
@@ -75,8 +85,8 @@ def draw(pool, prims):
             # workbench has no soft transparency: shrink faded things instead
             k = max(0.05, 1 - a)
             size = [s * (0.4 + 0.6 * k) for s in size]
-        obj = pool.take(p["shape"], size)
-        place(obj, p["cf"])
+        obj = pool.take(p["shape"])
+        obj.matrix_world = rp.CONV @ rp.cf_matrix(p["cf"]) @ scaled(p["shape"], size)
         c = lin(p["color"])
         if p.get("neon"):
             c = tuple(min(1.0, v * 1.25 + 0.08) for v in c)
