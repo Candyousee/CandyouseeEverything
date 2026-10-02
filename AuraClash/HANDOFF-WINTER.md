@@ -1,6 +1,6 @@
 # HANDOFF → Winter: build the Aura Clash two-zone playable test
 
-> **ON HOLD (2 Oct):** the owner is reviewing EXPERIENCE.md (core feel v3: crystal smashing, fighting spirits, Bonded aura, hatch cutscenes, Secrets, 3-phase bosses). Don't start building until he approves it and the model is re-tuned.
+> **ON HOLD (2 Oct):** the owner is reviewing CORE-LOOP.md v5 (meditation for Power, hunting crystal monsters for coins, pets that tank and fight, capped Shard Storm). Don't start building until he approves it and the model is re-tuned.
 
 **Status:** planning is done and audited. Three external reviews passed; the model passes 9/9 checks and reproduces. **Don't rewrite the concept.** The next evidence must come from the real game.
 

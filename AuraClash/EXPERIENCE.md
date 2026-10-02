@@ -1,6 +1,6 @@
 # AURA CLASH: Experience Design v4 (the CORE FEEL; checked against the top games; for owner approval)
 
-> **CORE-LOOP.md and STYLE-SHEET.md win on any conflict.** This file is the earlier feel draft. Since then: the Crystal Heart is cut; shards go into a bag (the Shard Storm) and are sold with the SELL button; spirits follow and lounge around you on the ground instead of orbiting; the Bonded spirit walks at your side.
+> **CORE-LOOP.md (v5) and STYLE-SHEET.md win on any conflict.** This file is the earlier feel draft. Since then: Power comes from meditation at the Shrine (AFK + Focus); crystals are now crystal monsters that fight back lightly; the Crystal Heart is cut; shards fill a capped Shard Storm and are sold with the SELL button; pets follow, lounge, tank and fight; Force is cut.
 
 **Why this exists:** the owner said the core must be good, not just the maths. v2 had correct numbers and a weak experience: standing on a stone while a number goes up. This document fixes the *feel*. The economy model gets re-tuned to these rules **after** the owner approves them.
 
