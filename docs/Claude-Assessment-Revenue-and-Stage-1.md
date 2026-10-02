@@ -170,3 +170,21 @@ Two additions:
 - a **"Studio-only primitives OK?"** row for kits sold on the Creator Store, since rule 45 (Blender only) can over-apply to simple functional kit parts like stands and pads.
 
 The same format would work as **GUI-SPEC** and **SYSTEM-SPEC** templates (save / purchase / remote contracts + the test that proves each).
+
+## H. A second opinion (Gemini), sorted
+
+Most of it restates the same Revenue / Stage 1 research, so it is not independent confirmation. Kept only what is new or now urgent:
+
+| Point | Verdict |
+|---|---|
+| Parcels invisible on live; streaming not tested | **Check first.** "Invisible until they reach the station" may be StreamingEnabled, not asset privacy. A privacy failure doesn't fix itself when a parcel moves. Test in a live server with streaming on before re-uploading 250 meshes. |
+| Stuck-player recovery, a missing-purchase path, rollback | **Add for ITP now.** It is live: a support/admin path to re-grant a purchase from the receipt log, without hand-editing DataStores. |
+| Save-schema migration and mixed-version servers | **Add for ITP now.** Every save carries a version and old saves migrate on load; a new server must never corrupt a save an old server is still writing. |
+| Paid random items + PolicyService | **Check ITP crates.** If a crate is bought with Robux, or with currency that Robux can buy, show the odds and gate it with `PolicyService:GetPolicyInfoForPlayerAsync().ArePaidRandomItemsRestricted`. |
+| Analytics fired in Studio isn't proof | **Add:** verify the events in the live dashboard after a day. |
+| Studio device emulation isn't a phone | **Add:** one real-phone check per release (the owner's phone; free). |
+| UI states: loading / error / pending / cancelled, double-taps | **Add to GUI-QA-GATE:** rule 37 covers hover / disabled / owned / locked, but not a purchase in flight or a double-tapped BUY. |
+| Economy outliers (a 1% drop is still 0/100 for 36.6% of players) | **Use it in the economy model** (section D): report dry streaks and the 90th percentile, not only averages. |
+| Overlap screening, collision, travel time | Already covered by rules 47, 55 and 57. |
+| Core loop vs the whole game; bots aren't real demand | Already covered (section D statuses, the FUN1 caveat). |
+| Earnings accounting, localization, near-empty servers | Later. Matters at real revenue or international scale. |
