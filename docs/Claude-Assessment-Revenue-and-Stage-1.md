@@ -122,13 +122,13 @@ The owner decides when a game goes public. These checks make it ready when he do
 
 ## F. Suggested order
 
-0. I (PIPELINE.md clean-up) together with A.
-0. G1 (decide pipeline vs studio plugin, and write the decision into both): 10 minutes, owner + operator.
-1. A (file clean-up): 30 minutes, operator only.
-2. C (live-game checklist) written into PIPELINE.md as a pre-public gate; the analytics events go into the reusable library.
-3. B (event-driven watcher) before the next multi-lane night.
-4. E notes folded into PIPELINE.md and STANDING-RULES.md (as new rules or lean-path notes).
-5. D: the full Stage 1 template only when the owner names the next real full game.
+1. I (PIPELINE.md clean-up) together with A.
+2. G1 (decide pipeline vs studio plugin, and write the decision into both): 10 minutes, owner + operator.
+3. A (file clean-up): 30 minutes, operator only.
+4. C (live-game checklist) written into PIPELINE.md as a pre-public gate; the analytics events go into the reusable library.
+5. B (event-driven watcher) before the next multi-lane night.
+6. E notes folded into PIPELINE.md and STANDING-RULES.md (as new rules or lean-path notes).
+7. D: the full Stage 1 template only when the owner names the next real full game.
 
 ## G. The toolkit and the studio plugin
 
