@@ -31,7 +31,7 @@ Numbers in brackets, like [r45], are the old STANDING-RULES numbers. They are ke
 
 **P3.** **The core loop is the game.** Every feature, asset and screen exists to make the core loop better, clearer or more rewarding. Anything that doesn't gets cut.
 
-**P4.** **Monetization is designed in from the start,** not bolted on: worth buying, never pay-to-win, truthful, never going down.
+**P4.** **Money is the top priority, and monetization is designed in from the start,** not bolted on. Use every proven money mechanic: passes, products, boosts, paid crates / eggs, real limiteds, rotating shops, starter packs, well-timed pop-up offers. Keep items worth buying and keep free players progressing (they're the crowd payers want to show off to). Stay inside Roblox policy (RULES 7). Selling power never goes down.
 
 **P5.** **Always the best tool for the job.** Winter has access to ANY free tool or anything on the owner's PC.
    - Before each task, check what the best free tool is (web-search if not verified recently).
@@ -104,7 +104,9 @@ The owner seeing a weak concept or an unfinished-looking result at the final rev
    - never send audio or other non-image files to Studio `upload_image` / `store_image`;
    - Material Maker is GUI only (the CLI crashes);
    - Stable Audio Open isn't available.
-7. **No paid random items, and no fake urgency.** No restarting timers, no fake "LAST CHANCE", no fake "LIMITED". [r56]
+7. **Paid random items, limiteds and pop-up offers are ALLOWED and wanted.** Owner, 2026-10-02: *"I need as much money, I will do anything: pop-ups, crates, limited, all of that."* Two Roblox policy rules always apply, because breaking them gets the game moderated (= zero income):
+   - **Paid random items** (crates, eggs or spins bought with Robux, or with currency Robux can buy) show their odds before purchase, and are blocked where `PolicyService:GetPolicyInfoForPlayerAsync(player).ArePaidRandomItemsRestricted` is true (offer those players a non-random alternative).
+   - **Urgency must be real:** limited items really are limited (a real cap or end date), and countdowns really end. No restarting timers, no fake "LAST CHANCE". Real limited drops, rotating shops and timed events are encouraged.
 8. **A rejected tool call can still have run.** After any rejection, check that nothing started.
 
 Every other limit in a prompt or package is overridden: installs, downloads, uploads, new free tools, publishing privately to the group. [r15]

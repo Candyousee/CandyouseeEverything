@@ -24,7 +24,7 @@ Successful Roblox games reuse a few proven structures. Know them, borrow what fi
 | **Zones / worlds** | Advance through areas unlocked by a requirement (gold, speed, strength, rebirths). Each zone: a new look, better rewards, a new thing to collect | Each zone needs a visible headline reason to want it, not just bigger numbers. The gate cost must feel reachable (payback 10-20 min early) |
 | **+1 stat per action / per second** | Every action (or second) raises a stat; the stat unlocks zones and wins | Needs visible growth: size, speed, effects. Pure numbers get boring fast |
 | **Rebirth / prestige** | Reset progress for a permanent multiplier | First rebirth around 30-60 minutes; show the multiplier gain before they confirm |
-| **Pets / helpers with multipliers** | Collect helpers that boost earnings; equip the best few; merge or upgrade | Eggs are random: if bought with Robux (or Robux-buyable currency), they're paid random items. Show odds + PolicyService, or sell them only for earned currency |
+| **Pets / helpers with multipliers** | Collect helpers that boost earnings; equip the best few; merge or upgrade | Paid eggs are great money: show the odds, gate them with PolicyService, add pity. Keep earned-currency eggs too, so free players progress |
 | **Collections / index** | Complete a set for a bonus | Show the empty slots so players see what's missing |
 | **Tools / gear upgrades** | A better tool = a faster core action | Each tier must visibly change the action, not just a number |
 | **Obby stages** | Checkpointed difficulty, skips as products | A skip must never be the only way past a stage |

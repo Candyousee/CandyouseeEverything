@@ -19,7 +19,7 @@ These came from his corrections. They apply to brick, cartoon, anime and realist
 - **Alive.** Idle motion on focal things, juice on every action, sliding shine sweeps on buttons, hype that's big and bouncy.
 - **Worth it.** Premium items look and feel premium (hero effects); plain items stay plain but well made.
 - **Original.** Fresh art for every project; no free models; no generic flag props or filler banners.
-- **Truthful.** Hype is real; no fake urgency.
+- **Truthful.** Hype is real: real limiteds, real timers (Roblox policy).
 - **Simple to understand.** Icons + numbers + 1-3 word labels; an 8-year-old knows what to do next.
 
 ## 2. Find the style (planning step, before the brief is approved)

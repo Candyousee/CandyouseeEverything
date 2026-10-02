@@ -91,8 +91,9 @@ Write what the player sees, does and feels:
 - **Starter pack:** <contents, price, when it's offered>
 - **Hero offer:** <the best-value bundle>
 - **Premium cosmetics:** <which get hero effects>
-- **No pay-to-win check:** <how a free player still reaches everything>
-- **No paid random items;** truthful urgency only.
+- **Free-player check:** <how a free player still progresses (slower), so servers stay full for payers to show off to>
+- **Paid crates / eggs:** odds shown, PolicyService-gated, pity. **Limiteds and timers:** real caps and real end dates.
+- **Pop-up offers:** which moments of want trigger which offer.
 
 ## 6. Economy table (numbers)
 
