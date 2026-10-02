@@ -1,4 +1,4 @@
-# AURA CLASH: Experience Design v3 (the CORE FEEL; for owner approval)
+# AURA CLASH: Experience Design v4 (the CORE FEEL; checked against the top games; for owner approval)
 
 **Why this exists:** the owner said the core must be good, not just the maths. v2 had correct numbers and a weak experience: standing on a stone while a number goes up. This document fixes the *feel*. The economy model gets re-tuned to these rules **after** the owner approves them.
 
@@ -221,3 +221,84 @@ The v2 beam clash alone was one-note. Each boss is now a **3-phase arena fight**
 - the playtest method.
 
 **After approval:** re-tune `econ/` to these rules (crystal HP / payouts, spirit damage, boss phases), then build the two-zone test with **these** moments.
+
+---
+
+## 10. RESEARCH CHECK (v4): what the top games do, what players hate, and how we compare
+
+### What the hits do
+
+| Game | What makes it work | Our v3 had it? |
+|---|---|---|
+| **Pet Simulator 99** | pets break things for you; a constant reward stream; Huge pets; clans, trading, frequent updates; YouTubers | Yes: crystals + fighting spirits are this loop (proven, **not** original). Trading was weak. No clans |
+| **Grow a Garden** | **your garden is a visible place** that earns while you're away; **restocks and weather are on ONE global clock for all servers** (Discord stock trackers, hype); **weather mutations** make each item's value different | **No.** No personal space, no idle income, events were per-server, no mutations |
+| **Steal a Brainrot** | your collection **lives in your base and earns money**; others can see it (and steal it): tension + bragging | **No** personal showcase. (Stealing itself: see "hates" below) |
+| **Sol's RNG** | one button; a giant rarity table; **cutscenes for rare rolls**; **biomes that change the odds**; the collection log | Yes (hatch ladder, Secret events). Ours were per-server, not global |
+| **Anime Fighting Sim** | stat training + **AFK progress 24/7** | Partly (meditation only while online) |
+| **Aura Farm Simulator / +1 Aura games** | aura trend: chasing the most insane-looking aura | Yes: our core fantasy matches the trend |
+
+### What players hate (and our rule for each)
+
+| Complaint | Seen in | Our answer |
+|---|---|---|
+| Shallow, repetitive loops | many simulators | crystal types per zone, 3-phase bosses with unique mechanics, global events, Wild Spirits (below) |
+| Pay-to-win, aggressive offers to kids | genre-wide | monetization is the owner's call. Flagged: keep power purchases moderate; free players must progress |
+| **Scams in unofficial trading** | Grow a Garden (no official trading → Discord scams) | **official, safe trading:** both sides confirm, item preview, a 3 s lock, server-validated |
+| **Dupes / cheaters** | Grow a Garden | server-authoritative everything; trade logs; unique ids on every spirit |
+| **Griefing / permanent loss** | Steal a Brainrot | **nobody can ever take or destroy your spirits.** We keep the competition, not the loss |
+| Becomes an "AFK sim" | Grow a Garden | idle income is **capped at 8 h** and is about a fifth of active play; the best stuff (bosses, events, Wild Spirits) needs you there |
+| Rushed, disappointing events | Grow a Garden | events reuse the core verbs (smash, hatch, catch) with real exclusive rewards; announced in advance |
+| New players crushed by veterans | Steal a Brainrot | no PvP loss; shared events reward **participation**, not just the top damage |
+
+### v4 additions (fixing the gaps)
+
+**A. Spirit Sanctum: your own place (the biggest gap)**
+- **What it is:** every player gets a **floating island plot** next to the Plaza (visible to everyone, visitable by anyone).
+- **What lives there:** spirits that **aren't equipped** live there: they wander, play and sleep on display.
+- **Idle income:** Sanctum spirits **earn coins over time** based on their rarity, **even while you're offline** (capped at 8 h, so you come back to collect).
+- **Decorating:** pedestals for your best spirits, your Secret's shrine, your boss trophies, and halo banners.
+- **Why:** the Brainrot / Grow a Garden pull (*"my stuff, on display, earning"*) **without stealing**. It's a reason to return and a show-off space.
+
+**B. One global clock (the Grow a Garden buzz)**
+- **Egg Shop rotation, synced across ALL servers:**
+  - normal eggs are always available;
+  - a **rotating rare egg** (e.g. a "Celestial Egg", limited stock per rotation) every 30 min.
+- **Weather / events on a global schedule:** Blood Moon, Meteor Shower, Sakura Storm, Aurora. A countdown is visible in the Plaza, so players can plan around them, tell friends, and track them on Discord.
+
+**C. Mutations (value variety)**
+- **Spirits hatched during an event** have a chance for an **event mutation:** Blood-touched, Starstruck, Petal-kissed, Aurora.
+- **Each mutation** adds a look (a tint + a particle) and a multiplier, and **stacks with Shiny / Gold / Rainbow.** Every spirit can be one of a kind.
+
+**D. Wild Spirits (the competitive rush, with nobody losing anything)**
+- **What happens:** a few times an hour, a **rare Wild Spirit** appears somewhere in a zone. **Server-wide alert + a light beam.**
+- **Catching it:** players race to it; it fights back (a mini-boss), and **the player who lands the final PERFECT blast catches it.** Everyone who hit it gets a consolation reward.
+- **Why:** the thrill of Brainrot's steal (a race, a rivalry), but you can't lose what you have.
+
+**E. Official trading from early on**
+- **When:** unlocks after boss 2 (not Ascension).
+- **Safety:** a safe trade window and server validation (see "hates").
+
+**F. Kept from v3:** charge-blast crystals, Overdrive, fighting spirits, the Bonded aura, the hatch ladder with Mythic / Secret cutscenes, Awakening perks, 3-phase bosses, the World Boss, the Infinity Tower.
+
+### Honest originality check
+- **Proven (borrowed on purpose):**
+  - breakables + pets (PS99);
+  - rarity cutscenes and odds-changing events (Sol's RNG);
+  - global restocks / weather + mutations + an earning showcase (Grow a Garden / Brainrot).
+- **Ours:**
+  - **skill in every action** (charge / PERFECT / Overdrive instead of plain clicking);
+  - **spirits that ARE your aura** (the Bonded look) and fight beside you;
+  - **3-phase bosses with a beam-clash finisher;**
+  - **Wild Spirit races** without loss.
+- **The risk:** the genre is crowded. We win only if the blast feel + aura spectacle beat the competition **in the playtest**.
+
+### Updated two-zone test scope (v4)
+
+v3 scope **plus:**
+- a small Sanctum (idle income + display);
+- 1 global event (Blood Moon) on the global clock;
+- 1 mutation;
+- 1 Wild Spirit spawn type;
+- official trading.
+
+The World Boss and Infinity wait.
