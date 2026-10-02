@@ -305,7 +305,7 @@ The v2 beam clash alone was one-note. Each boss is now a **3-phase arena fight**
 
 **IN (the core only):**
 - blast + combo + Overdrive;
-- crystals (3 sizes) → **shards in a bag → sell at the altar**;
+- crystals (3 sizes) → **shards in a bag → SELL button (teleport, sell, teleport back)**;
 - Power;
 - shop (Bag / Force / Surge);
 - eggs with the hatch ladder;

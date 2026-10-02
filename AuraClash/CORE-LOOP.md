@@ -71,14 +71,15 @@
 - **When it's full:**
   - the counter flashes **FULL**;
   - crystals still give Power, but drop no more shards;
-  - **an arrow points to the Sell Altar.**
-- **The Sell Altar:** a glowing shrine in the **middle of every zone**, never more than about 10 s away. Step on it:
-  - your shards **stream out of you into the altar**;
-  - the coin counter **rolls up**, a cha-ching plays, and a coin burst sprays out;
-  - Gems get their own bigger "GEM!" pop.
+  - the **SELL button** on the HUD bounces.
+- **The SELL button** (HUD, always available; key: G / gamepad Y):
+  1. you **teleport to the zone's Sell Altar** (a quick flash);
+  2. your shards **stream out of you into the altar** while the coin counter **rolls up**, with a cha-ching and a coin burst (about 1.5 s; Gems get their own bigger "GEM!" pop);
+  3. **you're teleported straight back** to where you were.
 
-  That's the cash-in moment.
-- **Why it works:** a rhythm (fill → sell → spend), a clear decision ("one more Geode before I sell?"), and a natural moment to stop at the shop and egg stand, which sit **next to** the altar.
+  **No walking:** about 2-3 s total, and the cash-in moment stays.
+- **The shop and egg stand** are next to the altar. A **"Stay"** toggle on the sell screen keeps you there to shop; otherwise you go straight back.
+- **Why it works:** a rhythm (fill → sell → spend), a clear decision ("one more Geode before I sell?"), and a natural moment to shop ("Stay"), with **zero walking**.
 
 ## 3. Spirits (they fight with you)
 
@@ -123,12 +124,12 @@
 
 | Time | What happens | Numbers |
 |---|---|---|
-| 0:00 | Spawn beside the Sell Altar in the Training Grove. Small Crystals everywhere, a few Crystals, one Geode in view (a visible goal). A pulsing **HOLD** hand over the nearest Small Crystal | Power 2, Bag 0/50, Coins 0 |
+| 0:00 | Spawn in the Training Grove. Small Crystals everywhere, a few Crystals, one Geode in view (a visible goal). A pulsing **HOLD** hand over the nearest Small Crystal | Power 2, Bag 0/50, Coins 0 |
 | 0:03 | First hold-release (probably early): it cracks. Second: it breaks; a shard flies into the bag, an orb into you. "+0.5 POWER" | — |
 | 0:10 | First PERFECT: a big blast, a one-hit kill | — |
 | ~0:30 | First **OVERDRIVE**: chain blasts wipe 8-10 crystals in 8 s; shards stream into the bag | — |
-| ~0:45 | **Bag FULL** (50 shards). The arrow points to the altar | Power ~14 |
-| 0:50 | **First sell:** shards stream out, the coins roll up, cha-ching | Coins ~150 |
+| ~0:45 | **Bag FULL** (50 shards). The SELL button bounces; the hand points at it | Power ~14 |
+| 0:50 | **First SELL:** teleport, shards stream out, coins roll up, cha-ching. The first time, you stay (the tutorial shows the shop) | Coins ~150 |
 | 0:55 | The egg stand glows (60). The hand points at it. First hatch (the tutorial egg is always dramatic): a **Light Fox**. "Bond it?" | — |
 | 1:00 | The hand points at the shop: **Bag Lv1** (40) → 100 capacity | — |
 | 1:05-2:00 | The Crystals' HP bars are green; you smash Crystals with the Fox. Bright Shards. Two more sells | Power ~70 |
@@ -176,6 +177,6 @@ Something always finishes soon, and the next bigger thing is always **visible** 
 **Still to prove in playtest #1:**
 - whether hold-release blasting feels great for 20+ minutes;
 - whether graduating crystal sizes feels like progress;
-- whether the bag / sell trip feels satisfying, not like a chore (if it's a chore: bigger bags sooner, or an altar closer).
+- whether the bag / SELL rhythm feels satisfying, not like an interruption (if not: bigger bags sooner).
 
 If it doesn't, we adjust the timing and HP **before** art.
