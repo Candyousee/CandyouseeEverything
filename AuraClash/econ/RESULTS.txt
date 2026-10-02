@@ -5,22 +5,22 @@ AURA CLASH v5.1 model results (python model.py)
    first SELL                   1:55
    first hatch                  1:57
    tutorial Gold Shardling      1:01
-   first Overdrive              3:09
+   first Overdrive              3:11
    quest 1 (Focus 20 s)         2:30
    Bag Lv1                      2:01
    Mat Lv1                      2:01
    first pet level-up           1:57
    quest 4 (10 Boars)           3:13
-   boss 1 beaten                5:36
-   zone 2 quest 1               6:38
+   boss 1 beaten                5:33
+   zone 2 quest 1               6:35
    first star fusion            2:08
-   boss 2 beaten                20:15
+   boss 2 beaten                22:41
 
 2. Milestones over 200 players per profile (median [10th-90th percentile], minutes)
    profile   first sell   boss 1          boss 2            meditating share   pets' damage share
-   weak        2.6         8.8 [6.9-11.6]    30.0 [25.9-36.1]      27%                53%
-   average     1.8         5.8 [4.8-7.4]    22.7 [19.9-25.8]      27%                43%
-   strong      1.5         4.6 [4.0-6.1]    20.1 [18.1-23.5]      26%                37%
+   weak        2.6         8.9 [6.9-11.7]    30.2 [26.1-35.2]      27%                53%
+   average     1.8         6.0 [4.8-7.4]    22.9 [20.3-25.8]      26%                43%
+   strong      1.5         4.6 [3.9-6.1]    19.9 [17.9-22.2]      26%                37%
 
 3. Beam clash win rate (2,000 fights per cell; hits taken in phases 1-2 = 2)
    Power / recommended:    0.5     0.75    1.0     1.5     2.0

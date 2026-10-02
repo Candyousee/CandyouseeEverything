@@ -1,6 +1,6 @@
 # AURA CLASH: Core Loop v5.1 (the rules and numbers of the two-zone test)
 
-**Authority:** this file is the single source for the core rules and numbers. Every number here is a constant in `econ/model.py` (run `python model.py` for the results, `python tests.py` for the 21 rule checks). If you change a rule, change the model constant and this file in the same commit. Systems outside the core loop (eggs in detail, aura, saving, playtest, later content) are in `CORE-GAME.md`.
+**Authority:** this file is the single source for the core rules and numbers. Every number here is a constant in `econ/model.py` (run `python model.py` for the results, `python tests.py` for the 22 rule checks). If you change a rule, change the model constant and this file in the same commit. Systems outside the core loop (eggs in detail, aura, saving, playtest, later content) are in `CORE-GAME.md`.
 
 **v5.1 decisions (owner, 2 Oct 2026):**
 - Power comes from **meditation** (the AFK half);
@@ -113,7 +113,7 @@ You meditate at the Shrine of the zone you're in.
 
 - **Combo:** each PERFECT moves it up one level: ×1 → ×1.25 → ×1.5 → ×1.75 → ×2. Any other release moves it **down one level** (not to zero). Flames on your fists show the level.
 - **OVERDRIVE:**
-  - **5 PERFECTs in a row** = **8 s of real time** (+2 s per Surge level) where **every release counts as PERFECT at ×2**. The timer keeps running while you walk, sell, hatch or meditate; only releases that land before it ends are boosted;
+  - **5 PERFECTs in a row** = **8 s of real time** (+2 s per Surge level), **starting when the 5th PERFECT lands**, where **every release counts as PERFECT at ×2**. The timer keeps running while you walk, sell, hatch or meditate; only releases that land before it ends are boosted;
   - each blast also hits **at most 2 other monsters next to your target, for 50% each** (a pack of Shardlings has up to 3 nearby, Boars usually 1, Brutes stand alone). Damage beyond a monster's HP is lost: it never turns into extra kills;
   - afterwards the combo sits at ×1.5.
 - **One blast cycle is about 1.4 s** (hold + recovery).
@@ -379,8 +379,8 @@ This is one seeded run close to the median (`econ` seed 74). Single runs vary: t
 
 | Player | First sell | Boss 1 | Boss 2 | Time meditating | Pets' damage share |
 |---|---|---|---|---|---|
-| weak | 2.6 min | 8.8 min | 30 min | 27% | 53% |
-| **average** | **1.8 min** | **5.8 min** | **23 min** | **27%** | **43%** |
+| weak | 2.6 min | 8.9 min | 30 min | 27% | 53% |
+| **average** | **1.8 min** | **6.0 min** | **23 min** | **26%** | **43%** |
 | strong | 1.5 min | 4.6 min | 20 min | 26% | 37% |
 
 These are **model targets, not promises**: the playtest decides. The model plays solo (crowded servers pay faster; see 8).

@@ -131,6 +131,27 @@ def test_overdrive_expires_on_real_time():            # CORE-LOOP 2.1: 8 s of re
     assert abs(t_left - (M.OD_TIME - M.SELL_TIME - 3 * M.HATCH_TIME - M.ALTAR_TIME)) < 1e-9
 
 
+def test_overdrive_starts_when_the_triggering_blast_lands():   # the 8 s begin at the 5th PERFECT's hit
+    pl = M.Player("average", 9)
+    pl.pf = dict(pl.pf, p=1.0)                             # every release PERFECT
+    pl.power, pl.quest, pl.t = 50, 1, 100
+    pl.milestones["mut_tutorial"] = 0
+    pl.spend = lambda: None
+    landed = []
+    for _ in range(5):
+        pl.hunt_blast(0)
+        landed.append(pl.t)
+    assert pl.od_active
+    trigger_landed = pl.kill_log[-1][0] if pl.kill_log else landed[-1]
+    assert abs(pl.od_until - (trigger_landed + M.OD_TIME)) < 1e-9
+    assert not any(k[3] for k in pl.kill_log)              # the triggering blast itself isn't boosted
+    while pl.in_overdrive():
+        pl.hunt_blast(0)
+    boosted = [k[0] for k in pl.kill_log if k[3]]
+    assert boosted and max(boosted) - trigger_landed <= M.OD_TIME + 1e-9
+    assert max(boosted) - trigger_landed > M.OD_TIME - M.BLAST_TIME - 1.0   # the full window is usable
+
+
 def test_beginner_protected_pack_in_a_crowded_server():   # CORE-LOOP 8: veterans can't block a beginner's quest
     solo = st.median(M.crowded_quest_time(0, True, seed_=r) for r in range(30))
     for vets in (3, 10):

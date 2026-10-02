@@ -62,26 +62,27 @@
 | Show-off | aura size, form, rare pets, ★★ pets, a mutated storm, Secret titles |
 | Return | the offline meditation gain, pets to level, ★★ goals, Secret hunting |
 | Simple | "Meditate to get strong, beat monsters for money, buy pets." |
-| Strong in grey boxes? | the blast timing + switching halves must be fun with grey boxes. **Checked in step 1-4 greybox before art** |
+| Strong in grey boxes? | the blast timing + switching halves must be fun with grey boxes. **Checked in the steps 1-5 greybox (including the minimal pet loop) before art** |
 
 ## 5. Build order: two-zone playable test (no monetization, no Later systems)
 
-Everything gameplay-facing is built from scratch. **Steps 1-4 are first proved in greybox** (PIPELINE 3a: fun gate); art follows only if they feel good.
+Everything gameplay-facing is built from scratch. **Steps 1-5 are first proved in greybox** (PIPELINE 3a: fun gate); art follows only if they feel good. The greybox includes a **minimal pet loop** (step 5), so the fun gate tests the whole cycle: **earn → buy a pet → become stronger**, not just blasting.
 
 | Step | Build | Done when |
 |---|---|---|
-| 1 | **Timing core:** hold-release blast (early / PERFECT / late / tap), combo ±1, Overdrive + chains, auto-aim on mobile / gamepad; the **Focus ring** sharing the same timing feel (CORE-LOOP 1, 2.1) | Server validation matches the rules; it feels right on PC, mobile and gamepad |
-| 2 | **Monsters zones 1-2:** 3 types each, AI (wander, telegraph, hit), green HP bars, spawns + the Brute cap, light damage + knockout to Shrine, **mutations** with their looks (one exact roll per spawn), shared monsters with personal loot, the **protected beginner pack** (CORE-LOOP 2.2-2.3, 8) | P9, P11, P13 pass; ≤ 30 monsters, 60 fps on mobile |
+| 1 | **Timing core:** hold-release blast (early / PERFECT / late / tap), combo ±1, Overdrive (an 8 s expiry timestamp that starts when the 5th PERFECT lands) + chains, auto-aim on mobile / gamepad; the **Focus ring** sharing the same timing feel (CORE-LOOP 1, 2.1) | Server validation matches the rules; it feels right on PC, mobile and gamepad |
+| 2 | **Monsters zones 1-2:** 3 types each, AI (wander, telegraph, hit), green HP bars, spawns + the Brute cap, light damage + knockout to Shrine, **mutations** (one exact roll per spawn), shared monsters with personal loot, the **protected beginner pack** (CORE-LOOP 2.2-2.3, 8) | P9, P11, P13 pass; ≤ 30 shared monsters, 60 fps on mobile |
 | 3 | **Shard Storm + SELL + Shrine hub:** the capped bag (4 looks, ≤ 12 meshes), SELL teleport + Stay, the shop (Egg / Bag / Mat / Surge) (CORE-LOOP 2.4-2.5, 4) | P10 + P12 pass |
-| 4 | **Meditation:** mats, AFK, Focus, the rate formula, offline (server time, once), AFK idle-rejoin (CORE-LOOP 1) | P2, P3, P5 pass; **greybox fun gate on steps 1-4** |
-| 5 | **Eggs:** odds card, honest cracks, guarantees, the hatch ladder incl. Mythic / Secret cutscenes (CORE-GAME 3) | P6-P8 pass |
-| 6 | **Pets:** follow / idle / charge / fight / tank / meditate behaviour, Strength, slots + Equip Best, star fusion + the Fusion Altar, Soul Food + Feed / Auto-feed, inventory + mailbox (CORE-LOOP 3) | Model rule tests mirrored in-game; 7 pets × full server at 60 fps |
-| 7 | **Rank quests + tutorial** (the first 8 minutes; the hand pointer) (CORE-LOOP 5, 7; CORE-GAME 6) | A new player reaches boss 1 unaided |
-| 8 | **Bosses:** Stone Golem + Magma Oni (3 phases, beam clash), forms Spark → BLAZE → INFERNO, transformation cutscenes (CORE-LOOP 6; CORE-GAME 4) | Scripted-bot win rates resemble `econ/RESULTS.txt` section 3 |
-| 9 | **Saving** (CORE-GAME 8) | P1-P14 pass in the real game |
-| 10 | **Test tools:** cheat panel, session log, Low effects | The owner can run playtest #1 without help |
+| 4 | **Meditation:** mats, AFK, Focus, the rate formula, offline gain from server time, AFK idle-rejoin (CORE-LOOP 1) | Rates match the model; offline tests P2-P3 follow in step 10 |
+| 5 | **Minimal pets (greybox):** the zone 1 egg stand with the real odds and a simple pop reveal; 3 slots + Equip Best; pets follow you, attack your target (Strength × 4% of Power), get dazed, and boost meditation (+10% per Strength). **No** fusion, Soul Food, cutscenes or idle animations yet | The cycle works end to end: hunt → sell → buy an egg → the pet visibly speeds up hunting **and** meditation. **Greybox fun gate on steps 1-5** (blasting, switching halves, and "does a new pet feel like getting stronger?"), then owner playtest #1 greybox (PIPELINE 3b) |
+| 6 | **Eggs (full):** odds card, honest cracks, guarantees, the hatch ladder incl. Mythic / Secret cutscenes (CORE-GAME 3) | P6-P8 pass |
+| 7 | **Pets (full):** tank AI, idle / charge / meditate behaviours, star fusion + the Fusion Altar, Soul Food + Feed / Auto-feed, inventory + mailbox (CORE-LOOP 3) | Model rule tests mirrored in-game; 7 pets × full server at 60 fps |
+| 8 | **Rank quests + tutorial** (the first 8 minutes; the hand pointer) (CORE-LOOP 5, 7; CORE-GAME 6) | A new player reaches boss 1 unaided |
+| 9 | **Bosses:** Stone Golem + Magma Oni (3 phases, beam clash), forms Spark → BLAZE → INFERNO, transformation cutscenes (CORE-LOOP 6; CORE-GAME 4) | Scripted-bot win rates resemble `econ/RESULTS.txt` section 3 |
+| 10 | **Saving** with the three-outcome contract (CORE-GAME 8) | P1-P14 pass in the real game |
+| 11 | **Test tools:** cheat panel, session log, Low effects | The owner can run playtest #1 without help |
 
-**Quality bar for the test: representative art, not greybox** (after the step 4 fun gate):
+**Quality bar for the test: representative art, not greybox** (after the step 5 fun gate):
 - one finished pet per rarity for zones 1-2 (Secrets as silhouettes);
 - all 6 monsters + 6 mutation looks;
 - Spark / BLAZE / INFERNO;
@@ -96,13 +97,13 @@ All of it follows STYLE-SHEET (GPU concepts → Blender, outlines, smooth plasti
 
 ## 6. Design targets (checked by `econ/tests.py`)
 
-These are **model targets for a solo player, not promises.** The two-zone test's session log measures the real values; the model is re-tuned to them.
+These are **model targets for a solo player, not promises.** The simulations check that the rules hang together and the pacing is sane; **they say nothing about retention or revenue.** Only the playtests and live data can. The two-zone test's session log measures the real values; the model is re-tuned to them.
 
 | Target | Model (average player) |
 |---|---|
-| Boss 1 at 4-9 min | 5.8 min |
+| Boss 1 at 4-9 min | 6.0 min |
 | Boss 2 at 18-35 min | 23 min |
-| 15-40% of play time meditating | 27% |
+| 15-40% of play time meditating | 26% |
 | Pets 30-60% of damage over the run | 43% |
 | A beginner's kill quest next to 10 veterans takes no longer than solo (protected pack) | 42 s = 42 s |
 | Average player wins the clash ≥ 90% at recommended Power; weak player ≥ 60%; under-powered (½) average ≤ 40% | 100% / 79% / 23% |

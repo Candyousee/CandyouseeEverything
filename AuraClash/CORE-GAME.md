@@ -174,34 +174,44 @@ A **pet simulator with two halves:**
 | Upgrades | Bag, Mat, Surge levels; pet slots |
 | Tutorial / guarantees | tutorial step, **lifetime hatch count**, guaranteed-Rare used, first-clear eggs claimed |
 | Offline | `lastSeen` (server time), `offlineClaimId` |
+| Operations | each critical operation's id → `committed` (with `revealed` yes/no) or `cancelled`, kept 30 days (8.2) |
 | Settings | effects, camera, flashing, Low effects |
 
 ### 8.2 Rules
 
 - **Session lock:** one server at a time per profile, so two servers can never both grant.
 - **Ordinary progress** (Power, coins, bag, kills, normal hatches, feeding): queued save + an autosave every 60 s, on leave and on server shutdown (`BindToClose`). **Honest limit:** if a server crashes, up to the last ~60 s of ordinary progress can be lost. That's accepted for ordinary progress; it's why the critical operations below use confirmed saving.
-- **Confirmed saving** (write first, show second):
-  1. the server writes the change with `UpdateAsync`, together with a unique **operation id**;
-  2. **success →** show the reward;
-  3. **error or timeout → the result is UNKNOWN, not "nothing granted".** Roblox warns that a failed response can follow a write that actually succeeded. So the server shows "Saving…" and **reconciles**: it reads the profile (inside the next `UpdateAsync`) and checks whether the operation id is already stored:
-     - **id found →** the write landed: show the reward, and never apply it again;
-     - **id not found →** apply it in that same `UpdateAsync` (so it can't land twice);
-  4. up to 3 attempts with backoff;
-  5. **if every attempt fails, the operation is cancelled in this session:** the server undoes it in memory (the egg's coins are back, the pets are unfused) and says **"Couldn't save, so nothing happened. Try again."** It never promises the reward is safe, because an operation that exists only in server memory is lost if the server crashes.
-     - The one exception is a write that **did** land but reported failure. It's already in the saved profile, so the reconcile check (step 3) finds its operation id on the next access, **including the next join on another server**, and shows it then. It's never applied twice.
+- **Confirmed saving: three outcomes, never two.** Roblox documents that a request can fail on the game server's side **after** the write has committed (https://create.roblox.com/docs/cloud-services/data-stores/error-codes-and-limits). So a failed or timed-out response proves nothing. Every critical operation ends in exactly one of three states:
 
-  **What this guarantees:** an operation is either saved exactly once, or it never happened. The player never sees a result that isn't saved, so there's nothing to lose and nothing to re-roll. (A crash before any save can't lose a reward the player was shown.)
+  | State | How the server knows | What happens |
+  |---|---|---|
+  | **1. CONFIRMED SAVED** | the `UpdateAsync` call returned success, **or** a later successful `UpdateAsync` finds the operation id in the stored profile | show the result (play the cutscene / the fused pet / the offline gain); never apply it again |
+  | **2. CONFIRMED NOT COMMITTED** | a later **successful** `UpdateAsync` finds the id absent, and in that same write stores the id as **cancelled** (so a delayed original write can never apply afterwards: its version is stale and the id is now taken) | undo it in memory (the coins are released, the pets stay unfused) and say "Not saved, nothing was spent. Try again." |
+  | **3. UNKNOWN** | the write errored or timed out, and no later `UpdateAsync` has succeeded yet | **don't show the result, don't refund, don't say "cancelled".** Hold the operation as **pending** (below) and keep reconciling |
 
-  **Each critical operation is ONE write that contains everything:** the cost, the result and the operation id together. That way, a failed hatch never keeps the coins without the pet, or the pet without the coins.
+  **While an operation is UNKNOWN (pending):**
+  - its cost is **held**, neither spent nor refunded. The coins show as "held" in the HUD and can't be spent; the pets involved are locked;
+  - **conflicting transactions are blocked:** no other purchase, hatch, fusion, feed or sell that touches the same coins or pets, and no second critical operation, until it resolves. The UI shows "Saving…";
+  - **safe play continues:** hunting, meditating and quests keep working as ordinary progress;
+  - the server retries the reconcile with backoff (2, 4, 8, 16… s, capped at 60 s), and resolves to state 1 or 2 on the first successful `UpdateAsync`;
+  - **every later write is also a reconcile:** the autosave, the leave save and the shutdown save all run inside `UpdateAsync`, which first resolves pending ids against the stored profile. If the id is present, the stored effect is kept; if it's absent, it's marked cancelled. **No save ever writes the "refunded" or "spent" coins on a guess.**
 
-  
-  Used for:
+  **If the server crashes while an operation is UNKNOWN:** the pending memory is gone, but storage holds exactly one truth:
+  - **committed:** the profile already contains the cost, the result and the id, with `revealed = false`. On the next join (any server), the game finds the unrevealed operation and **plays it then** ("Your Mythic hatch finished saving!"), then marks it revealed;
+  - **not committed:** the profile has neither the cost nor the result, so nothing was spent and nothing was gained. The first save of the next session writes the id as cancelled.
+
+  **Each critical operation is ONE write that contains everything:** the cost, the result, the operation id and `revealed = false`. The result is never shown before state 1, so a player can't see a bad roll and force a crash to re-roll it.
+
+  **Used for:**
   - the offline meditation claim;
-  - Mythic / Secret hatches: the egg's cost and the result are saved in one write **before** the cutscene plays. If the save fails, the hatch is cancelled and the coins are kept; the result was never shown, so it can't be re-rolled on purpose;
+  - Mythic / Secret hatches (the egg's cost and the rolled result, saved before the cutscene);
   - fusion of ★★ or Epic+ pets.
+
+  The operation ids (including cancelled ones) are kept in the profile for 30 days, then pruned.
+
 - **Offline gain:**
   - computed once per session from `lastSeen` to now (server time, capped at 8 h), in **one write** with a new `offlineClaimId`;
-  - if that write fails, the gain isn't shown and `lastSeen` is unchanged, so the same span is offered again later (nothing is lost);
+  - it follows the three outcomes above: shown only when confirmed saved. If it's confirmed not committed, `lastSeen` is unchanged, so the same span is offered again; while it's unknown, the gain is held, not shown;
   - a rejoin can't claim the same span twice;
   - the device clock does nothing.
 - **AFK rejoin:** the rejoin teleport saves first, then puts you back on a mat (the gain continues).
@@ -216,7 +226,7 @@ A **pet simulator with two halves:**
 | P2 | Log off 1 h, rejoin twice quickly (two servers) | offline Power granted exactly once |
 | P3 | Change the device clock ±1 day | no effect on offline gains |
 | P4 | Kill the server during a Mythic hatch (forced shutdown) | after rejoin: the Mythic is there exactly once |
-| P5 | Studio mock: (a) the save fails before writing; (b) **the save writes, then reports a timeout**; (c) the data store is down for 2 min | (a) the retry grants once; (b) reconciliation finds the operation id and shows the reward **without granting it again**; (c) after 3 failed attempts the operation is cancelled with "nothing happened, try again": no reward shown, nothing spent |
+| P5 | Studio mock of the data store: (a) the write fails before committing; (b) **the write commits, then the call reports a timeout**; (c) the store is down for 2 min after an unknown write | (a) a later successful reconcile finds no id: "nothing spent, try again", the id is stored as cancelled; (b) the reconcile finds the id: the result is shown once, **never refunded**; (c) during the outage the coins are **held** (not refunded, not spendable), conflicting purchases / fusions / hatches are blocked, and hunting / meditating still work; when the store recovers it resolves to (a) or (b) exactly once |
 | P6 | Rejoin before the 3rd hatch and after the tutorial egg | the guarantees happen exactly once, in order |
 | P7 | **Odds test:** 200,000 automated server-side hatches | each rarity within ±4 standard deviations (Mythic: 200 expected, accepted 144-256) |
 | P8 | Crack colour vs result over the same 200,000 hatches | 100% match |
@@ -225,7 +235,7 @@ A **pet simulator with two halves:**
 | P11 | A newcomer (10% of the damage) and a veteran (90%) hit one monster | **both** get their own full drop and quest credit |
 | P12 | Spam SELL / Feed / Fuse (20 clicks), and two devices at once | exactly one sale, feed and fusion each |
 | P13 | A new player does zone 1 quests 2 and 4 in a full server next to veterans who kill everything shared | the quests complete at the solo pace or faster, thanks to the protected pack (CORE-LOOP 8). The model simulates this (`econ/RESULTS.txt` section 7); it must also be run in the game |
-| P14 | Studio mock: every save fails, then the server is shut down mid-session after a Mythic hatch attempt | on rejoin there's no Mythic and no coins spent (it was cancelled and never shown); with a write that landed but reported failure, the Mythic and the cost are both there exactly once |
+| P14 | Studio mock: every save fails during a Mythic hatch attempt, then the server is shut down | rejoin with the write **not committed**: no Mythic and no coins spent. Rejoin with the write **committed** (response lost): the Mythic and its cost are both there once, and the cutscene plays on join ("finished saving"). No path refunds coins for a committed hatch or shows a result that isn't stored |
 
 ## 9. PLAYTEST #1 (behaviour first)
 

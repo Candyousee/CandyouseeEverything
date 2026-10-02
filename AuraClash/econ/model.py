@@ -271,12 +271,11 @@ class Player:
         if self.in_overdrive():
             d, dt, perf = self.power * PERFECT_X * COMBO[4], BLAST_TIME, True
             in_od = True
+            trigger_od = False
         else:
             d, dt, perf = self.blast()
             in_od = False
-            if self.streak >= OD_STREAK:
-                self.start_overdrive()
-                self.streak = 0
+            trigger_od = self.streak >= OD_STREAK      # the 5th PERFECT in a row triggers Overdrive ...
         pet_d = self.team_str() * PET_HIT_X * self.power * (dt / PET_HIT_EVERY + (1 if perf else 0))
         target = self.field[0]
         target["hp"] -= d + pet_d
@@ -288,6 +287,9 @@ class Player:
                 self.player_dmg += d * OD_CHAIN_X
         self.t += dt
         self.hunt_time += dt
+        if trigger_od:                                 # ... and its 8 s start when that blast lands
+            self.start_overdrive()
+            self.streak = 0
         dead = [m for m in self.field if m["hp"] <= 0]
         target_died = target["hp"] <= 0
         for m in dead:
