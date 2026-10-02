@@ -280,21 +280,31 @@ The v2 beam clash alone was one-note. Each boss is now a **3-phase arena fight**
 
 **F. Kept from v3:** charge-blast crystals, Overdrive, fighting spirits, the Bonded aura, the hatch ladder with Mythic / Secret cutscenes, Awakening perks, 3-phase bosses, the World Boss, the Infinity Tower.
 
-### Honest originality check
-- **Proven (borrowed on purpose):**
-  - breakables + pets (PS99);
-  - rarity cutscenes and odds-changing events (Sol's RNG);
-  - global restocks / weather + mutations + an earning showcase (Grow a Garden / Brainrot).
-- **Ours:**
-  - **skill in every action** (charge / PERFECT / Overdrive instead of plain clicking);
-  - **spirits that ARE your aura** (the Bonded look) and fight beside you;
-  - **3-phase bosses with a beam-clash finisher;**
-  - **Wild Spirit races** without loss.
-- **The risk:** the genre is crowded. We win only if the blast feel + aura spectacle beat the competition **in the playtest**.
+### Proven systems we take (owner: "we don't need to be original, take what we need")
+
+| System | Taken from | In Aura Clash |
+|---|---|---|
+| Pets break things for you | Pet Simulator 99 | spirits attack crystals with you |
+| Huge pets | Pet Simulator 99 | **Huge spirits:** giant, rare, the ultimate flex |
+| Gold / Rainbow machines | Pet Simulator 99 | fusion (3 → Gold → Rainbow) |
+| **Rank quests** (do tasks → rank up → rewards / slots) | Pet Simulator 99 | rank quests ("break 200 crystals", "hatch 50 eggs") give slots, eggs and potions. A clear "what do I do next" at all times |
+| **Enchants / potions** | Pet Simulator 99 | potions (coins / luck / damage, 15 min) from chests and quests; enchant books later |
+| Clans | Pet Simulator 99 | **later** (after launch): clan auras and clan World Boss ranks |
+| Global restocks + weather on one clock | Grow a Garden | the global egg rotation + global events (B) |
+| Mutations | Grow a Garden | event mutations (C) |
+| Items that earn while you're away, on display | Grow a Garden / Steal a Brainrot | Spirit Sanctum (A) |
+| The race / steal rush | Steal a Brainrot | Wild Spirits, with no loss (D) |
+| Rarity cutscenes + odds-changing biomes | Sol's RNG | the hatch ladder + Secret events |
+| AFK progress | Anime Fighting Sim | Sanctum income + meditation (capped) |
+| Rebirth with a permanent boost | every simulator | Ascension + Awakening perks |
+| Server announcements, a leaderboard statue | Pet Simulator 99 / many | Plaza statues + announcements |
+
+**What actually matters:** the **execution quality** (the blast feel, aura spectacle, hatch cutscenes, polish) and the **playtest**, not novelty.
 
 ### Updated two-zone test scope (v4)
 
 v3 scope **plus:**
+- **rank quests** (ranks 1-5);
 - a small Sanctum (idle income + display);
 - 1 global event (Blood Moon) on the global clock;
 - 1 mutation;
