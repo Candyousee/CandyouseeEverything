@@ -199,7 +199,7 @@
 ---
 
 
-## 8. Rules that close the gaps (decided; the owner can override)
+## 6b. Rules that close the gaps (decided; the owner can override)
 
 | Question | Rule |
 |---|---|
