@@ -1,0 +1,43 @@
+AURA CLASH v5.1 model results (python model.py)
+
+1. Average player, first run, one seeded playthrough (milestones)
+   tutorial meditation done     0:20
+   first SELL                   1:36
+   first hatch                  1:38
+   tutorial Gold Shardling      1:02
+   first Overdrive              0:54
+   quest 1 (Focus 20 s)         2:02
+   Bag Lv1                      1:42
+   Mat Lv1                      3:58
+   first pet level-up           1:38
+   quest 4 (10 Boars)           4:06
+   boss 1 beaten                5:53
+   zone 2 quest 1               6:55
+   first star fusion            2:31
+   boss 2 beaten                22:34
+
+2. Milestones over 200 players per profile (median [10th-90th percentile], minutes)
+   profile   first sell   boss 1          boss 2            meditating share   pets' damage share
+   weak        2.7         8.6 [6.9-11.3]    30.4 [26.5-35.1]      26%                52%
+   average     1.9         5.9 [4.9-7.3]    23.1 [20.8-26.2]      24%                44%
+   strong      1.6         5.1 [4.3-7.0]    20.9 [18.7-24.3]      22%                39%
+
+3. Beam clash win rate (2,000 fights per cell; hits taken in phases 1-2 = 2)
+   Power / recommended:    0.5     0.75    1.0     1.5     2.0
+   weak                       0%     28%     79%    100%    100%
+   average                   23%     98%    100%    100%    100%
+   strong                    97%    100%    100%    100%    100%
+
+4. Coins per minute by monster (zone 1, average player, 3 Common pets, no mutations)
+   Power   50: Shardling    220/min ( 0.8 s/kill, GREEN) | Crystal Boar    276/min ( 3.7 s/kill, GREEN) | Crag Brute    311/min (24.9 s/kill)
+   Power  150: Shardling    267/min ( 0.7 s/kill, GREEN) | Crystal Boar    457/min ( 2.2 s/kill, GREEN) | Crag Brute    751/min (10.3 s/kill)
+   Power  400: Shardling    287/min ( 0.6 s/kill, GREEN) | Crystal Boar    575/min ( 1.8 s/kill, GREEN) | Crag Brute    774/min (10.0 s/kill, GREEN)
+
+5. Mutations add about +58% to average shard value per kill (before their extra HP)
+
+6. Meditation (zone 1 Shrine, 3 Common pets, Mat Lv0)
+   AFK 0.65/s (2,340 Power/hour); average Focus 1.56/s; offline 0.16/s, max 4,680 per 8 h
+   zone 2 Shrine, 5 zone-2 Commons: AFK 14,400 Power/hour
+
+7. AFK-only player (never hunts): Power keeps growing, but the boss gate never opens
+   (rank quests 2-4 need kills and hatches, which need coins, which only hunting gives).

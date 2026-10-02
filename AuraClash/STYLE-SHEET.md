@@ -10,9 +10,9 @@ Owner's direction (2 Oct 2026): **cartoony anime, extremely polished. Smooth "pl
 
 Colourful games look cheap when everything is loud. Ours stays good because of **colour hierarchy**:
 1. **Bases are calm:** ground, rocks and buildings use soft, slightly muted pastels (saturation about 40-60%).
-2. **Things that matter are loud:** crystals, shards, spirits, auras, the SELL button and eggs get the fully saturated colour and the glow.
+2. **Things that matter are loud:** crystal monsters, shards, pets, auras, the SELL button and eggs get the fully saturated colour and the glow.
 3. **One hero colour per object** plus one accent; no rainbow objects except Rainbow spirits.
-4. **Value contrast first:** in a greyscale screenshot, the player, the target crystal and the spirits must still pop out from the ground.
+4. **Value contrast first:** in a greyscale screenshot, the player, the target monster and the pets must still pop out from the ground.
 
 So the screen is colourful everywhere, but your eye always lands on the loot and the action.
 
@@ -30,25 +30,26 @@ Winter researches the current top games in this style online before the concept 
 
 ## Target frames (art bible)
 
-`ART/bible/01-08.png`, generated on the GPU and approved by the owner once:
-1. the player in the Training Grove with a full Shard Storm and pets lounging;
-2. a PERFECT blast hitting a Geode;
-3. Overdrive chaining across crystals;
+`ART/bible/01-09.png`, generated on the GPU and approved by the owner once:
+1. the player in the Training Grove with a full Shard Storm and pets lounging around them;
+2. a PERFECT blast shattering a Crag Brute, pets pouncing;
+3. Overdrive chaining across a pack of Shardlings, one of them a Gold mutation;
 4. the Sell Altar cash-in;
 5. a Legendary hatch;
 6. the Stone Golem beam clash;
 7. the Lava Dojo overview;
-8. the HUD over gameplay.
+8. the HUD over gameplay;
+9. meditation at the Shrine: players sitting on mats, auras flaring, pets in circles around them.
 
 ## Look
 
 | Area | Rule for this game |
 |---|---|
-| **Shape language** | Round, soft and chunky: bevelled edges everywhere (no sharp 90° corners on props), slightly oversized heads and paws on spirits, big readable silhouettes. Crystals are the only sharp shapes, so they stand out as the thing you hit |
+| **Shape language** | Round, soft and chunky: bevelled edges everywhere (no sharp 90° corners on props), slightly oversized heads and paws on pets, big readable silhouettes. The crystals on monsters are the only sharp shapes, so they stand out as the thing you hit |
 | **Palette** | Zone 1 Training Grove: mint grass `#8EE3B0`, warm path `#F5D9A8`, sky `#9FD8FF`, crystals cyan/violet `#4FE6FF` `#B36BFF`. Zone 2 Lava Dojo: warm stone `#E8A07A`, dark rock `#5B3A4A`, lava `#FF6A2B`, crystals red/gold `#FF3D5A` `#FFC93D`. Shards cyan `#5FF0FF`, Bright Shards gold `#FFD84A`, Gems magenta `#FF4FD8`. Bases 40-60% saturation; hero objects 85-100% |
-| **Materials** | **Smooth plastic everywhere:** low roughness (0.2-0.35), no realistic textures (no grass blades, dirt or rock photos). Surfaces get **soft gradients** (lighter on top, darker at the base) and baked ambient occlusion in the colour. Crystals are glossy and slightly see-through with an inner glow. Spirits are soft-matte plastic with a gloss highlight on the head |
+| **Materials** | **Smooth plastic everywhere:** low roughness (0.2-0.35), no realistic textures (no grass blades, dirt or rock photos). Surfaces get **soft gradients** (lighter on top, darker at the base) and baked ambient occlusion in the colour. Crystals are glossy and slightly see-through with an inner glow. Pets are soft-matte plastic with a gloss highlight on the head |
 | **Ground** | Sculpted, smooth meshes (not Roblox terrain): rounded grass mounds, bevelled paths and soft rock blobs, with gentle gradient colour and painted-in shadow. Small decoration is simple shapes (lollipop trees, round bushes, pebble clusters) |
-| **Outlines** | Clean dark outlines on characters, spirits, crystals, eggs and key props, built in Blender as an **inverted-hull mesh** (a slightly bigger back-faced shell in a darker shade of the object's own colour, never pure black). Thickness scales with object size. Ground and background get none or thin ones, so foreground pops. **Don't use Roblox Highlight instances for outlines** (there's a limit of 31 and they cost performance); Highlight is only for the selected target ring |
+| **Outlines** | Clean dark outlines on characters, pets, crystal monsters, eggs and key props, built in Blender as an **inverted-hull mesh** (a slightly bigger back-faced shell in a darker shade of the object's own colour, never pure black). Thickness scales with object size. Ground and background get none or thin ones, so foreground pops. **Don't use Roblox Highlight instances for outlines** (there's a limit of 31 and they cost performance); Highlight is only for the selected target ring |
 | **Highlights** | A crisp specular "shine" on every glossy object (a baked highlight shape on top + engine specular), plus a **rim light** on characters and spirits so they separate from the background |
 | **Lighting + grade** | Future lighting, bright and warm. Soft shadows, light blue ambient (not grey), gentle bloom (only bright crystals and auras bloom), slight colour correction (saturation +0.1, contrast +0.05). A stylised gradient sky with big soft clouds. Each zone has its own light mood |
 | **Concept generation (GPU)** | ComfyUI on the owner's GPU: an anime / toon model (an SDXL anime checkpoint or FLUX with a toon LoRA), prompts with "glossy toon, cel shaded, thick clean outlines, smooth plastic, pastel base, saturated accents", the reference images above as inputs. Several options per asset; the best go to the owner once |

@@ -1,260 +1,392 @@
-# AURA CLASH: the core loop (v5; starting numbers, tuned later in the model)
+# AURA CLASH: Core Loop v5.1 (the rules and numbers of the two-zone test)
 
-v5 changes (owner, 2 Oct): **Power comes from MEDITATION** (the AFK half). **Crystals become crystal MONSTERS** (pets tank and fight). **The bag is capped** for mobile. Force is cut. One stat, one currency, one pet number.
+**Authority:** this file is the single source for the core rules and numbers. Every number here is a constant in `econ/model.py` (run `python model.py` for the results, `python tests.py` for the 12 rule checks). If you change a rule, change the model constant and this file in the same commit. Systems outside the core loop (eggs in detail, aura, saving, playtest, later content) are in `CORE-GAME.md`.
 
-v5.1 (owner): **monster MUTATIONS** (Gold, Fire, Rainbow…: rarer, worth much more, their shards spin in your storm); **pets eat SOUL FOOD** dropped by monsters to level up; **Bond is cut**; pet fusion tiers renamed to **stars** (★, ★★) so "Gold" only means the mutation.
+**v5.1 decisions (owner, 2 Oct 2026):**
+- Power comes from **meditation** (the AFK half);
+- you hunt **crystal monsters** (pets tank and fight);
+- the bag is **capped** for mobile;
+- **mutations** on monsters;
+- **Soul Food** levels pets;
+- **Bond and Force are cut**;
+- pet fusion tiers are **stars**.
+
+---
 
 ## 0. The core in one picture
 
 ```
         MEDITATE (calm / AFK)                    HUNT (active)
-   sit at the Shrine → POWER grows      blast crystal monsters → SHARDS in your storm
+   sit at the Shrine → POWER grows      blast crystal monsters → SHARDS (+ Soul Food)
              │                                        │
-             │  Power = your damage + toughness       │  SELL → COINS
-             └──────────────► you hunt harder ◄───────┘
+             │  Power = your damage                   │  SELL → COINS
+             └──────────────► you hunt faster ◄───────┘
                                     │
                             COINS → EGGS → PETS
                    each pet's STRENGTH boosts BOTH halves:
-                 faster meditation  +  it fights beside you
+               faster meditation  +  it fights and tanks beside you
                                     │
-                    enough Power → BOSS → new zone:
-             a stronger Shrine, tougher monsters, better loot, a new egg
+          rank quests done + enough Power → BOSS → next zone
+            (a 4× Shrine, tougher monsters, better loot, a new egg)
 ```
 
-**The rule that makes it a loop, not two separate games:**
-- **Power only comes from meditating.** Hunting gives none.
-- **Coins only come from hunting.** Meditating gives none.
-- **Pets come from coins** and speed up **both** halves.
+**The three rules that make it one loop:**
+1. **Power only comes from meditating.** Hunting never gives Power.
+2. **Coins only come from hunting** (selling shards). Meditating, quests and bosses never give coins.
+3. **Pets come from coins and speed up both halves.**
 
-So a meditation-only player has big Power but no new pets (slow), and a hunting-only player has pets but can't beat the next zone's monsters (stuck). **The fastest way is to switch between them,** and each switch feels great: you come back from meditating and one-shot the monsters that were hard 10 minutes ago.
+So a meditate-only player has big Power but no new pets and can't finish the rank quests (they need kills and hatches). A hunt-only player has pets but can't reach the boss's Power. **The fastest way is to switch,** and each switch feels good: you come back from meditating and one-shot what was slow before.
 
-### The four things on your screen
-
-| Thing | What it is | Where it comes from |
+| On your screen | What it is | Where it comes from |
 |---|---|---|
-| **POWER** | your blast damage and toughness; your aura's size | **meditation only**; never spent, never lost |
-| **SHARDS** (storm: 18 / 60) | loot you're carrying | monsters you defeat |
-| **COINS** | the one currency | selling shards |
-| **PETS** | each has one number, **Strength** | eggs (coins) |
-| **SOUL FOOD** | levels up your pets | monsters drop it (straight into your pouch, never the bag) |
+| **POWER** | your blast damage; your aura's size | meditation only. Never spent, never lost |
+| **Shard Storm** (18 / 60) | the shards you're carrying | monsters |
+| **COINS** | the only currency | selling shards |
+| **PETS** | each shows one number, **Strength** | eggs (coins), quest rewards |
+| **Soul Food** (pouch) | levels up pets | monsters (never takes bag space) |
 
 ---
 
-## 1. MEDITATE: where Power comes from
+## 1. MEDITATE (where Power comes from)
 
-**Where:** the **Shrine** in the middle of each zone: a glowing ring of meditation mats. The Sell Altar, the egg stand and the shop are around it, so the Shrine is the hub. (Meditating works only on mats, so there's one calm, social spot per zone, where everyone sees everyone's aura.)
+**The Shrine:**
+- one Shrine per zone, in its centre, with a ring of glowing **meditation mats** (enough for a full server);
+- the **Sell Altar, egg stand and shop** stand around it, so the Shrine is the hub;
+- you can **only meditate on a mat.**
 
-**How:** walk onto a mat and press **MEDITATE**:
-- you sit cross-legged and float a little; your eyes close; your aura rises like a slow flame;
-- energy streams in from the zone (leaves, sparks, light) into your chest;
-- **your pets sit in a circle around you and meditate too** (each in its own cute pose);
-- the Power counter ticks up, and your aura visibly swells.
+**How it looks:** press **MEDITATE** on a mat:
+- you sit cross-legged and float, and your aura rises like a slow flame;
+- energy streams into you from the zone;
+- **your pets sit in a circle around you, meditating in their own poses**;
+- the Power counter ticks up and your aura swells.
 
-**Two speeds:**
+**Two modes:**
 
-| Mode | What you do | Rate |
+| Mode | What you do | Multiplier |
 |---|---|---|
 | **AFK** | nothing | ×1 |
-| **FOCUS** (active) | a breathing ring around you grows and shrinks; **tap when it's fullest** (the same timing feel as a PERFECT). Each good tap adds a Focus level (max 5); a miss drops one | up to **×3** |
+| **FOCUS** | a breathing ring grows and shrinks around you; **tap when it's fullest** (the same timing feel as a PERFECT). A good tap = +1 Focus level (max 5 = ×3); a miss = −1 level | up to **×3** (an average player holds about ×2.4) |
 
-**Meditation rate = Shrine rate × Focus × (1 + 10% per point of equipped pets' Strength) × Mat upgrade.**
-- Zone 1 Shrine: 0.5 Power/s; zone 2: 2/s; each zone about ×4.
-- Example: zone 1, 3 Common pets (Strength 1 each), AFK: 0.5 × 1 × 1.3 = 0.65/s. With full Focus: 1.95/s.
+**Rate (Power per second) = Shrine rate × Focus × (1 + 0.10 × your equipped pets' total Strength) × (1 + 0.25 × Mat level)**
 
-**AFK and offline:**
-- **In game:** AFK meditation runs at the full ×1 rate. Roblox kicks idle players after 20 minutes, so just before that the game rejoins you to a server and sits you back on a mat.
-- **Offline:** you keep meditating at **25% of your AFK rate, up to 8 hours.** When you come back: a "WHILE YOU WERE AWAY: +4,210 POWER" screen with your aura bursting bigger, which is the return hook.
+| | Zone 1 (Training Grove) | Zone 2 (Lava Dojo) |
+|---|---|---|
+| Shrine rate (AFK) | 0.5 / s | 2 / s |
+| Example | 3 Commons, AFK: 0.65 / s (2,340 / hour); with average Focus 1.56 / s | 5 zone-2 Commons, AFK: 4 / s (14,400 / hour) |
 
-**Why it's fun, not boring:** it's calm after hunting, it's a show-off spot (everyone's sitting in one place with their auras flaring), active Focus is a satisfying rhythm, and you watch your aura grow.
+You meditate at the Shrine of the zone you're in.
+
+**AFK in game:**
+- full AFK rate, for as long as you like;
+- Roblox kicks idle players after 20 minutes, so when the idle warning fires, the game rejoins you to a server and sits you back on a mat.
+
+**Offline:**
+- you keep meditating at **25% of your AFK rate, for up to 8 hours** (server time; your device clock can't change it);
+- on return you see **"WHILE YOU WERE AWAY: +4,210 POWER"** and your aura bursts bigger.
+
+**Why it isn't boring:**
+- it's the calm half after hunting;
+- it's the social, show-off spot, with everyone's aura flaring in one place;
+- Focus is a satisfying rhythm;
+- you watch your aura grow.
 
 ---
 
-## 2. HUNT: where coins come from
+## 2. HUNT (where coins come from)
 
-### The blast (the only attack)
+### 2.1 The blast (the only attack)
 
 | Platform | Aim | Charge |
 |---|---|---|
-| PC | the monster under your mouse (a white ring) | hold LMB or Space |
-| Mobile | **auto-aim** at the nearest monster in front of you; tap to switch | hold the big button |
+| PC | the monster under your mouse (a white ring); click to switch | hold LMB or Space |
+| Mobile | **auto-aim** at the nearest monster in front of you; tap one to switch | hold the big button |
 | Gamepad | auto-aim; the right stick switches | hold R2 |
 
-Hold: energy gathers in your fists and a ring shrinks around you over 1.2 s. Release:
+**Hold:** energy gathers in your fists and a ring shrinks around you over **1.2 s**. Then release:
 
-| Release | Damage |
-|---|---|
-| Too early (0.5-1.0 s) | 0.6 × Power |
-| **PERFECT** (the glow, the last 0.18 s) | **2 × Power × combo**, a screen kick, and every pet pounces |
-| Too late | 0.5 × Power + a short stagger |
-| Quick tap (< 0.5 s) | nothing |
+| Release | Damage | What you see |
+|---|---|---|
+| Too early (0.5-1.0 s) | 0.6 × Power | a small blast |
+| **PERFECT** (the glow: the last 0.18 s) | **2 × Power × combo** | a big blast, a screen kick, "PERFECT!", **every pet pounces** |
+| Too late | 0.5 × Power, plus a 0.5 s stagger | a fizzle |
+| Quick tap (under 0.5 s) | nothing | (auto-clickers are useless) |
 
-- **Combo:** PERFECTs in a row: ×1.25 → ×1.5 → ×1.75 → ×2. A non-PERFECT **drops one level** (not to zero; kinder to younger players).
-- **OVERDRIVE:** 5 PERFECTs in a row = 8 s where every release is PERFECT ×2 and **chains to the 2 nearest monsters** at 50%.
+- **Combo:** each PERFECT moves it up one level: ×1 → ×1.25 → ×1.5 → ×1.75 → ×2. Any other release moves it **down one level** (not to zero). Flames on your fists show the level.
+- **OVERDRIVE:**
+  - **5 PERFECTs in a row** = **8 s** (+2 s per Surge level) where **every release counts as PERFECT at ×2**;
+  - each blast **chains to the 2 nearest monsters for 50%**;
+  - afterwards the combo sits at ×1.5.
+- **One blast cycle is about 1.4 s** (hold + recovery).
 
-### The monsters (zone 1, the Training Grove)
+### 2.2 Crystal monsters
 
-The grove's wildlife has been overgrown by crystals: **crystal monsters that shatter into shards.**
+The animals in each zone have been overgrown by crystals. When defeated they **crack, freeze and shatter into shards.**
 
-| Monster | HP | Behaviour | Drops |
+**Zone 1, the Training Grove** (shards: Shard 3 coins, Bright Shard 40, Gem 250):
+
+| Monster | HP | Behaviour | Drops | Soul Food |
+|---|---|---|---|---|
+| **Shardling** (a small crystal slime) | 20 | hops in packs of 3-4; bumps you lightly | 1 Shard | 10% chance of 1 |
+| **Crystal Boar** (person-high) | 200 | wanders; when it spots you it **charges down a straight red lane** (0.8 s warning) | 3 Shards + 20% chance of a Bright Shard | 1 |
+| **Crag Brute** (house-high) | 2,000 | slow; **slams the ground** (a red circle, 1 s warning) | 8 Shards + 2 Bright + 10% chance of a **Gem** | 3 |
+
+**Zone 2, the Lava Dojo** (shards: Ember Shard 30, Bright 400, Gem 2,500):
+
+| Monster | HP | Behaviour | Drops | Soul Food |
+|---|---|---|---|---|
+| **Ember Slime** | 400 | packs; leaves short burning puddles | 1 Shard | 10% chance of 1 |
+| **Lava Hound** | 4,000 | charges down a red lane | 3 Shards + 20% Bright | 1 |
+| **Obsidian Brute** | 40,000 | slams a red circle | 8 Shards + 2 Bright + 10% Gem | 3 |
+
+**Spawns:**
+- fixed spawn points: Shardling-type packs respawn every 5 s and Boar-types every 10 s;
+- **3 Brutes per zone, each respawning after 30 s**;
+- about 30 monsters per zone at most.
+
+**Green HP bars:** a monster's HP bar turns **green** when you'd beat it in about 3 of your blasts (your pets included). That's the nudge to hunt bigger ones.
+
+**They fight back, lightly:**
+- you have a health bar; a monster hit takes 10-30% of it (less as your Power outgrows the zone), and it refills fast out of combat;
+- **knocked out:** you reappear at the Shrine and **keep everything**, bag included.
+
+**Coins per minute** (model, zone 1, average player, 3 Common pets, no mutations):
+
+| Power | Shardling | Crystal Boar | Crag Brute |
 |---|---|---|---|
-| **Shardling** (a small crystal slime) | 20 | hops around in groups of 3-4; bumps you lightly | 1 Shard (sells for 3) |
-| **Crystal Boar** (person-high) | 200 | wanders; when it spots you, **charges in a straight line** (a red lane, 0.8 s warning) | 3 Shards + 20% Bright Shard (40) |
-| **Crag Brute** (house-high) | 2,000 | slow; **slams the ground** (a red circle, 1 s warning) | 8 Shards + 2 Bright + 10% **Gem** (250) |
+| 50 | 220 | 276 | 311 (not green, slow) |
+| 150 | 267 | 457 | 751 |
+| 400 | 287 | 575 | 774 (green; capped by Brute respawns) |
 
-- **Each monster's HP bar turns green** when you can beat it in about 3 of your blasts: the nudge to hunt bigger ones.
-- **When one is defeated:** it cracks, freezes, and **shatters**; the shards spiral into your Shard Storm.
-- **They fight back (lightly):**
-  - you have a health bar; a monster hit takes 10-30% of it (less as your Power outgrows the zone); it regenerates quickly out of combat;
-  - if you're knocked out: you reappear at the Shrine and **keep everything**, bag included. No loss, only lost time.
-- **Respawn:** each monster type has fixed spawn points (Shardlings 5 s, Boars 10 s, Brutes 30 s), max about 30 monsters per zone.
-- **Every monster also drops Soul Food** (section 3b): Shardling 10% chance of 1, Boar 1, Brute 3.
+The bigger the monster you can handle, the better the money.
 
-### Mutations (the jackpot layer)
+### 2.3 Mutations (the jackpot layer)
 
-Any monster can spawn **mutated**: same monster, a different crystal. Rarer mutations are worth far more.
+Any monster can spawn **mutated**: the same monster with different crystals. A mutated monster is tougher and worth far more.
 
 | Mutation | Chance per spawn | Shard value | HP | How you spot it |
 |---|---|---|---|---|
 | **Gold** | 1 in 25 | ×5 | ×2 | shiny gold crystals, a gold sparkle trail |
-| **Fire** | 1 in 60 | ×10 | ×3 | burning crystals, embers rising |
+| **Fire** | 1 in 60 | ×10 | ×3 | burning crystals, rising embers |
 | **Frost** | 1 in 60 | ×10 | ×3 | icy blue crystals, cold mist |
-| **Rainbow** | 1 in 400 | ×25 | ×4 | shifting rainbow crystals; a light beam above it visible across the zone |
+| **Rainbow** | 1 in 400 | ×25 | ×4 | shifting rainbow crystals + a light beam visible across the zone |
 | **Void** | 1 in 2,000 | ×75 | ×6 | dark purple crystals that warp the air; a deep hum |
 | **Celestial** | 1 in 10,000 | ×250 | ×8 | starry crystals, a halo; **a server announcement** when it spawns and when it's defeated |
 
-- **Its shards keep the mutation.** Mutated shards **spin in your Shard Storm** glowing in their colour (gold glints, fire shards trailing embers, rainbow shards shimmering), so everyone can see what you're carrying. They're always the ones shown first in the storm's 12 visible shards.
-- **At the altar,** mutated shards sell with their own bigger pop ("RAINBOW ×25!").
-- **Mutated monsters drop ×3 Soul Food.**
-- **Why it works:** every spawn is a tiny lottery, so hunting never feels flat; spotting a Rainbow beam across the zone makes everyone run; and it's a natural hook for later events ("Fire mutations ×5 this hour") and the owner's luck items.
-- **Rules:** the shared-damage rule applies (15% of its HP = the full drop), so racing to a Rainbow is a group moment, never a steal. The first Gold Shardling is guaranteed in the tutorial (around 1:10) to teach it.
+- **Its shards keep the mutation:**
+  - they **spin in your Shard Storm in their colour** (gold glints, ember trails, rainbow shimmer), and they're always the first shown among the storm's 12 visible shards;
+  - each still takes **1 bag slot**;
+  - they sell with a bigger pop ("RAINBOW ×25!").
+- **Mutated monsters drop 3× Soul Food.**
+- **On average,** mutations add about **+58%** to shard value per kill.
+- **Tutorial:** a **Gold Shardling is guaranteed** about 1 minute in, to teach mutations.
+- **Later hook:** events can raise mutation chances ("Fire ×5 this hour").
 
-### Why pets matter here (the reason for monsters)
+### 2.4 The Shard Storm (your bag, capped for mobile)
 
-- **Pets fight:** every pet attacks your target every 1.5 s for **Strength × 10% of your Power**, each with its signature move (the fox dash, the imp fireball).
-- **Pets tank:** monsters attack whatever is closest, and that's often a pet. **A hit pet is dazed for 2 s** (stars over its head), then jumps back in. **Pets never die.** So more pets = fewer hits on you.
-- **Pets team strike:** on your PERFECT, they all pounce at once.
+- **What it is:** the shards you carry **spin around you as a storm.**
 
-You *feel* every new pet: monsters fall faster and you get hit less.
+| Bag | Storm |
+|---|---|
+| Empty | dust at your feet |
+| Half | a waist-high ring |
+| Nearly full | a head-high tornado |
+| **FULL** | **it turns gold and pulses.** Monsters still die (and still drop Soul Food) but drop no shards; the SELL button bounces |
 
-### The bag: the Shard Storm (capped for mobile)
+- **Capacity:** **60 → 100 → 150 → 200 → 250 maximum.** Later zones' shards are worth more; bags don't grow huge.
+- **Lag-proof:**
+  - 4 fixed looks, each 1-2 particle emitters and **at most 12 shard meshes**, whatever the count;
+  - other players' storms show only the ring emitter;
+  - **Settings → Low effects** turns yours into a simple ring too.
+- **Pull radius:** loose shards within 12 studs spiral in. Shards from monsters you earned (pet kills, Overdrive chains) always reach you, however far away they were.
 
-- **Your shards spin around you as a storm.** It turns gold and pulses when full; then monsters still die but drop nothing, and the SELL button bounces.
-- **Capacity is small on purpose:** 60 → 100 → 150 → 200 → **250 max**. (Bigger shards in later zones carry the value, not bigger bags.)
-- **Lag-proof:** the storm has **4 fixed looks** (dust → ring → tornado → gold tornado) made of 1-2 particle emitters and **at most 12 shard meshes**, whatever the count. Other players' storms show only the ring emitter. **Settings → "Low effects"** shows yours as a simple ring.
+### 2.5 SELL
 
-### SELL
-
-Press SELL (or G / gamepad Y) anywhere outside a boss fight:
-1. you teleport to the Shrine's Sell Altar;
-2. your storm unwinds into it while coins roll up (about 1.5 s; Gems get a "GEM!" pop);
+Press **SELL** (G / gamepad Y) anywhere except a boss fight:
+1. you teleport to your zone's Sell Altar;
+2. the storm unwinds into the altar while coins roll up (about 1.5 s; Gems and mutations get bigger pops);
 3. you teleport straight back.
 
-**"Stay"** keeps you at the Shrine instead: to shop, hatch, or **sit down and meditate.** That's the natural switch point between the two halves.
+It takes about 3 s in total.
+
+**"Stay"** keeps you at the Shrine instead, to shop, hatch or **sit down and meditate.** That's the natural switch point between the halves. The first sell always stays (the tutorial shows the shop).
 
 ---
 
-## 3. PETS: one number, two jobs
+## 3. PETS (one number, two jobs)
 
-**Strength by rarity:**
+**Strength = rarity × zone × stars × level**
+- **Rarity:**
 
-| Rarity | Strength | In a fight (per 1.5 s) | Meditation boost |
-|---|---|---|---|
-| Common | 1 | 10% of your Power | +10% |
-| Rare | 2 | 20% | +20% |
-| Epic | 4 | 40% | +40% |
-| Legendary | 10 | 100% | +100% |
-| Mythic | 20 | 200% | +200% |
-| Secret | 50 | 500% | +500% |
+| Common | Rare | Epic | Legendary | Mythic | Secret |
+|---|---|---|---|---|---|
+| 1 | 2 | 4 | 10 | 20 | 50 |
 
-**Fusion: stars** (so "Gold" and "Rainbow" only ever mean monster mutations):
-- **3 copies of the same pet → the ★ version: ×3 Strength**, a star badge and a brighter glow.
-- **3 ★ copies → the ★★ version: ×9 Strength**, two stars and a sparkling outline.
-- The fused pet keeps the **highest level** of the three (section 3b), so no feeding is wasted.
-- It turns duplicates into progress and gives a goal for every pet, even Commons. (Auto-fuse for Commons and Rares that aren't equipped; manual for the rest.)
+- **Zone:** zone 1 pets ×1, zone 2 pets ×2.
+- **Stars (fusion):** none ×1, ★ ×3, ★★ ×9.
+- **Level:** +5% per level above 1 (level 30 = ×2.45).
 
-**How pets behave:**
+The pet card shows only the final Strength.
+
+| Job | Rule |
+|---|---|
+| **Fight** | each equipped pet hits your target every 1.5 s for **Strength × 4% of your Power**, with its signature move. On your PERFECT, every pet also strikes at once (the team strike) |
+| **Tank** | monsters attack whatever is closest, often a pet. A hit pet is **dazed for 2 s** (stars over its head). **Pets never die** |
+| **Meditate** | **+10% meditation per point of Strength** equipped |
+
+**Their share of the damage** grows from about 10% early to about half by the end of zone 2 (model: about 44% on average over a first run). Your blasts always matter.
+
+**Behaviour:**
 
 | Moment | What they do |
 |---|---|
-| Walking | follow you in a loose pack; small ones hop, fliers bob |
-| Standing still (2 s+) | huddle around you and relax: sit, nap, play |
-| Charging a blast | perk up into a battle stance |
-| Fighting | dash in, hit, run back; get dazed when hit; all pounce on PERFECT |
-| Meditating | sit in a circle around you, meditating in their own pose |
+| Walking | follow you in a loose pack: small ones hop, fliers bob |
+| Standing still (2 s+) | huddle around you and relax: sit, nap, play (2-3 idle animations per species) |
+| You start charging | perk up into a battle stance |
+| Fighting | from your first blast on a target until it dies: dash in, hit, run back. They never attack on their own |
+| Meditating | sit in a circle around you |
+| SELL teleport | poof along with you |
 
-- **Slots:** 3 to start; rank quests add more (up to 6 in the first two zones).
-- **No Bond** (cut). Your aura's look comes from your **transformations** (Spark → Blaze → …) earned from bosses.
+**Slots:** 3 at the start. Rank quests add 2 in zone 1 and 2 in zone 2 (**7 by the end of zone 2**). **Equip Best** fills them by Strength.
+
+### 3a. Fusion: stars
+
+- **3 copies of the same pet (same species, same stars) → its ★ version: ×3 Strength**, a star badge and a brighter glow.
+- **3 ★ copies → ★★: ×9 Strength**, two stars and a sparkling outline.
+- **The fused pet keeps the highest level** of the three.
+- **Fusion never lowers your team's total Strength.**
+- **Auto-fuse** (on by default) fuses unequipped Commons and Rares. Epic and up are fused by hand at the **Fusion Altar** by the Shrine, with a before / after preview.
 
 ### 3b. Soul Food (pet levels)
 
-- **Monsters drop Soul Food:** glowing little treats in the zone's flavour (Crystal Berries in the Grove, Magma Peppers in the Lava Dojo). They fly into a **food pouch**, not your bag, so they never fill the storm.
-- **Feeding:** in the pet menu, tap **FEED** on a pet (or **Feed All** to share it across your equipped team). The pet gobbles it with a happy bounce and hearts; its XP bar fills; a level-up gives a sparkle burst and "Lv 7!".
-- **Levels 1-30.** Each level gives **+5% Strength** (Lv 30 = about ×2.5). Higher zones' food gives more XP.
-- **One number stays one number:** the pet card shows a single **Strength** = rarity × stars × level. Pets also look a bit bigger and brighter as they level.
-- **Why it's good:**
-  - every monster kill now feeds your team, not just your wallet;
-  - your favourite pet grows with you, which builds attachment;
-  - Commons and Rares stay useful early, since you can level them while you hunt for better eggs;
-  - it's a second reason to hunt the biggest monsters you can (Brutes drop the most food).
+- **Drops:** monsters drop glowing treats in the zone's flavour (**Crystal Berries** in the Grove, **Magma Peppers** in the Dojo). They fly into your **food pouch** (no cap, never the bag).
+- **Feeding:**
+  - tap **FEED** on a pet, or **Feed All** (shared across your equipped team, lowest level first);
+  - **Auto-feed** (on by default) feeds equipped pets as food arrives;
+  - the pet gobbles it with a bounce and hearts, and a level-up bursts with "Lv 7!".
+- **XP:**
+  - 1 Crystal Berry = 1 XP, 1 Magma Pepper = 3 XP;
+  - level n → n+1 costs **2 × n XP**;
+  - level 30 (the maximum) is 870 XP in total.
+- **Why it matters:**
+  - every kill feeds your team;
+  - your favourite pet grows with you;
+  - early Commons stay useful;
+  - it's another reason to hunt the biggest monster you can.
 
-**Eggs:** each zone's egg: Common 60 / Rare 28 / Epic 10 / Legendary 1.9 / Mythic 0.1 / **??? Secret 1 in 500,000.** The hatch grows with rarity (a pop → a blue glow → lightning → a gold pillar + server announcement → a **Mythic cutscene** → a **10-second Secret cutscene** that changes the server's sky). **The crack colour always shows the true rarity.**
+### 3c. Eggs
+
+- **Price:** Zone 1 egg 60 coins; Zone 2 egg 1,500.
+- **Odds** (on the egg card): Common 60% / Rare 28% / Epic 10% / Legendary 1.9% / Mythic 0.1% / **??? Secret 1 in 500,000**.
+- **Tutorial guarantees:**
+  - the **1st hatch is the Light Fox** (Common);
+  - **the 3rd hatch is a Rare** if you don't have one yet.
+- **Hatches escalate by rarity**, and **the crack colour always shows the true rarity** (details: CORE-GAME 3).
 
 ---
 
-## 4. COINS: what you spend them on (the shop around the Shrine)
+## 4. COINS: the shop (by the Shrine)
 
-| Item | Price (zone 1) | Effect | Which half it helps |
+| Item | Prices | Effect | Helps |
 |---|---|---|---|
-| **Egg** | 60 | a pet | both |
-| **Bag** (4 levels) | 50, 200, 600, 1,500 | 60 → 100 → 150 → 200 → 250 | hunting |
-| **Meditation Mat** (5 levels) | 100, 300, 800, 2,000, 5,000 | +25% meditation each | meditation |
-| **Surge** (3 levels) | 200, 800, 2,000 | +2 s Overdrive each | hunting |
+| **Egg** | 60 (zone 1), 1,500 (zone 2) | a pet | both halves |
+| **Bag** (4 levels) | 50, 250, 3,000, 10,000 | 60 → 100 → 150 → 200 → 250 | hunting |
+| **Meditation Mat** (5 levels) | 100, 400, 4,000, 12,000, 30,000 | +25% meditation per level | meditating |
+| **Surge** (3 levels) | 300, 5,000, 15,000 | +2 s of Overdrive per level | hunting |
 
-Coins are the only currency, and everything they buy makes the next loop visibly faster.
+Upgrades are account-wide. The cheap levels fit zone 1, and the rest are zone 2 goals.
 
 ---
 
 ## 5. RANK QUESTS (always one clear next task)
 
-They alternate between the halves, which teaches the rhythm:
-1. "Meditate with Focus for 20 s" → +1 pet slot
-2. "Defeat 15 Shardlings" → a free egg
-3. "Hatch 3 pets" → Bag level 1
-4. "Defeat 5 Crystal Boars" → +1 pet slot
-5. "Reach 150 Power" → the boss gate opens
+They alternate between the halves and teach the rhythm. **The boss gate opens when all of a zone's quests are done.** Rewards are slots, eggs and food, **never coins or Power.**
+
+| Zone 1 | Reward | Zone 2 | Reward |
+|---|---|---|---|
+| 1. Focus meditate for 20 s | +1 pet slot | 1. Focus meditate for 60 s | +1 pet slot |
+| 2. Defeat 20 Shardlings | a free egg | 2. Defeat 50 Ember Slimes | a free egg |
+| 3. Hatch 5 pets | 10 Soul Food | 3. Hatch 8 zone-2 pets | 30 Soul Food |
+| 4. Defeat 10 Crystal Boars | +1 pet slot | 4. Defeat 20 Lava Hounds | +1 pet slot |
+| 5. Reach 300 Power | **boss gate opens** | 5. Get a pet to level 10 | a free egg |
+| | | 6. Reach 10,000 Power | **boss gate opens** |
 
 ---
 
-## 6. THE FIRST 8 MINUTES (target script; tuned in the model)
+## 6. THE BOSSES (your own instance; about 40-60 s; pets fight too)
 
-| Time | What happens | Numbers |
-|---|---|---|
-| 0:00 | Spawn at the Training Grove Shrine. A glowing mat and a "MEDITATE" hand | Power 10 |
-| 0:05 | **Tutorial meditation** (boosted ×10 for 20 s): Focus taps; the aura swells; "Power 10 → 50!" | Power 50 |
-| 0:30 | The hand points at Shardlings. First blast; first PERFECT one-shots | — |
-| 1:00 | First Overdrive chains through a Shardling pack | — |
-| ~1:10 | A guaranteed **Gold Shardling** sparkles nearby: "MUTATION!". It drops gold shards that spin in your storm | — |
-| 1:30 | **Storm full** (60). SELL → coins roll up. The first sell stays at the Shrine | Coins ~180 |
-| 1:40 | First egg (the tutorial egg is always dramatic): **Light Fox** (equipped instantly; it hops to your side). Then 2 more eggs (guaranteed Rare on the 3rd) | 3 pets |
-| 2:00 | Rank quest 1: Focus meditate for 20 s with 3 pets → +1 slot | Power ~75 |
-| 2:30-5:00 | Hunting with 4 pets: Shardlings, then Boars (the pets tank the charges). Power stays put while hunting (it only comes from meditating). Two sells → Bag Lv1, Mat Lv1, 1-2 more eggs. First **FEED**: the Fox eats Crystal Berries → Lv 3 | Power ~75, coins spent |
-| 5:00 | The Boars feel slow now. Sit at the Shrine and Focus meditate for about 1 minute (Mat Lv1, 4-5 pets) | Power ~150 |
-| 6:00 | **The boss gate opens** (rank quest 5) | — |
-| 6:00-7:30 | **Stone Golem** (below) | — |
-| 7:30 | KO → transform to **BLAZE**. The zone 2 portal opens; a free Zone 2 egg | — |
-| 8:00 | **Lava Dojo:** a 4× Shrine, Magma monsters, Fire pets | — |
+Boss HP scales with its **recommended Power (R)**:
+- **6 plates of 3.3 × R** each;
+- a **body of 20 × R**;
+- the Magma Oni has ×2.5 HP.
 
-After that, a typical session: **hunt until the storm is full → sell → hatch / upgrade → meditate a while (Focus or AFK) → hunt again with more Power.** Log off on a mat: offline meditation.
+| Boss | R | Plates | Body |
+|---|---|---|---|
+| **Stone Golem** (zone 1) | 300 | 6 × 990 | 6,000 |
+| **Magma Oni** (zone 2) | 10,000 | 6 × 82,500 | 500,000 |
+
+1. **Armor:** only plate hits count. Every 4 s it **slams**: a red circle for 1 s, then the hit. **Walk out.**
+2. **Rage:** the boss's own move:
+   - **Golem:** rolls boulders down red lanes (0.8 s warning). Dodge sideways, or **PERFECT a boulder to blast it back** for big damage.
+   - **Oni:** throws lava waves in a fan. Jump the gap; a PERFECT on the Oni's glowing fist staggers it.
+3. **Beam clash** (the finisher at 0 HP): your beam against its beam.
+   - **Start:** the meter starts at **60%, minus 5% per hit you took** in phases 1-2 (never below 30%).
+   - **Each blast pushes your beam:** **each PERFECT +12%**, any other release +6%.
+   - **The boss pushes back 3% per second** at R. This is scaled by R ÷ your Power, up to 4×, so being under-powered hurts.
+   - **Red flash every 4 s:** **TAP in time = +5%**, a miss = −8%.
+   - **Win at 100%; lose at 0%** or after 30 s.
+
+**Win rates (model, 2 hits taken):**
+
+| Power ÷ R | 0.5 | 0.75 | 1.0 | 1.5 |
+|---|---|---|---|---|
+| weak timing | 0% | 28% | 79% | 100% |
+| average | 23% | 98% | 100% | 100% |
+| strong | 97% | 100% | 100% | 100% |
+
+So a weak player can always win by meditating a bit more.
+
+- **Win:** slow motion, your beam swallows the boss, it shatters. You **transform** (**Spark → BLAZE** from the Golem, **→ INFERNO** from the Oni). The next zone opens and a **free egg** of the new zone waits.
+- **Lose:** "You got hit 4 times: dodge the red circles!" (or "Meditate to Power 300 first"), and an instant retry.
 
 ---
 
-## 7. THE BOSS (Stone Golem; recommended Power 150; your own instance)
+## 7. THE FIRST 8 MINUTES (model playthrough, average player)
 
-1. **Armor (~25 s):** 6 glowing crystal plates (80 HP each); only plate hits count. Every 4 s it slams: a red circle on the ground for 1 s. Each hit you take costs 10% of your clash meter.
-2. **Rage (~25 s):** it rolls boulders down red lanes (0.8 s warning): dodge sideways, or PERFECT one to blast it back for big damage. HP 600 (your blasts + pets).
-3. **Beam clash (~10 s):** your beam vs its beam. Each PERFECT +6%; tap on the red flash to counter (+4%, a miss −4%). The meter starts at 50% minus the hits you took.
+| Time | What happens | Power | Pets |
+|---|---|---|---|
+| 0:00 | Spawn at the Training Grove Shrine. A glowing mat and a **MEDITATE** hand | 10 | 0 |
+| 0:00-0:20 | **Tutorial meditation:** Focus taps, the aura swells, "+40 POWER!" | 50 | 0 |
+| 0:20 | The hand points at the Shardlings. First blast; PERFECTs one-shot them | 50 | 0 |
+| ~0:55 | First **Overdrive** chains through a pack | 50 | 0 |
+| ~1:00 | The guaranteed **Gold Shardling**: "MUTATION!". Gold shards spin in the storm | 50 | 0 |
+| ~1:35 | **Storm full** → first **SELL** (about 300 coins). The first sell stays at the Shrine | 50 | 0 |
+| ~1:40 | Eggs: the **Light Fox** first (it hops to your side), the 3rd egg is a guaranteed Rare. **Bag Lv1** | 50 | 3 |
+| ~2:00 | Quest 1: Focus meditate for 20 s → +1 slot | ~90 | 3 |
+| ~2:30 | Quest 2 (20 Shardlings) → a free egg; the first **★ fusion** (3 Commons) | ~90 | 3-4 |
+| 2:30-4:00 | Crystal Boars, with the pets tanking the charges. 2nd sell → **Mat Lv1** + eggs. First Soul Food levels | ~90 | 6 |
+| ~4:05 | Quest 3 (hatch 5 → 10 food) and quest 4 (10 Boars → +1 slot) | ~90 | 6 |
+| 4:05-5:15 | The Boars feel slow and quest 5 needs 300 Power: **sit and Focus meditate about 70 s** | ~300 | 6 |
+| ~5:15 | **Boss gate opens** | | |
+| 5:15-5:55 | **Stone Golem** (about 40 s) | | |
+| ~5:55 | KO → **BLAZE**. The Lava Dojo opens with a free Fire egg | ~300 | 7 |
+| 6:00-7:00 | Zone 2 quest 1: Focus meditate for 60 s at the 4× Shrine | ~1,200 | 7 |
+| 7:00+ | Ember Slimes; Magma Peppers; the first Fire pets | | |
 
-Win: slow motion, the beam swallows it, it shatters into loot, you **transform**. Lose: "You got hit 4 times: dodge the red circles!", and retry instantly. Pets fight too (they can be dazed by the slam).
+**Model medians (200 players per profile):**
+
+| Player | First sell | Boss 1 | Boss 2 | Time meditating | Pets' damage share |
+|---|---|---|---|---|---|
+| weak | 2.7 min | 8.6 min | 30 min | 26% | 52% |
+| **average** | **1.9 min** | **5.9 min** | **23 min** | **24%** | **44%** |
+| strong | 1.6 min | 5.1 min | 21 min | 22% | 39% |
+
+**A normal session after the tutorial:**
+1. hunt until the storm is full, then sell;
+2. hatch, upgrade and feed;
+3. meditate when the next monster isn't green yet (Focus, or AFK while you do something else);
+4. hunt again, stronger.
+
+Log off on a mat to keep meditating offline.
 
 ---
 
@@ -262,34 +394,37 @@ Win: slow motion, the beam swallows it, it shatters into loot, you **transform**
 
 | Question | Rule |
 |---|---|
-| Several players hit the same monster? | Monsters are shared. **Everyone who dealt at least 15% of its HP gets the full drop** |
-| Shards from far away (pets, chains)? | Always fly to you; the 12-stud pull is just the visual spiral |
-| Meditate anywhere? | Only on Shrine mats (one calm, social hub per zone; enough mats for a full server) |
-| Do pets attack on their own? | Only from your first blast on a target until it dies; standing still is always calm |
-| Who judges PERFECT / Focus timing? | Your device (lag never ruins it); the server checks it's possible |
-| SELL in a boss fight? | No (greyed out) |
-| Bag full mid-Overdrive? | Overdrive keeps going; the storm turns gold |
-| Do mutated shards take more bag space? | No: 1 shard = 1 slot, whatever its mutation |
-| Does Soul Food fill the bag? | No: it goes to the food pouch (no cap) |
-| Does AFK skip the game? | No: AFK gives Power only. Pets, upgrades and zones need coins (hunting) and bosses (active) |
+| Several players hit the same monster? | Monsters are shared. **Everyone who dealt at least 15% of its HP gets the full drop** (shards, food, mutation). Nobody can steal a kill |
+| Shards from far away (pets, chains)? | They always reach you; the 12-stud pull is only the visual spiral |
+| Where can I meditate? | Only on Shrine mats |
+| Do pets attack on their own? | No: only from your first blast on a target until it dies |
+| Who judges PERFECT / Focus timing? | Your device (lag never ruins it); the server checks it's humanly possible (CORE-GAME 7) |
+| SELL in a boss fight? | No: it's greyed out |
+| Bag full during Overdrive? | Overdrive continues (Soul Food still drops); the storm turns gold |
+| Do mutated shards take more space? | No: 1 shard = 1 slot |
+| Does AFK skip the game? | No: AFK gives Power only. Quests need kills and hatches (coins come only from hunting); bosses must be played |
+| Are coins ever given for free? | No. Coins come only from selling shards (quests and bosses give slots, eggs and food) |
 
 ## 9. LAG BUDGET (mobile first)
 
-- Max ~30 monsters per zone; simple server logic (move, telegraph, hit), animations on the client.
+- About 30 monsters per zone; simple server logic (move, telegraph, hit), animation on the client.
 - Pets are client-side visuals; the server computes their damage as numbers.
-- Storm: max 12 meshes + 2 emitters for you (mutated shards shown first); 1 emitter for others; "Low effects" option.
-- Mutation effects: one emitter per mutated monster; the Rainbow+ light beams are a single beam part each.
-- Other players' pets at a distance: simple follow, no idle animations.
-- Target: 60 fps on a mid-range phone with a full server at the Shrine.
+- **Storm:**
+  - yours is at most 12 meshes + 2 emitters, with mutated shards shown first;
+  - others' storms are 1 emitter each;
+  - a Low effects option.
+- **Mutations:** one emitter per mutated monster; the Rainbow+ light beam is a single beam part.
+- **Others' pets at a distance:** a simple follow, no idle animations.
+- **Target:** 60 fps on a mid-range phone with a full server at the Shrine.
 
 ## 10. WHY THE LOOP HOLDS
 
-| Second to second | Minute to minute | 5-10 minutes | Session / days |
+| Second to second | Minute to minute | 5-10 minutes | Days |
 |---|---|---|---|
-| PERFECT timing, combo, Overdrive chains, pets pouncing, monsters shattering, **a mutation sparkling into view** | storm full → SELL → hatch / upgrade / **feed**; the next monster turns green | meditate → come back stronger → boss | offline meditation, the next zone, fusion goals, Secret hunting |
+| PERFECT timing, combo, Overdrive chains, pets pouncing, monsters shattering, a mutation sparkling into view | storm full → SELL → hatch / upgrade / feed; the next monster turns green | meditate → come back stronger → boss → new zone | offline meditation, ★★ goals, level 30 pets, Secret hunting, new zones |
 
-**Still to prove in playtest #1:**
+**Still to prove in playtest #1 (CORE-GAME 9):**
 - whether blasting monsters feels great for 20+ minutes;
-- **whether players actually switch** between hunting and meditating (if they only hunt: raise the Shrine rate; if they only sit: raise the monster loot);
-- whether active Focus meditation is enjoyable or a chore;
+- **whether players switch between hunting and meditating on their own** (if they only hunt: raise the Shrine rate; if they only sit: raise the monster loot);
+- whether Focus meditation is enjoyable, not a chore;
 - whether the SELL rhythm feels like a cash-in, not an interruption.

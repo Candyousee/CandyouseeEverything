@@ -1,42 +1,71 @@
-# HANDOFF → Winter: build the Aura Clash two-zone playable test
+# HANDOFF → Winter: build the Aura Clash two-zone playable test (v5.1)
 
-> **ON HOLD (2 Oct):** the owner is reviewing CORE-LOOP.md v5 (meditation for Power, hunting crystal monsters for coins, pets that tank and fight, capped Shard Storm). Don't start building until he approves it and the model is re-tuned.
+> **ON HOLD:** the owner is having the v5.1 documents checked for inconsistencies by an outside reviewer. **Don't start building until the owner signs off.**
 
-**Status:** planning is done and audited. Three external reviews passed; the model passes 9/9 checks and reproduces. **Don't rewrite the concept.** The next evidence must come from the real game.
+**Status:**
+- the design is v5.1 (meditation + crystal-monster hunting + pets);
+- the numbers come from `econ/model.py`, and `python tests.py` passes 12/12;
+- the art style is chosen (STYLE-SHEET).
 
-## Read first
+**Don't rewrite the concept.** The next evidence must come from the real game.
 
-1. `CORE-GAME.md`: all rules + numbers. Its sections 13 (playtest) and 14 (persistence) are **acceptance criteria**.
-2. `GAME-PLAN.md` section 3: the 9 build steps and the representative-quality bar.
-3. `econ/`: the reference model.
+## Read first (in this order)
+
+1. **`README.md`:** the doc map.
+2. **`CORE-LOOP.md`:** the core rules and numbers. **It wins on any conflict.**
+3. **`CORE-GAME.md`:**
+   - eggs, the pet catalogue, aura, HUD, tutorial, server authority;
+   - **section 8 (saving tests P1-P12)** and **section 9 (playtest #1)** are the **acceptance criteria**.
+4. **`GAME-PLAN.md` section 5:** the 10 build steps and the quality bar.
+5. **`STYLE-SHEET.md`:** glossy toon anime.
+6. **`econ/`:** the reference model.
    - `python tests.py` must keep passing.
-   - If you change a rule while building, change the model constant, re-run it, and update CORE-GAME in the same commit.
-4. The playbook: RULES section 0, PIPELINE section 3a-3c (prove the concept, playtests, concept first), craft/STYLE, VFX, GUI, SYSTEMS.
+   - If you change a rule while building, change the model constant, re-run both scripts, and update CORE-LOOP in the same commit.
+7. **The playbook:** RULES section 0, PIPELINE 3a-3c (prove the concept, playtests, concept first), craft STYLE / VFX / GUI / SYSTEMS / GAMEPLAY.
+
+**Ignore `archive/`:** old versions, not rules.
 
 ## Before step 1
 
-- **Style:** chosen by the owner, see `STYLE-SHEET.md` (glossy toon anime: smooth plastic, outlines, highlights, calm bases + loud loot). Generate the art bible from it.
-- **GPU concept sheets:**
-  - aura forms 1-4 (Light + Fire);
-  - 10 spirits (5 rarities × zones 1-2);
-  - the HUD + egg card + Fusion Altar + Wardrobe UI;
-  - the zone 1, zone 2 and Plaza key art.
+- **Art bible:** the 9 target frames (STYLE-SHEET) generated on the GPU from STYLE-SHEET; the owner approves them once.
+- **Greybox first:** steps 1-4 in grey boxes, then **Winter's fun gate** (does blasting + switching to meditation feel good?), before any art.
+- **Concept sheets** (GPU → Blender):
+  - 6 monsters + 6 mutation looks;
+  - 16 pets (8 per zone; Secrets as silhouettes);
+  - Spark / BLAZE / INFERNO;
+  - the Shrine hub;
+  - the Stone Golem, the Magma Oni;
+  - the HUD.
 
-## Rules that are easy to get wrong (all in CORE-GAME)
+## Rules that are easy to get wrong
 
-- **Coins** never get the spirit / form / Ascension multipliers (2.3).
-- **Auto-fuse** = Commons + Rares, unequipped copies only. The altar's "Fuse All" follows whole chains (3.5).
-- **The crack colour always equals the result** (3.1). There are no fake near-miss cues anywhere.
-- **The counter** is a separate tap inside the strike window. The beam drifts continuously (5).
-- **Equip Best never changes the look.** The "NEW LOOK: wear it?" prompt does (4.2).
-- **Incubator / claims:** confirmed saving with operation ids (14.2b). The tutorial flags and lifetime hatch count are saved (14.1).
-- **No monetization** in this build. The owner designs it after playtest #1.
+- **Power only from meditation; coins only from selling shards.** No quest, boss, event or Later system may give coins or Power.
+- **The bag counts shards, not value:** a mutated shard is 1 slot. The storm shows at most 12 meshes.
+- **Soul Food never uses bag space.**
+- **Pets never attack on their own** and **never die** (they get dazed).
+- **The combo drops one level on a miss,** not to zero.
+- **Fusion = stars,** keeps the highest level, and never lowers the team. "Gold" only ever means a mutation.
+- **The crack colour always equals the result.** No fake near-misses.
+- **Shared kills:** 15% of HP = the full drop.
+- **The boss gate** = all zone quests done (the last one is the Power target).
+- **Offline:** server time, 25% of AFK, 8 h cap, claimed once (confirmed save).
+- **No Bond, no Force.** No monetization in this build.
+
+## You have full access
+
+You're entitled to every free tool, app and resource on the owner's PC, and to install new free ones, **without asking permission** (RULES P5 / rule 14).
+
+**Hard limits still apply:**
+- never spend money or Robux;
+- never make the experience public or change its access;
+- never print or write `ROBLOX_API_KEY`;
+- never type passwords.
 
 ## Done means
 
-- steps 1-9 built at representative quality;
-- tests P1-P7 pass **in the game**;
-- Winter's fun gate passed;
+- steps 1-10 built, at representative quality;
+- tests P1-P12 pass **in the game**;
+- the greybox fun gate and the seven-sense review passed;
 - the owner runs playtest #1 (day 1 + invited day 2) with the cheat panel and session log ready.
 
-Then report to the owner with the behaviour results from section 13.
+Then report to the owner with the behaviour results from CORE-GAME 9.
