@@ -1,9 +1,9 @@
 """Ascension strategy comparison (CORE-GAME v2 section 6). Average player, 8 hours of play.
-Rules: Ascension n+1 needs boss 4 beaten and peak run power >= boss-4 power x 5^n;
-it pays 1 shard + 1 per x100 of power beyond the requirement;
+Rules: Ascension n+1 needs the run to clear depth ASC_DEPTH[n] (4,5,5,6,6,7,7,8,8, then Infinity 1,2,...);
+it pays 1 shard + 1 per x100 of peak power beyond that boss's power;
 power x (1 + 0.5 x shards). Kept: spirits, slots, shards. Reset: power, coins, zones, stones, forms."""
 import json, statistics as st
-from economy import Player, ASC_REQ, ZONES, fmt
+from economy import Player, ZONES, fmt
 gates = json.load(open("gates.json"))["gates"]
 
 def play(policy_depth, seed, hours=8, profile="average"):

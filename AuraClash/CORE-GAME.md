@@ -1,114 +1,107 @@
-# AURA CLASH: Core Game v2 (rules + one balance model)
+# AURA CLASH: Core Game v2.1 (rules + one balance model)
 
 **No monetization here:** the owner designs that separately.
 
-**Every number in this document comes from one model in `econ/`, which plays these exact rules with simulated players:**
+**Every number here comes from the model in `econ/`. It ships WITH this file:** the AuraClash zip contains this document plus `econ/`.
 
 | File | What it covers | Saved output |
 |---|---|---|
-| `training.py` | training rates per player type | — |
+| `training.py` | training rates | — |
 | `clash_sim.py` | boss fights | `clash_results.txt` |
-| `economy.py` | coins, prices, eggs, fusion, gates, first-run timelines | `RESULTS-economy.txt` |
+| `economy.py` | prices, gates, eggs, fusion, first-run timelines | `RESULTS-economy.txt` |
 | `ascension.py` | Ascension strategies and the first 2 hours | `RESULTS-ascension.txt` |
 
-- **Change a rule here → change the constant in the model → re-run.** The numbers are only valid together.
-- **All times are MODEL OUTPUTS** for simulated players. Real playtests replace them.
+- **Verify:** `python economy.py && python ascension.py` (Python 3, standard library only, about 2 minutes).
+- **Change a rule → change its constant → re-run.**
+- **All times are model outputs** for simulated players.
 - **Assumptions the times depend on:**
   - players buy the upgrade with the best power gain per coin;
   - a hatch takes 2 s;
-  - walking and menu time are not modelled (add about 10-15%).
+  - walking and menus are not modelled (add about 10-15%);
+  - INDEX bonuses are not modelled (at most +50%, so the times are conservative).
 
-## What v2 fixes (review points → where)
+## Changes in v2.1 (second review)
 
-| # | Problem in v1 | Fix | Section |
+| # | Issue | Decision | Section |
 |---|---|---|---|
-| 1 | Stone upgrades cost more coins than reaching the boss earns | Coins defined explicitly (base units, not multiplied by spirits); all prices derived from the same coin income | 2.3, 7 |
-| 2 | Ascension had no repeat rules; early-zone farming could win | The requirement grows ×5 per Ascension; shards reward building beyond it; reset/keep list is explicit; the strategies are simulated | 6 |
-| 3 | Training was a precision grind; quick taps could win | Minimum hold 0.5 s, a recovery time, idle meditation, Overdrive (no-timing bursts); rates per player type | 2 |
-| 4 | Counter impossible in a 1 s warning; clash maths missing | The counter is a separate TAP input in a strike window; full formulas plus the simulation attached | 5 |
-| 5 | Fusion could lower team power | Gold = 6× (beats the 5 it consumes); favourites protected; a team-power preview | 3.4 |
-| 6 | The aura could visually downgrade; layers fought; Ascension shrank it | A visual hierarchy, a wardrobe of earned looks, and size = a permanent part + a run part | 4 |
-| 7 | No place for players to meet | Aura Plaza hub: all shared machines, a showcase stage, inspect, statues | 8 |
-| 8 | Pacing had no data and impossible exact times | The full balance table, guarantees, and model timelines labelled as model output | 7, 9 |
-| 9 | Return systems had no rules; 1% chase with no progress | Exact luck maths, incubator rules, Boss Seals (guaranteed by 25), endgame | 10, 11 |
-| 10 | Vague quality bar and playtest | References, early / mid / end aura specs at gameplay distance, budgets, settings, observable test criteria | 12, 13 |
+| 1 | Fusion beat rarity (a z8 Rainbow Rare beat a Mythic); "old spirits are weak even fused" was false | **Fusion is now 3 → 1 at ×3 / ×9.** It's the *reliable* path, but a Mythic still beats any Rainbow below Epic. The claims are corrected | 3.4 |
+| 2 | "AFK" timelines implied automation | Renamed **meditation + manual management**; true unattended progress defined and measured | 2.4 |
+| 3 | The incubator reward was too small | **A guaranteed Legendary+ of your deepest zone, a chance at an exclusive Dream variant, and 3 Boss Seals** | 10.2 |
+| 4 | Ascension power-vs-depth contradiction; first-clear scope | Ascension needs **depth** (bosses, then Infinity tiers) with an exact shard formula; **first-clear rewards are once per account** | 5, 6 |
+| 5 | Not verifiable; INDEX missing from the formula | The model ships with the doc; INDEX is in the formula with a stacking rule | 2.3 |
+| 6 | Counter, inventory, auto-fusion and boss-look rules | All defined | 3.5, 3.6, 4.2, 5 |
+| 7 | The playtest used content the rules don't allow; weak criteria | Uses the zone-2 egg + Rare ornament; **behaviour-based** pass criteria, including a real next-day return | 13 |
 
 ---
 
 ## 1. What the game is
 
-- **A pet training simulator.** Train power, hatch spirits, beat each zone's boss, grow the biggest aura, Ascend, and go deeper.
-- The only fighting is the boss clash. No player-vs-player.
-
-**The 4 systems: TRAIN → SPIRITS → ZONES (boss gate) → ASCEND.**
+**A pet training simulator:** train → hatch spirits → beat each zone's boss → grow your aura → Ascend → go deeper. The only fighting is the boss clash.
 
 ---
 
-## 2. TRAIN (exact rules)
+## 2. TRAIN
 
-### 2.1 The input (one button: hold Mouse/Space, the CHARGE button on mobile, R2 on gamepad)
+### 2.1 Input (one button, on your zone's Training Stone)
 
-Standing on your zone's **Training Stone**:
-
-| Hold length | Result | Gain (base units) | Combo |
+| Hold | Result | Gain | Combo |
 |---|---|---|---|
-| under 0.5 s | **nothing** (in a clash this is the COUNTER tap) | 0 | unchanged |
+| under 0.5 s | nothing (a TAP; see the counter rule, section 5) | 0 | unchanged |
 | 0.5 - 1.02 s | **Early** | 0.6 × hold / 1.02 | resets |
-| 1.02 - 1.20 s (the glow band) | **PERFECT** | 2 × combo | +1 step |
-| over 1.20 s | **Overcharge** | 0.5, then a 0.4 s stagger | resets |
+| 1.02 - 1.20 s | **PERFECT** | 2 × combo | +1 step |
+| over 1.20 s | **Overcharge** | 0.5 + a 0.4 s stagger | resets |
 
-- **Timing:**
-  - after every release there is a **0.25 s recovery**;
-  - the ring closes over 1.2 s, and the glow band is its last 0.18 s.
-- **Combo steps:** ×1 → ×1.25 → ×1.5 → ×1.75 → ×2.
-- **Overdrive:**
-  - **5 PERFECTs in a row** (the one at ×2) start **OVERDRIVE** for **8 s**;
-  - during Overdrive every release of 0.5 s or more counts as a PERFECT at ×2. No timing needed: it's the reward burst;
-  - afterwards the combo returns to ×1.5, so the next Overdrive needs only 3 more PERFECTs.
-- **Meditation (idle):**
-  - no input for 3 s while on the stone = **meditation**, at 0.4 base units per second;
-  - you can AFK, slowly.
-- **Off the stone:** no training (the stone is where you train).
+- **Recovery** of 0.25 s after every release. **Presses during recovery are buffered** and start when it ends.
+- **Combo:** ×1 → ×1.25 → ×1.5 → ×1.75 → ×2.
+- **Overdrive:** 5 PERFECTs in a row start **OVERDRIVE** (8 s):
+  - every release of 0.5 s or more counts as PERFECT ×2;
+  - afterwards the combo returns to ×1.5.
+- **Meditation:** no input for 3 s on the stone = 0.4 per second. It works **only while you're in the game** (not offline).
 
-### 2.2 Training rates (model: `training.py`, 1 simulated hour each)
+### 2.2 Rates (`training.py`)
 
-| Player type | Base units / s | vs idle | Releases / hour | Overdrives / hour |
+| Player | Units / s | vs meditation | Releases / h | Overdrives / h |
 |---|---|---|---|---|
-| Idle (meditation) | 0.40 | 1.0× | 0 | 0 |
-| Masher (always 0.5 s) | 0.39 | ~1.0× | 4,800 | 0 |
+| Meditation only | 0.40 | 1.0× | 0 | 0 |
+| Masher (0.5 s holds) | 0.39 | ~1.0× | 4,800 | 0 |
 | Casual (40% PERFECT) | 1.06 | 2.7× | 2,706 | 18 |
 | Average (60%) | 1.97 | 4.9× | 2,979 | 84 |
 | Skilled (85%) | 3.42 | 8.6× | 3,519 | 218 |
 
-- **Mashing gives no advantage over idling.** Good timing is 5-9× idle.
-- **Precision load:** the average player spends about 19% of training time in Overdrive (no timing), the skilled player about 48%. So the precision part is roughly 2,100 timed releases an hour for an average player, broken up by Overdrive bursts, hatches, upgrades and fights.
-- **This is the #1 thing playtest #1 must check** (section 13: does timing feel good, or tiring, after 10 minutes?).
-
-### 2.3 Power and coins (explicit)
+### 2.3 Power and coins
 
 ```
-Power per release = gain × stone base(zone) × stone level × TEAM × FORM × ASCENSION
-Coins per release = gain × stone base(zone) × stone level            (spirits, forms and Ascension do NOT boost coins)
+Power per release = gain × STONE BASE × STONE LEVEL × TEAM × FORM × ASCENSION × INDEX
+Coins per release = gain × STONE BASE × STONE LEVEL
 ```
 
 | Factor | Value |
 |---|---|
-| **Stone base** | ×6 per zone: 1, 6, 36, 216, 1,296, 7,776, 46,656, 279,936 |
-| **Stone level** | Lv1 ×1, Lv2 ×2, Lv3 ×4. Each zone has its own stone, bought with coins in that zone |
-| **TEAM** | 1 + the sum of equipped spirits' bonuses (section 3) |
-| **FORM** | 1 + 0.05 × (form − 1) (forms 1-10) |
+| **STONE BASE** | 1, 6, 36, 216, 1,296, 7,776, 46,656, 279,936 (zones 1-8) |
+| **STONE LEVEL** | ×1 / ×2 / ×4 |
+| **TEAM** | 1 + the sum of equipped spirit bonuses |
+| **FORM** | 1 + 0.05 × (form − 1) |
 | **ASCENSION** | 1 + 0.5 × shards |
+| **INDEX** | 1 + 0.05 × (completed zone rows) + 0.10 if all 8 Boss Spirits are owned. It's additive inside, so the maximum is ×1.50 |
 
-- **Coins are a separate wallet:** spending coins never lowers power.
-- **WHY coins skip the multipliers:** prices stay predictable per zone. Spirits make you *stronger*; the stone and your timing make you *richer*. That's also why the v1 maths broke and this doesn't.
+**Coins skip the multipliers on purpose:** prices stay predictable per zone.
+
+### 2.4 What "AFK" means (honest definitions)
+
+- **Unattended (nobody at the keyboard):**
+  - you meditate on your current stone, banking **power and coins**;
+  - **nothing is automated:** no buying, hatching, clashing or zone changes;
+  - **8 h unattended ≈ 1.6 h of average active training** on that stone. You come back to a big coin bank to spend, which is part of the return loop.
+- **The "idle" column** in the timelines (section 9) = **meditation + manual management**: someone who never times releases, but buys, hatches and fights when they check in.
+- **Any automation** (auto-train, auto-hatch) would be a product decision for the owner, not part of the core game.
 
 ---
 
-## 3. SPIRITS (pets)
+## 3. SPIRITS
 
 ### 3.1 Eggs
 
-- **One egg stand per zone**, which you pay for with coins. The stand shows every spirit inside, with its odds.
+- **One stand per zone,** paid in coins. **5 species** (one per rarity), all of the zone's element.
 
 | Rarity | Odds |
 |---|---|
@@ -117,329 +110,306 @@ Coins per release = gain × stone base(zone) × stone level            (spirits,
 | Epic | 10% |
 | Legendary | 1.9% |
 | Mythic | 0.1% |
-| **Shiny** (independent of rarity) | 1 in 100: ×1.5 bonus, a sparkle |
+| **Shiny** (independent) | 1 in 100, ×1.5 |
 
-- **Guarantees** (first run only):
-  - a **free egg** waits at the zone 1 stand (the tutorial);
-  - the **1st hatch is a Common**, and the **3rd hatch is a Rare**.
+- **First-run guarantees:**
+  - a free tutorial egg;
+  - the 1st hatch is a Common;
+  - the 3rd hatch is a Rare.
+- **Hatch:** 2 s (skippable to 1 s), with the coloured-crack tell.
 
-  These are why "first Rare" happens at a predictable time.
-- **Each zone's egg holds 5 species**, one per rarity, all of that zone's element.
-- **Hatching** takes 2 s and can be skipped to 1 s:
-  1. the egg drops;
-  2. it wobbles 3 times;
-  3. **the cracks glow in the rarity's colour** (blue / purple / gold / rainbow);
-  4. it bursts.
-
-### 3.2 Spirit bonuses (added to TEAM)
+### 3.2 Bonuses (normal spirits; each zone ×2.5 the last)
 
 | Zone | Common | Rare | Epic | Legendary | Mythic |
 |---|---|---|---|---|---|
-| 1 | +0.10 | +0.25 | +0.60 | +1.50 | +4.00 |
-| 2 | +0.25 | +0.62 | +1.50 | +3.75 | +10.0 |
-| 3 | +0.62 | +1.56 | +3.75 | +9.38 | +25.0 |
-| 4 | +1.56 | +3.91 | +9.38 | +23.4 | +62.5 |
-| 5 | +3.91 | +9.77 | +23.4 | +58.6 | +156 |
-| 6 | +9.77 | +24.4 | +58.6 | +146 | +391 |
-| 7 | +24.4 | +61.0 | +146 | +366 | +977 |
-| 8 | +61.0 | +153 | +366 | +916 | +2,441 |
+| 1 | 0.10 | 0.25 | 0.60 | 1.50 | 4.00 |
+| 2 | 0.25 | 0.62 | 1.50 | 3.75 | 10.0 |
+| 3 | 0.62 | 1.56 | 3.75 | 9.38 | 25.0 |
+| 4 | 1.56 | 3.91 | 9.38 | 23.4 | 62.5 |
+| 5 | 3.91 | 9.77 | 23.4 | 58.6 | 156 |
+| 6 | 9.77 | 24.4 | 58.6 | 146 | 391 |
+| 7 | 24.4 | 61.0 | 146 | 366 | 977 |
+| 8 | 61.0 | 153 | 366 | 916 | 2,441 |
 
-**Rule:** each zone's spirits are ×2.5 the previous zone's.
+### 3.3 Slots
 
-### 3.3 Slots and equipping
+- 3 to start;
+- +1 the first time you ever reach zones 2, 4 and 6 (permanent);
+- +1 at Ascensions 1, 2 and 3;
+- **maximum 9.**
 
-- **3 slots to start.**
-- **+1 the first time you ever reach zones 2, 4 and 6.** These are permanent and survive Ascension.
-- **+1 at Ascensions 1, 2 and 3.**
-- **Maximum 9.**
-- **"Equip Best"** = the highest bonuses. It changes power only, **never your aura's look** (section 4).
+"Equip Best" changes power only, never your look.
 
-### 3.4 Fusion (exact)
+### 3.4 Fusion: an intentional "reliable path" vs the "lucky path"
 
-| Recipe | Result | Bonus |
+| Recipe | Result | Bonus | Ingredients from hatches (avg) |
+|---|---|---|---|
+| 3 × the same normal spirit | **Gold** | ×3 | — |
+| 3 × the same Gold | **Rainbow** | ×9 | 9 of that species |
+| Shiny fuses only with Shiny | Shiny Gold / Rainbow | ×1.5 on top | — |
+
+**Zone 8, what to chase:**
+
+| Spirit | Bonus | Hatches needed (avg) |
 |---|---|---|
-| 5 × the same species (normal) | 1 Gold | **6×** the normal bonus |
-| 5 × the same Gold | 1 Rainbow | **36×** the normal bonus (6× Gold) |
-| Shiny fuses only with Shiny | Shiny Gold / Shiny Rainbow | ×1.5 on top |
+| Rainbow Common | 549 | 15 |
+| Rainbow Rare | 1,373 | 32 |
+| **Normal Mythic** | **2,441** | **1,000** |
+| Rainbow Epic | 3,296 | 90 |
+| Rainbow Legendary | 8,240 | 474 |
+| Rainbow Mythic | 21,972 | 9,000 |
 
-- **Fusion never lowers team power:**
-  - 5 zone-1 Commons give +0.50 if all 5 are equipped;
-  - the Gold gives +0.60 in ONE slot, and frees 4 slots.
-- **Preview:** before you confirm, the Fusion Altar shows **"Team ×12.4 → ×13.1 (+5.6%)"**. If the number would drop, the button turns red and asks again.
-- **Protection:**
-  - **Favourited** (locked) spirits are never used by fusion or mass-delete;
-  - equipped spirits are only used after a confirmation, and Equip Best re-runs afterwards.
-- **Auto-fuse** is a toggle (default ON for Commons and Rares).
-- **Old spirits:** a zone-1 Common is weak by zone 4, even fused. That's normal. Auto-delete settings per rarity per zone keep the inventory clean (200 spirits; favourites don't count).
+- **Design intent:** fusion lets steady grinders keep up (a Rainbow Epic beats one lucky Mythic).
+- **Mythics stay special:**
+  - they're the strongest *single* hatch;
+  - they unlock the **Mythic Wardrobe tier** (the biggest visual);
+  - they're **announced to the server**;
+  - a Rainbow Mythic is the endgame chase.
+- **Never a loss:** 3 spirits → 1 Gold = the same total bonus in one slot, plus 2 slots freed.
+- **Old spirits fade:** a zone-1 Rainbow Common (+0.9) is beaten by a zone-4 Common (+1.56). Fused or not, old-zone spirits are outclassed about 2 zones later.
+
+### 3.5 Where fusion happens
+
+- **Auto-fuse:** a toggle, **default ON for Commons and Rares**. It runs **anywhere**, instantly, but only on spirits that are **unequipped and unfavourited**.
+- **Manual fusion** (any rarity, including equipped spirits) happens **only at the Fusion Altar in the Plaza**. It shows the team-power preview ("Team ×12.4 → ×13.1") and asks for confirmation.
+- **Favourited spirits** are never used by fusion or deletion.
+
+### 3.6 Inventory
+
+- **Hard limit: 250 spirits**, favourites included.
+- **When it's full:**
+  - hatching is blocked, with a one-tap "Delete all unequipped Commons from old zones?" prompt;
+  - **auto-delete rules** (per zone × rarity) clean up as you hatch;
+  - rewards that would overflow (incubator, tickets, Boss Spirits) wait in a **Plaza mailbox** (up to 50) until there's space.
 
 ---
 
-## 4. YOUR AURA (visual rules: what controls what)
+## 4. YOUR AURA
 
-### 4.1 Layer hierarchy (each layer has exactly ONE source)
+### 4.1 Layer hierarchy (each has ONE source)
 
-| Layer | Controls | Source |
-|---|---|---|
-| **Shape + motion** | flames / ice crystals / storm arcs / petals / light rays / void tendrils / starfield | the **element** of your chosen **Aura Look** |
-| **Ornament** | how many extra effect layers (section 12) | the **rarity** of your chosen Aura Look |
-| **Halo + edge trim** | a ring above your head + the aura's outer edge colour | your **Ascension tier** |
-| **Size + intensity** | radius, brightness, pulse strength | your **form** (this run) + your **Ascensions** (permanent) |
-| **Orbiters** | the spirits circling inside the aura | your **equipped** spirits |
+| Layer | Source |
+|---|---|
+| **Shape + motion** | the chosen Aura Look's **element**, or its **Signature** for boss looks |
+| **Ornament** (extra layers, section 12) | the chosen look's **rarity** |
+| **Halo + edge trim** | your **Ascension tier** |
+| **Size + intensity** | **form** (this run) + **Ascensions** (permanent) |
+| **Orbiters** | your **equipped** spirits |
 
-### 4.2 The Aura Wardrobe (no downgrades)
+### 4.2 Wardrobe (no downgrades) + Signature looks
 
-- **Every look you've ever hatched is unlocked permanently:** element + rarity, e.g. "Void · Mythic".
-- **Default = Auto:** your **rarest look ever unlocked** (ties go to the newest zone).
-- **You can pick any unlocked look** at the Wardrobe Mirror in the Plaza.
-- **Equip Best changes power only.** Your look never drops because a stronger Common got equipped.
+- **Every element × rarity you've ever hatched** is unlocked forever. **Auto** = the rarest one unlocked (ties go to the newest zone).
+- **Boss Spirits unlock Signature looks:** 8 unique shapes, separate from the element looks, with Mythic-level ornament:
+
+| Boss | Signature look |
+|---|---|
+| Stone Golem | orbiting rune-stones |
+| Magma Oni | a horned flame mask + ember rain |
+| Frost Yeti | a blizzard swirl + ice spikes |
+| Thunder Tengu | lightning wings |
+| Kitsune Queen | nine fox-fire tails |
+| Sun Phoenix | a phoenix silhouette + a rising sun halo |
+| Void Titan | a void rift crown |
+| Star Emperor | a galaxy cape + constellations |
+
+  Signature looks occupy the shape layer, so they never collide with ordinary Mythic looks.
+- **Dream variants** (incubator only, section 10.2) unlock a **Dream** version of any look: pastel, plus a starlight shimmer.
 
 ### 4.3 Size
 
 ```
-radius (studs) = 2.5 + 0.4 × min(Ascensions, 10) + 0.9 × (form − 1)
+radius = 2.5 + 0.4 × min(Ascensions, 10) + 0.9 × (form − 1)    (maximum 14.6 studs)
 ```
 
-| Player | Radius |
-|---|---|
-| A0, form 1 | 2.5 |
-| A3, form 6 | 8.2 |
-| A10, form 10 | 14.6 (max) |
-
-- **Ascension resets your form,** so the run part shrinks, but the **permanent Ascension part and the halo stay.** A veteran at form 1 is still visibly bigger and haloed.
-- The reset is staged as a rebirth: you collapse into a point and re-ignite in the new colour.
+Ascension resets the form part. The permanent part and the halo stay.
 
 ### 4.4 Forms
 
-| Form | Name | How you get it |
+| Form | Name | Earned at |
 |---|---|---|
 | 1 | Spark | start |
-| 2 | Flame | reach 20% of boss 1's power (the tutorial transformation) |
-| 3 | Blaze | **beat boss 1** |
-| 4 | Surge | **beat boss 2** |
-| 5 | Storm | **beat boss 3** |
-| 6 | Tempest | **beat boss 4** |
-| 7 | Nova | **beat boss 5** |
-| 8 | Eclipse | **beat boss 6** |
-| 9 | Titan | **beat boss 7** |
-| 10 | Ascended | **beat boss 8** |
-
-- **"Beat the boss → transform":** one combined celebration, with a 2 s cinematic.
-- Forms 6+ are announced to the server.
-- Forms reset on Ascension and are re-earned on every run.
+| 2 | Flame | 20% of boss 1's power |
+| 3 | Blaze | beat boss 1 |
+| 4 | Surge | beat boss 2 |
+| 5 | Storm | beat boss 3 |
+| 6 | Tempest | beat boss 4 |
+| 7 | Nova | beat boss 5 |
+| 8 | Eclipse | beat boss 6 |
+| 9 | Titan | beat boss 7 |
+| 10 | Ascended | beat boss 8 |
 
 ---
 
-## 5. BOSS CLASH (exact rules; model: `clash_sim.py`, 2,000 fights per cell)
+## 5. BOSS CLASH (`clash_sim.py`)
 
-1. **The boss gate** shows the boss's power. It turns gold at **1.1×** ("READY").
-2. **The clash is solo and lasts up to 45 s.**
-   - The meeting point **M** starts at 50. M = 100 wins; M = 0, or the time running out, loses.
-3. **Drift every second:**
+**Gate:** shows the boss's power; turns gold at 1.1×. The meeting point M starts at 50 (100 = win; 0, or 45 s passing, = loss).
 
-   ```
-   12 × (√(yourPower ÷ bossPower) − 1)
-   ```
-
-   clamped to −12 … +12.
-4. **Your releases:** the training input pushes M.
-
-| Release | Push |
+| Rule | Value |
 |---|---|
-| PERFECT | **+(2.4 + 0.5 × combo step)**, steps 0-4 |
-| Early | +0.5 × hold/1.02 |
-| Overcharge | +0.3 |
+| Drift / s | 12 × (√(you ÷ boss) − 1), clamped to ±12 |
+| PERFECT push | 2.4 + 0.5 × combo step |
+| Early push | 0.5 × hold/1.02 |
+| Overcharge push | 0.3 |
+| Overdrive | none in clashes |
+| Attack | every 5 s (**3.5 s when M ≥ 70**, enraged): a 1.0 s telegraph, then a 0.5 s strike window |
+| **Overpower** | at 3× the boss's power or more: an instant 2 s KO, no clash |
 
-   **No Overdrive in clashes.**
-5. **Boss attacks:**
-   - **every 5 s** (every **3.5 s** when M ≥ 70: **ENRAGED**);
-   - each attack has a **1.0 s telegraph** (the boss glows) and then a **0.5 s strike window** (red flash);
-   - **COUNTER = a quick TAP (under 0.5 s)** inside the strike window: **+4**;
-   - no tap in the window → the strike hits: **−4**;
-   - a tap cancels any charge in progress, so the skill is *"finish your PERFECT, then tap"*.
+### Counter rules (exact)
 
-   **WHY a separate tap:** a full charge (1.2 s) can't fit a 1 s warning. A tap can.
-6. **Overpower:** at **3× the boss's power or more**, there's no clash. It's an instant 2 s KO cinematic, so veterans replaying early zones aren't slowed down.
+- **A counter** is a press that **starts and ends inside the strike window** and lasts **under 0.5 s**. It gives **+4** (no tap gives **−4**).
+- **Recovery never blocks a counter.** A tap during recovery still counts.
+- **If you're already holding when the window opens,** releasing that hold is a *normal* release (Early / PERFECT), **not** a counter. You must release, then tap.
 
-**Results** (assumes the player abandons the current charge at each telegraph and spends 1.5 s countering, the worst case):
+  That's the skill: *finish your PERFECT before the flash, then tap*.
+- **Only one counter per attack.** Extra taps in the window do nothing.
 
-| Your power ÷ boss | Casual (40% perfect / 40% counter) | Average (60% / 65%) | Skilled (85% / 90%) |
+### Results (2,000 fights per cell; assumes the player abandons their charge at each telegraph, the worst case)
+
+| You ÷ boss | Casual (40% / 40%) | Average (60% / 65%) | Skilled (85% / 90%) |
 |---|---|---|---|
-| 0.9× | 0% | 2% | **80%** |
+| 0.9× | 0% | 2% | 80% |
 | 1.0× | 1% | 40% | 100% |
-| **1.1× (gold gate)** | 21% | **92%** | 100% |
+| **1.1× (gold)** | 21% | **92%** | 100% |
 | 1.25× | **93%** | 100% | 100% |
-| 1.5× | 100% (19 s) | 100% (15 s) | 100% (13 s) |
+| 1.5× | 100% | 100% | 100% |
 
-**Meaning:**
-- an average player at the gold gate wins about 9 fights in 10;
-- skilled players can win early (0.9×);
-- casual players win at 1.25×, a little more training.
+### Clear rewards
 
-Nobody is stuck.
-
-- **Win:**
-  - the next form;
-  - **first-clear coins** (section 7);
-  - a **free egg** of the next zone;
-  - the next zone opens.
-- **Lose:**
-  - a card shows how far you got;
-  - **one tip:** "Need ~15% more power", or "TAP on the red flash!";
-  - retry in one tap.
+| Reward | When |
+|---|---|
+| Next form | **every run** |
+| **First-clear coins + free next-zone egg** | **once per account** (replays don't repeat them) |
 
 ---
 
-## 6. ASCEND (exact repeat rules; model: `ascension.py`)
+## 6. ASCEND (exact; `ascension.py`)
 
-- **Requirement for Ascension n+1:**
-  - boss 4 beaten in this run;
-  - **AND** peak power this run ≥ boss 4's power × **5ⁿ** (n = Ascensions so far).
-- **Reward:**
-  - **shards = 1 + 1 per ×100 of power beyond the requirement**;
-  - the ASCENSION multiplier = 1 + 0.5 × all shards ever earned.
-- **The Ascend button** always shows **"Ascend now: +X shards. Next shard at Y power."** The choice is visible.
+- **Requirement for Ascension n+1:** clear depth **D(n)** in this run:
 
-| Ascension | Power needed | About where that is |
-|---|---|---|
-| 1 | 170 M | zone 4 boss |
-| 2 | 850 M | zone 4-5 |
-| 3 | 4.2 B | zone 5 boss |
-| 4 | 21 B | zone 5 → 6 |
-| 5 | 110 B | zone 6 boss |
-| 6 | 530 B | zone 6 → 7 |
-| 7 | 2.7 T | zone 7 boss |
-| 8 | 13 T | zone 7 → 8 |
-| 9 | 66 T | zone 8 boss / Infinity 1 |
-| 10 | 330 T | Infinity ~4 |
-| 11 | 1.7 Q | Infinity ~8 |
-| 12 | 8.3 Q | Infinity ~11 |
+| Ascension | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | … |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Clear | boss 4 | boss 5 | boss 5 | boss 6 | boss 6 | boss 7 | boss 7 | boss 8 | boss 8 | Infinity 1 | Infinity 2 | Infinity 3 | one more tier each |
+
+- **Shards:**
+
+  ```
+  shards = 1 + floor( log₁₀₀( peak run power ÷ power of the boss at D(n) ) )
+  ```
+
+  That's 1 for meeting the requirement, +1 for each ×100 beyond it. The Ascend button always shows "+X now; next at Y power".
+- **Why early-zone farming is impossible:** the requirement is a boss or tier you must clear, not a power number. From Ascension 2 on it's beyond zone 4, and from Ascension 10 on it **requires Infinity tiers**.
 
 | Resets | Kept |
 |---|---|
-| power, coins, zone access (back to zone 1), stone levels, form | spirits, slots, shards, Wardrobe looks, index, Boss Seals, Egg Tickets, the incubator, streak |
+| power, coins, zone access, stone levels, form | spirits, slots, shards, Wardrobe, index, seals, tickets, incubator, streak, first-clear history |
 
 **Also gives:**
-- the next **Ascension tier**: halo + trim colour (gold → crimson → violet → void → prismatic; A6+ = prismatic ★1, ★2…, with no cap);
-- **+1 slot** (A1-A3);
-- the rebirth ceremony and a server announcement.
+- a halo tier (gold → crimson → violet → void → prismatic, then prismatic ★1, ★2…);
+- +1 slot (A1-A3);
+- the rebirth ceremony.
 
-### 6.1 Strategy check (average player, 8 h of play, 24 simulated players each)
+**Strategy check** (average player, 8 h, 24 simulated players each):
 
 | Strategy | Ascensions | Shards | ASCENSION × | First boss 8 |
 |---|---|---|---|---|
-| Ascend as soon as allowed (1 shard) | 11 | 11 | 6.5 | 2.5 h |
-| **Wait for 2 shards** | 8 | **16** | **9.0** | 2.4 h |
-| Wait for 3 shards | 5 | 15 | 8.5 | 2.5 h |
-| Wait for 4 shards | 2 | 8 | 5.0 | 2.7 h |
+| Ascend ASAP (1 shard) | 15 | 15 | 8.5 | 2.7 h |
+| Wait for 2 shards | 7 | 14 | 8.0 | 2.2 h |
+| Wait for 3 shards | 5 | 15 | 8.5 | 2.8 h |
+| Wait for 4 shards | 1 | 4 | 3.0 | 2.7 h |
 
-**Both paths are real:**
-- **Ascending ASAP** gives more Ascensions: slots A1-A3 sooner, colours and halo tiers sooner, more rebirth moments;
-- **waiting for 2** gives the most total power;
-- **waiting too long** is worse.
-
-**Early-zone farming is impossible:** after Ascension 2 the requirement is beyond zone 4's power, so every run must go deeper. Earlier versions of these rules produced 166-364 Ascensions in 8 h, and the model caught it. The rules here produce 2-11.
+**Both paths work:**
+- **ASAP:** more Ascensions, so more slots, halos and ceremonies;
+- **waiting a little:** reaches boss 8 sooner;
+- **hoarding:** loses.
 
 ---
 
-## 7. BALANCE TABLE (model: `economy.py`)
+## 7. BALANCE TABLE (`economy.py`)
 
-**Prices** = seconds of an **average** player's Lv1 coin income in that zone:
-- egg = 15 s;
-- stone Lv2 = 40 s;
-- stone Lv3 = 120 s;
-- first-clear coins = 30 s of the **next** zone's income.
+- **Prices** = seconds of an average player's Lv1 coin income in that zone: egg 15 s, Lv2 40 s, Lv3 120 s, first-clear = 30 s of the next zone.
+- **Boss power** is derived from the target zone times (3, 5, 8, 12, 18, 25, 35, 50 min) over 60 simulated average players.
 
-**Boss power** was derived from the target zone times (minutes: 3, 5, 8, 12, 18, 25, 35, 50) by simulating 60 average players.
-
-| Zone (element) | Stone base | Egg | Stone Lv2 | Stone Lv3 | Boss power | Gold gate (1.1×) | First-clear coins |
+| Zone (element) | Stone base | Egg | Stone Lv2 | Stone Lv3 | Boss power | Gold gate | First-clear coins (once) |
 |---|---|---|---|---|---|---|---|
 | 1 Training Grounds (Light) | 1 | 29 | 79 | 240 | 1,100 | 1,200 | 350 |
-| 2 Lava Dojo (Fire) | 6 | 180 | 470 | 1,400 | 78,000 | 86,000 | 2,100 |
-| 3 Frozen Peak (Frost) | 36 | 1,100 | 2,800 | 8,500 | 4.1 M | 4.5 M | 13,000 |
-| 4 Storm Temple (Storm) | 216 | 6,400 | 17,000 | 51,000 | 170 M | 190 M | 76,000 |
-| 5 Sakura Realm (Nature) | 1,296 | 38,000 | 100,000 | 310,000 | 4.3 B | 4.7 B | 460,000 |
-| 6 Sky Sanctuary (Light) | 7,776 | 230,000 | 610,000 | 1.8 M | 110 B | 120 B | 2.8 M |
-| 7 Void Rift (Void) | 46,656 | 1.4 M | 3.7 M | 11 M | 2.6 T | 2.9 T | 17 M |
-| 8 Galaxy Throne (Cosmic) | 279,936 | 8.3 M | 22 M | 66 M | 58 T | 64 T | — |
-| Infinity tier k | (zone 8 stone) | (zone 8 egg) | — | — | 58 T × 1.6ᵏ | ×1.1 | — |
-
-**Check of the v1 problem:** in zone 1 an average player earns about 2 coins/s at Lv1. Stone Lv2 (79) takes about 40 s; Lv3 (240) about 60 s at Lv2; an egg (29) about 15 s. All of it is affordable well before the 1,200-power gate, which the model reaches at about 3.6 min.
+| 2 Lava Dojo (Fire) | 6 | 180 | 470 | 1,400 | 79,000 | 87,000 | 2,100 |
+| 3 Frozen Peak (Frost) | 36 | 1,100 | 2,800 | 8,500 | 3.4 M | 3.7 M | 13,000 |
+| 4 Storm Temple (Storm) | 216 | 6,400 | 17,000 | 51,000 | 130 M | 140 M | 76,000 |
+| 5 Sakura Realm (Nature) | 1,296 | 38,000 | 100,000 | 310,000 | 3.5 B | 3.9 B | 460,000 |
+| 6 Sky Sanctuary (Light) | 7,776 | 230,000 | 610,000 | 1.8 M | 87 B | 96 B | 2.8 M |
+| 7 Void Rift (Void) | 46,656 | 1.4 M | 3.7 M | 11 M | 1.9 T | 2.1 T | 17 M |
+| 8 Galaxy Throne (Cosmic) | 279,936 | 8.3 M | 22 M | 66 M | 43 T | 47 T | — |
+| Infinity tier k | (zone 8) | (zone 8) | — | — | 43 T × 1.6ᵏ | ×1.1 | — |
 
 ---
 
 ## 8. AURA PLAZA (where players meet)
 
-- **Everyone spawns in the Plaza** on join, and returns through it. **Zone portals ring the Plaza** (8 arches + the Infinity Gate), each showing locked or unlocked and your best clear.
-- **Every shared machine is ONLY in the Plaza:**
-  - the **Fusion Altar**;
-  - the **Incubator**;
-  - the **Wardrobe Mirror**;
-  - the **Daily Board** (streak, Boss Seals, rematches);
-  - the **Spirit Index wall**.
-
-  So every player passes through several times per session.
-- **The Showcase Stage:**
-  - step on it to get a spotlight, a camera orbit, and a banner: "★ Nik is showing off ★";
-  - anyone nearby can inspect you.
-- **Inspect anyone** (tap or click a player anywhere). Their card shows:
+- **Spawn and return point:** zone portals ring the Plaza, plus the Infinity Gate.
+- **Only in the Plaza:**
+  - the Fusion Altar (manual fusion);
+  - the Incubator;
+  - the Wardrobe Mirror;
+  - the Daily Board (streak, rematches, seals);
+  - the Index wall;
+  - the mailbox.
+- **Showcase Stage:** a spotlight, a camera orbit and a banner.
+- **Inspect any player.** Their card shows:
   - Ascension tier;
   - form;
   - power;
-  - Aura Look;
-  - all 9 equipped spirits (Gold, Rainbow, Shiny visible);
+  - look;
+  - the 9 equipped spirits;
   - best Infinity tier.
-- **Statues:** the top 3 players by best Infinity tier stand in the Plaza as statues with their **live** Aura Look and halo. Their names are on the plinth.
-- **Veterans pass beginners naturally:** every Ascension replays zones 1-4 in minutes (the model shows bosses 1-4 cleared within 3 min after A1). Huge haloed auras blast through the zones where new players are training.
+- **Statues** of the top 3 best Infinity tiers, wearing their live looks.
+- **Veterans replay zones 1-4 within minutes** of each Ascension (model: bosses 1-4 cleared in about 4 min after A1), so they pass straight through where new players train.
 
 ---
 
-## 9. THE FIRST 2 HOURS (model output, not a promise)
+## 9. TIMELINES (model output)
 
-Average player, one representative simulated player, "wait for 2 shards" strategy. The p10-p90 spread for first-run bosses is in the next table.
+**First run, median [p10-p90] of 120 simulated players:**
+
+| Event | Casual | Average | Skilled | Meditation + manual mgmt |
+|---|---|---|---|---|
+| First Rare | 1.8 m | 1.0 m | 0.6 m | 4.6 m |
+| First Gold | 4.0 m | 2.2 m | 1.3 m | 10.2 m |
+| Boss 1 | 6.0 m | 3.5 m [3.3-3.7] | 2.3 m | 14 m |
+| Boss 2 | 15 m | 9.1 m [8.4-9.8] | 6.1 m | 36 m |
+| Boss 3 | 30 m | 17.5 m [16.1-18.9] | 11.7 m | 71 m |
+| Boss 4 | 54 m | 30.3 m [28.3-32.0] | 19 m | 2.2 h |
+| Boss 5 | 91 m | 49 m | 29 m | — |
+| Boss 8 | 5.4 h | 2.7 h [2.5-2.8] | 1.5 h | — |
+
+**First 2 hours** (average player, one seed, waits for 2 shards):
 
 | Time | Event |
 |---|---|
-| 0:00 | free tutorial egg → a Common spirit orbiting you |
-| 0:42 | stone Lv2 |
-| 1:00 | 3rd hatch: guaranteed **Rare** |
-| 1:12 | **form 2: FLAME** (20% of boss 1) |
-| 2:30 | first **Gold fusion** (5 zone-1 Commons) |
-| 3:30 | **Boss 1** → BLAZE, zone 2, 4th slot |
-| 8:18 | first **Rainbow** fusion |
-| 9:36 | **Boss 2** → SURGE |
-| 17:54 | **Boss 3** → STORM, zone 4, 5th slot |
-| 30:54 | **Boss 4** → TEMPEST. Ascension available (1 shard); this player waits for 2 |
-| 48:54 | **Boss 5** → NOVA, zone 6, 6th slot |
-| 52:48 | **Ascension 1** (2 shards, ×2.0): gold halo, 7th slot |
-| 53-60 | bosses 1-5 again in about 7 min |
-| 67:24 | **Ascension 2** |
-| 84:42 | **Ascension 3** (9th slot) |
-| 97:54 | **Ascension 4** |
-| 110:18 | **Boss 7** (first time) |
-| 113:18 | **Ascension 5** |
-
-**First run** (no Ascension), median [p10-p90] of 120 simulated players per type:
-
-| Event | Casual | Average | Skilled | Idle (AFK) |
-|---|---|---|---|---|
-| First Rare | 1.8 m | 1.0 m | 0.6 m | 4.6 m |
-| First Gold fusion | 4.4 m | 2.5 m | 1.6 m | 11.3 m |
-| Boss 1 | 6.0 m | 3.6 m [3.4-4.1] | 2.3 m | 14.3 m |
-| Boss 2 | 15 m | 9.2 m [8.4-9.7] | 6.2 m | 36 m |
-| Boss 3 | 30 m | 17.7 m [16.6-18.8] | 11.5 m | 73 m |
-| Boss 4 | 56 m | 30.8 m [29.3-32.9] | 19 m | 2.3 h |
-| Boss 5 | 92 m | 49.5 m | 29 m | — |
-| Boss 8 | 5.3 h | 2.7 h [2.5-2.9] | 1.5 h | — |
-
-Walking and menus aren't modelled, so add about 10-15%. **Idle players** progress at about a fifth of the average player's speed. AFK is real but slow, by design.
+| 0:00 | free egg |
+| 1:00 | Rare (guaranteed) |
+| 1:12 | FLAME |
+| 2:06 | first Gold |
+| 3:36 | boss 1 + 4th slot |
+| 5:48 | first Rainbow |
+| 9:36 | boss 2 |
+| 17:42 | boss 3 + 5th slot |
+| 30:12 | boss 4 |
+| 48:06 | boss 5 + 6th slot |
+| 51:48 | **Ascension 1** |
+| 71:24 | boss 6 |
+| 74:12 | **Ascension 2** |
+| 84:18 | **Ascension 3** |
+| 98:12 | boss 7 |
+| 101:06 | **Ascension 4** |
+| 110:12 | **Ascension 5** |
 
 ---
 
-## 10. RETURN SYSTEMS (exact)
+## 10. RETURN SYSTEMS
 
 ### 10.1 Luck
 
-"×N luck" = **every Rare-or-better weight × N, then renormalised** (Commons absorb the difference).
+"×N luck" = every Rare-or-better weight × N, then renormalised.
 
 | Rarity | Normal | ×2 luck | ×3 luck |
 |---|---|---|---|
@@ -449,21 +419,18 @@ Walking and menus aren't modelled, so add about 10-15%. **Idle players** progres
 | Legendary | 1.9% | 2.71% | 3.17% |
 | Mythic | 0.1% | 0.143% | 0.167% |
 
-Shiny odds are unchanged by luck.
+### 10.2 Incubator (Plaza; built to be worth coming back for)
 
-### 10.2 Incubator (Plaza)
+- **Start:** pay one egg price of your deepest unlocked zone. It runs **8 h of real time** (counts offline). One slot.
+- **Collect:**
+  1. **one guaranteed Legendary-or-better** spirit of your deepest zone (Legendary 95% / Mythic 5%);
+  2. a **20% chance it's a Dream variant:** ×1.25 bonus + the exclusive Dream Wardrobe look (only obtainable here);
+  3. **3 Boss Seals** for a boss of your choice (more than 10% of a guaranteed Boss Spirit).
+- **Why it matters:** a Legendary normally takes about 53 hatches. Combined with the seals and the Dream look, it advances two long-term collections every day.
 
-- **1 slot.** Put in an egg from any zone you've unlocked this run, paying its normal coin price.
-- It hatches **8 h later in real time** (it counts while you're offline), with **×2 luck**.
-- The result is rolled when you collect it.
-- **Survives Ascension.**
-- **Its job:** the last thing you do before leaving, and the first thing you collect on return.
+### 10.3 Daily streak
 
-### 10.3 Daily streak (Daily Board)
-
-Every reward is **persistent** (it survives Ascension):
-- **Egg Tickets** = one free hatch of your current deepest zone's egg;
-- **Luck Charms** = ×2 luck for 10 min.
+Persistent rewards (Tickets = a free hatch of your deepest egg; Charms = ×2 luck for 10 min).
 
 | Day | Reward |
 |---|---|
@@ -473,98 +440,77 @@ Every reward is **persistent** (it survives Ascension):
 | 4 | 1 Charm |
 | 5 | 3 Tickets |
 | 6 | 2 Charms |
-| 7 | 3 Tickets + 1 **Lucky Ticket** (a ×3-luck hatch) |
+| 7 | 3 Tickets + a ×3-luck Ticket |
 
-Missing a day resets the streak to day 1.
+A missed day resets the streak.
 
-### 10.4 Daily boss rematch + Boss Seals
+### 10.4 Rematches + Boss Seals
 
-- **Each boss you've ever beaten** can be rematched **once a day** from the Daily Board. It's at its normal power, so it's usually an instant Overpower KO for veterans: about 2 s each.
-- **Each rematch win gives:**
-  - **1 Boss Seal** of that boss (persistent);
-  - a **1% chance** of its unique **Boss Spirit** (Mythic-tier for that zone ×1.5, with a unique look and element);
-  - coins = 60 s of that zone's Lv1 income.
-- **25 Seals of one boss craft its Boss Spirit,** guaranteed in at most 25 days per boss.
-  - Chance of getting the drop before then: 1 − 0.99²⁴ ≈ 21%.
-  - With 8 bosses, the daily routine is about 8 quick rematches, so every attempt is progress.
+- **Each beaten boss, once a day:** usually an instant Overpower KO.
+- **Each win gives:** +1 Seal, a 1% Boss Spirit chance, and 60 s of that zone's coin income.
+- **25 Seals craft the Boss Spirit.** With the incubator's 3 seals a day, one boss can be finished in **about 7 days** instead of 25.
 
 ### 10.5 Playtime chests
 
-One every **10 min** online (up to 6 a day). Each = 1 Egg Ticket.
+One every 10 min online (up to 6 a day), each 1 Ticket.
 
 ---
 
-## 11. ENDGAME (after zone 8)
+## 11. ENDGAME
 
-- **Infinity Gate (Plaza):** endless boss tiers; tier k = 58 T × 1.6ᵏ. They count as depth for Ascension requirements (Ascension 9+ needs Infinity tiers, see section 6).
-- **Plaza statues** = the top 3 best Infinity tiers. There's also a server and global leaderboard.
-- **Ascension tiers never end:** prismatic ★1, ★2, … The halo gains stars.
-- **Collection goals:**
-  - the **Spirit Index**: 40 zone spirits + 8 Boss Spirits, plus Gold / Rainbow / Shiny variants;
-  - **completing a zone's row** gives a permanent +5% power;
-  - the **Wardrobe**: 7 elements × 5 rarities = 35 looks.
-- **Model check:** an average player is at Infinity tier 4-7 after 8 h. The wall rises ×1.6 per tier while power grows with shards and spirits, so progress slows smoothly instead of ending.
-
----
-
-## 12. QUALITY TARGET (aura at gameplay distance)
-
-**References.** Winter collects 10-second clips into `ART/refs/` before concepting:
-- anime power-up auras: the flame-column shape, the pulse, the ground debris;
-- Sol's RNG high-rarity auras: the Roblox endgame bar for layered aura VFX;
-- Pet Simulator 99 hatch reveals and Huge announcements: the hatch tension, the colour tell.
-
-**Judge at the default camera** (18-25 studs), plus from across the Plaza (60+ studs):
-
-| Stage | Radius | Layers | Particles alive (own) | Must read as |
-|---|---|---|---|---|
-| **Early** (forms 1-3, Common / Rare look) | 2.5-4.3 | 2: soft glow + rising motes / element wisps | ≤ 40 | a warm glow in the element's colour |
-| **Mid** (forms 4-7, Epic / Legendary, A1-A3) | 5-9 | 4-5: + a flipbook element shape, a ground ring, orbit sparks, a halo | ≤ 120 | a coloured column visible at 60 studs |
-| **End** (forms 8-10, Mythic, A5+) | 10-15 | 6-7: + a signature (wings / creature-silhouette wisps), a pulse every 4 s | ≤ 220 | "stop and stare": readable from across the Plaza |
-
-**Performance budgets** (Roblox's performance guidance: overlapping transparent layers are expensive; see https://create.roblox.com/docs/performance-optimization/improve):
-- **Other players' auras:**
-  - full within 40 studs (max 120 particles each);
-  - reduced at 40-100 studs (max 30, no beams);
-  - beyond 100 studs, a glow billboard only.
-- **Total aura particles per client ≤ 1,500.**
-- **At most 4 overlapping transparent layers** at the screen centre.
-- **Low graphics:** half rates, no flipbooks.
-
-**Settings:**
-
-| Setting | Options |
-|---|---|
-| Others' effects | High / Medium / Low / Off |
-| Camera shake | Full / Low / Off |
-| Reduced flashing | toggle |
-| Show others' auras | All / Friends / None |
+- **The Infinity Gate:** tier k = 43 T × 1.6ᵏ. These tiers are **required** for Ascension 10+.
+- **Leaderboards:** server + global, with the top-3 statues in the Plaza.
+- **Halo stars never cap.**
+- **Collections:**
+  - the Index: 40 zone spirits + 8 Boss Spirits + variants;
+  - the Wardrobe: 35 element looks + 8 Signatures + Dream versions;
+  - Rainbow Mythics.
 
 ---
 
-## 13. PLAYTEST #1 (what's in it, what we watch)
+## 12. QUALITY TARGET (unchanged from v2)
 
-**In the build:**
-- the stone + charge / release + combo + Overdrive + meditation;
-- 1 egg with 5 spirits, **one of them with a distinct element look**;
-- spirits orbiting and feeding the aura;
-- the Wardrobe change on that hatch;
-- aura growth + **one transformation** (boss 1 → BLAZE);
-- boss 1 clash with the counter;
-- zone 2 unlocked;
-- the Fusion Altar with a preview.
+- **Early / mid / end aura specs** at gameplay distance:
+  - early: 2.5-4.3 studs, 2 layers, ≤ 40 particles;
+  - mid: 5-9 studs, 4-5 layers, ≤ 120;
+  - end: 10-15 studs, 6-7 layers + Signature / Mythic extras, ≤ 220.
+- **References:**
+  - anime power-up auras;
+  - Sol's RNG high-rarity auras;
+  - Pet Simulator 99 hatch reveals.
+- **Budgets** for others' auras: full within 40 studs, reduced at 40-100, a billboard beyond that; ≤ 1,500 particles per client; ≤ 4 overlapping transparent layers. Based on Roblox's performance guidance: https://create.roblox.com/docs/performance-optimization/improve
+- **Settings:** others' effects, camera shake, reduced flashing, show others' auras.
 
-**Watch a fresh player** (no instructions) and record:
+---
 
-| # | Observation | Pass if |
+## 13. PLAYTEST #1 (real content, behaviour first)
+
+**Build:**
+- zone 1 + zone 2;
+- the stone, charge / release, combo, Overdrive and meditation;
+- the zone 1 egg (Light) and the zone 2 egg (Fire);
+- spirits orbiting;
+- **the Wardrobe changes when the first Rare arrives** (the ornament step);
+- **the element changes Light → Fire** on the first zone-2 hatch;
+- boss 1 with the counter → BLAZE;
+- auto-fuse + the Fusion Altar;
+- the incubator.
+
+**Two sessions:** day 1 (free play, no instructions), then **day 2** (we just invite them back).
+
+| # | We watch (behaviour) | Pass |
 |---|---|---|
-| 1 | Time to the first PERFECT, unaided | under 30 s |
-| 2 | "What did that spirit do?" | they say it made them stronger AND / OR changed their aura |
-| 3 | Do they understand the red flash → TAP? | by their 2nd fight |
-| 4 | After boss 1, do they keep playing without being asked? | 5+ more minutes |
-| 5 | Do they show wanting the next spirit or form? | they point at, ask about, or walk to the egg / gate |
-| 6 | Timing fatigue after 10 min | they don't say "tiring" / "annoying"; they use Overdrive and idle naturally |
-| 7 | "If you came back tomorrow, what would you do first?" | they name a concrete action |
-| 8 | Fun 1-10, best moment, most boring moment | fun 7+ |
+| 1 | First PERFECT, unaided | under 30 s |
+| 2 | Buys a stone upgrade **without being told** | yes, before boss 1 |
+| 3 | Taps on the red flash **without being told** | by the 2nd clash |
+| 4 | Keeps playing after boss 1 with no prompt | 10+ min |
+| 5 | Opens the zone-2 egg and **re-equips** for the Fire look or power | yes |
+| 6 | Starts the incubator before leaving day 1 | yes |
+| 7 | **Day 2: comes back and collects** the incubator / streak, then keeps playing | yes, 10+ min |
+| 8 | Timing behaviour at 10+ min: still aiming for PERFECTs, using Overdrive, idling when tired | not abandoning timing |
 
-**If #1, #3 or #6 fails,** fix the input timing before ANY art (e.g. widen the glow band, shorten the charge, or add more Overdrive).
+**What they say counts less than what they do:**
+- secondary: fun 1-10, best and most boring moment;
+- an answer only breaks a tie.
+
+**If #1, #3 or #8 fails, fix the input before any art.**

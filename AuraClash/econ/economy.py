@@ -17,7 +17,8 @@ RARITIES = ["Common", "Rare", "Epic", "Legendary", "Mythic"]
 ODDS = [0.60, 0.28, 0.10, 0.019, 0.001]
 R_BONUS = [0.10, 0.25, 0.60, 1.50, 4.00]                    # zone-1 bonus by rarity
 SPIRIT_STEP = 2.5                                           # each zone's spirits are x2.5 the previous zone's
-GOLD, RAINBOW, SHINY, SHINY_P = 6.0, 36.0, 1.5, 0.01
+GOLD, RAINBOW, SHINY, SHINY_P = 3.0, 9.0, 1.5, 0.01      # fusion: 3 same -> Gold (x3), 3 Gold -> Rainbow (x9)
+FUSE_N = 3
 FORM_BONUS = 0.05
 SLOT_ZONES = {2, 4, 6}                                      # +1 slot the first time you reach these zones (permanent)
 BASE_SLOTS, MAX_ASC_SLOTS = 3, 3
@@ -25,10 +26,10 @@ EGG_SECONDS, LV2_SECONDS, LV3_SECONDS = 15, 40, 120         # prices = seconds o
 FIRST_CLEAR_SECONDS = 30                                    # boss first-clear coins = 30 s of next zone's Lv1 income
 HATCH_TIME = 2.0
 TARGET_MIN = [3, 5, 8, 12, 18, 25, 35, 50]                  # DESIGN TARGET: minutes per zone, average player, first run
-ASC_STEP = 5.0                                              # Ascension n+1 needs peak run power >= boss-4 power x 5^n
-ASC_REQ = lambda n, g4: g4 * ASC_STEP ** n
+ASC_DEPTH = [4, 5, 5, 6, 6, 7, 7, 8, 8]                     # depth needed for Ascension n+1; after the list: Infinity tier n-8
+ASC_REQ_DEPTH = lambda n: ASC_DEPTH[n] if n < len(ASC_DEPTH) else 8 + (n - len(ASC_DEPTH) + 1)
 SHARD_STEP = 100.0
-SHARDS = lambda power, req: 1 + int(math.log(power / req, SHARD_STEP))   # +1 at the requirement, +1 per x100 beyond it
+SHARDS = lambda power, req: 1 + int(math.log(max(power, req) / req, SHARD_STEP))   # req = boss power of the required depth
 ASC_PER_SHARD = 0.5
 INFINITY_STEP = 1.6                                         # Infinity tier k boss power = boss 8 x 1.6^k
 
@@ -73,7 +74,7 @@ class Player:
         self.g = G_RATE[profile]
         self.inv = {}                 # (zone, rarity, tier, shiny) -> count
         self.asc, self.shards, self.best_zone_ever = 0, 0, 0
-        self.slots_zone = set(); self.hatches_total = 0
+        self.slots_zone = set(); self.hatches_total = 0; self.cleared_ever = set()
         self.t, self.ev = 0.0, {}
         self.reset_run()
         self.hatch(0, free=True)                                # tutorial: a free egg waits at the stand
@@ -132,8 +133,8 @@ class Player:
         while changed:
             changed = False
             for (z, r, tier, sh), n in list(self.inv.items()):
-                if tier < 2 and n >= 5:
-                    self.inv[(z, r, tier, sh)] = n - 5
+                if tier < 2 and n >= FUSE_N:
+                    self.inv[(z, r, tier, sh)] = n - FUSE_N
                     k = (z, r, tier + 1, sh); self.inv[k] = self.inv.get(k, 0) + 1
                     self.mark("first Gold fusion" if tier == 0 else "first Rainbow fusion"); changed = True
         self.inv = {k: v for k, v in self.inv.items() if v > 0}
@@ -177,17 +178,21 @@ class Player:
         self.deepest = max(self.deepest, z + 1)
         self.form = max(self.form, z + 3); self.mark(f"boss {z+1}" + (f" (A{self.asc})" if self.asc else ""))
         self.mark(f"form {self.form}")
+        first = z not in self.cleared_ever; self.cleared_ever.add(z)
         if z + 1 < ZONES:
-            self.coins += FIRST_CLEAR[z]
-            self.zone = z + 1; self.hatch(self.zone, free=True)
+            self.zone = z + 1
+            if first:                                       # first-clear coins + free egg: once per ACCOUNT
+                self.coins += FIRST_CLEAR[z]; self.hatch(self.zone, free=True)
             if (self.zone + 1) in SLOT_ZONES and (self.zone + 1) not in self.slots_zone:
                 self.slots_zone.add(self.zone + 1); self._mult = None; self.mark(f"slot at zone {self.zone+1}")
         return True
 
+    def depth_gate(self, d):
+        return self.gates[d - 1] if d <= 8 else self.gates[7] * INFINITY_STEP ** (d - 8)
     def can_ascend(self):
-        return self.deepest >= 4 and self.power >= ASC_REQ(self.asc, self.gates[3])
+        return self.deepest >= ASC_REQ_DEPTH(self.asc)
     def shards_now(self):
-        return SHARDS(self.power, ASC_REQ(self.asc, self.gates[3])) if self.can_ascend() else 0
+        return SHARDS(self.power, self.depth_gate(ASC_REQ_DEPTH(self.asc))) if self.can_ascend() else 0
 
     def ascend(self):
         self.shards += self.shards_now(); self.asc += 1
@@ -239,11 +244,11 @@ if __name__ == "__main__":
     print(f"{'zone':>4}{'stone base':>11}{'egg':>11}{'stone Lv2':>12}{'stone Lv3':>12}{'boss power':>20}{'gold gate (1.1x)':>20}{'first-clear coins':>18}")
     for z in range(ZONES):
         print(f"{z+1:>4}{STONE_BASE[z]:>11,}{EGG_PRICE[z]:>11,}{LV2_PRICE[z]:>12,}{LV3_PRICE[z]:>12,}{gates[z]:>20,}{nice(1.1*gates[z]):>20,}{(FIRST_CLEAR[z] if z < 7 else 0):>18,}")
-    print("\nASCENSION REQUIREMENTS (peak power this run)")
+    print("\nASCENSION REQUIREMENTS (depth to clear in the run; shards measured vs that boss's power)")
     for n in range(12):
-        req = ASC_REQ(n, gates[3]); near = max([z for z in range(ZONES) if gates[z] <= req], default=0)
-        extra = "" if req <= gates[7] else f"  (Infinity tier ~{math.ceil(math.log(req / gates[7], INFINITY_STEP))})"
-        print(f"  Ascension {n+1:>2}: {nice(req):>24,}   ~ zone {near+1} boss{extra}")
+        d = ASC_REQ_DEPTH(n); g = gates[d-1] if d <= 8 else gates[7] * INFINITY_STEP ** (d - 8)
+        name = f"boss {d}" if d <= 8 else f"Infinity tier {d-8}"
+        print(f"  Ascension {n+1:>2}: clear {name:<16} (boss power {nice(g):,}; +1 shard per x100 beyond)")
     print("\nSPIRIT BONUS BY ZONE (added to the team multiplier; Gold x6, Rainbow x36, Shiny x1.5)")
     print("zone " + "".join(f"{r:>12}" for r in RARITIES))
     for z in range(ZONES):
