@@ -1,11 +1,11 @@
 power ratio |  casual (40% perf, 40% counter) |             average (60% / 65%) |             skilled (85% / 90%)
         0.6 |           0% win,   0.0 s avg    |           0% win,   0.0 s avg    |           0% win,   0.0 s avg   
         0.7 |           0% win,   0.0 s avg    |           0% win,   0.0 s avg    |           0% win,   0.0 s avg   
-        0.8 |           0% win,   0.0 s avg    |           0% win,   0.0 s avg    |           2% win,  43.9 s avg   
-        0.9 |           0% win,   0.0 s avg    |           2% win,  39.8 s avg    |          74% win,  36.4 s avg   
-        1.0 |           1% win,  39.6 s avg    |          41% win,  36.6 s avg    |         100% win,  27.2 s avg   
-        1.1 |          29% win,  37.4 s avg    |          94% win,  30.3 s avg    |         100% win,  20.8 s avg   
-       1.25 |          98% win,  28.2 s avg    |         100% win,  20.7 s avg    |         100% win,  15.6 s avg   
-        1.5 |         100% win,  16.3 s avg    |         100% win,  13.5 s avg    |         100% win,  11.5 s avg   
+        0.8 |           0% win,   0.0 s avg    |           0% win,   0.0 s avg    |           1% win,  43.7 s avg   
+        0.9 |           0% win,   0.0 s avg    |           2% win,  40.0 s avg    |          72% win,  36.6 s avg   
+        1.0 |           1% win,  39.5 s avg    |          40% win,  36.9 s avg    |         100% win,  27.5 s avg   
+        1.1 |          29% win,  37.4 s avg    |          94% win,  30.7 s avg    |         100% win,  21.3 s avg   
+       1.25 |          98% win,  28.3 s avg    |         100% win,  20.8 s avg    |         100% win,  15.9 s avg   
+        1.5 |         100% win,  16.1 s avg    |         100% win,  13.6 s avg    |         100% win,  11.5 s avg   
         2.0 |         100% win,   9.2 s avg    |         100% win,   8.3 s avg    |         100% win,   7.7 s avg   
-        3.0 |         100% win,   5.4 s avg    |         100% win,   5.1 s avg    |         100% win,   4.8 s avg   
+        3.0 |         100% win,   5.2 s avg    |         100% win,   5.0 s avg    |         100% win,   4.8 s avg   

@@ -1,8 +1,8 @@
 policy                     ascensions  shards  power x    spirit x  first boss 8
-ascend at 1+ shards              15.0    15.0      8.5       6,428         2.6 h  deepest now 11.5
-ascend at 2+ shards               7.0    14.0      8.0       6,532         2.1 h  deepest now 16.0
-ascend at 3+ shards               5.0    15.0      8.5       7,067         2.6 h  deepest now 14.0
-ascend at 4+ shards               1.0     4.0      3.0       6,089         2.6 h  deepest now 13.0
+ascend at 1+ shards              15.0    15.0      8.5       6,609         2.6 h  deepest now 12.0
+ascend at 2+ shards               7.0    14.0      8.0       6,565         2.1 h  deepest now 16.0
+ascend at 3+ shards               5.0    15.0      8.5       7,023         2.6 h  deepest now 14.0
+ascend at 4+ shards               1.0     4.0      3.0       6,043         2.6 h  deepest now 13.0
 
 FIRST 2 HOURS, average player, ascends at 2+ shards (one representative seed; key events)
     1.0 min  first Rare+
@@ -11,49 +11,49 @@ FIRST 2 HOURS, average player, ascends at 2+ shards (one representative seed; ke
     1.6 min  first Epic+
     3.3 min  boss 1
     3.3 min  slot at zone 2
-    6.4 min  first Rainbow fusion
+    6.5 min  first Rainbow fusion
     9.4 min  boss 2
-   11.3 min  first Legendary+
+   11.4 min  first Legendary+
    16.3 min  boss 3
    16.3 min  slot at zone 4
-   28.2 min  boss 4
+   28.3 min  boss 4
    47.8 min  boss 5
-   47.8 min  slot at zone 6
-   51.4 min  Ascension 1
+   47.9 min  slot at zone 6
+   51.5 min  Ascension 1
    51.5 min  boss 1 (A1)
-   51.9 min  boss 2 (A1)
-   52.6 min  boss 3 (A1)
+   52.0 min  boss 2 (A1)
+   52.7 min  boss 3 (A1)
    54.4 min  boss 4 (A1)
    57.8 min  boss 5 (A1)
-   66.9 min  boss 6 (A1)
-   70.6 min  Ascension 2
-   70.6 min  boss 1 (A2)
-   70.8 min  boss 2 (A2)
-   71.2 min  boss 3 (A2)
-   72.8 min  boss 4 (A2)
-   74.8 min  boss 5 (A2)
-   78.5 min  boss 6 (A2)
-   80.2 min  Ascension 3
-   80.3 min  boss 1 (A3)
-   80.3 min  boss 2 (A3)
-   80.9 min  boss 3 (A3)
-   81.7 min  boss 4 (A3)
-   83.4 min  boss 5 (A3)
-   86.4 min  boss 6 (A3)
-   93.6 min  boss 7 (A3)
-   96.6 min  Ascension 4
-   96.7 min  boss 1 (A4)
-   96.7 min  boss 2 (A4)
-   96.9 min  boss 3 (A4)
-   97.4 min  boss 4 (A4)
-   98.5 min  boss 5 (A4)
-  100.7 min  boss 6 (A4)
-  105.0 min  boss 7 (A4)
-  106.5 min  Ascension 5
-  106.5 min  boss 1 (A5)
-  106.6 min  boss 2 (A5)
-  106.9 min  boss 3 (A5)
-  107.5 min  boss 4 (A5)
-  108.5 min  boss 5 (A5)
-  110.4 min  boss 6 (A5)
-  113.7 min  boss 7 (A5)
+   67.2 min  boss 6 (A1)
+   70.9 min  Ascension 2
+   70.9 min  boss 1 (A2)
+   71.0 min  boss 2 (A2)
+   71.5 min  boss 3 (A2)
+   73.4 min  boss 4 (A2)
+   75.3 min  boss 5 (A2)
+   79.2 min  boss 6 (A2)
+   80.9 min  Ascension 3
+   80.9 min  boss 1 (A3)
+   81.0 min  boss 2 (A3)
+   81.5 min  boss 3 (A3)
+   82.4 min  boss 4 (A3)
+   84.0 min  boss 5 (A3)
+   87.2 min  boss 6 (A3)
+   94.3 min  boss 7 (A3)
+   97.4 min  Ascension 4
+   97.5 min  boss 1 (A4)
+   97.5 min  boss 2 (A4)
+   97.7 min  boss 3 (A4)
+   98.2 min  boss 4 (A4)
+   99.3 min  boss 5 (A4)
+  101.5 min  boss 6 (A4)
+  106.3 min  boss 7 (A4)
+  107.8 min  Ascension 5
+  107.9 min  boss 1 (A5)
+  107.9 min  boss 2 (A5)
+  108.2 min  boss 3 (A5)
+  108.8 min  boss 4 (A5)
+  109.9 min  boss 5 (A5)
+  111.8 min  boss 6 (A5)
+  115.1 min  boss 7 (A5)

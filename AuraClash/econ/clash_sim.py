@@ -11,17 +11,25 @@ Player model (the assumptions the results depend on):
   p_perfect  = chance a normal charge lands PERFECT (else 70% Early / 30% Overcharge)
   p_counter  = chance the player taps inside the strike window
   When a telegraph starts the player abandons the current charge (worst case) and spends
-  1.5 s on the counter; then resumes charging."""
+  1.5 s on the counter; then resumes charging. The +4 / -4 applies INSIDE the strike window
+  (a counter at a random moment 1.0-1.5 s after the tell; a missed strike at 1.5 s)."""
 import math, random
 
 T_LIMIT, DT = 45.0, 0.01
-def clash(ratio, p_perfect, p_counter, rnd):
+def clash(ratio, p_perfect, p_counter, rnd, trace=None):
     M, t, step = 50.0, 0.0, 0
     drift = max(-12.0, min(12.0, 12.0 * (math.sqrt(ratio) - 1.0)))
-    next_attack, charge_end, busy_until = 5.0, None, 0.0
+    next_attack, charge_end, busy_until, pending = 5.0, None, 0.0, None
     while t < T_LIMIT:
-        if t >= next_attack:                        # boss attack: player drops the charge and spends 1.5 s on the tap
-            M += 4.0 if rnd.random() < p_counter else -4.0
+        if pending and t >= pending[0]:             # the counter / hit lands INSIDE the strike window (1.0-1.5 s after the tell)
+            M += pending[1]
+            if trace is not None: trace.append((t - pending[2], pending[1]))
+            pending = None
+        if t >= next_attack:                        # telegraph starts: player drops the charge and spends 1.5 s on the tap
+            if rnd.random() < p_counter:
+                pending = (t + rnd.uniform(1.0, 1.5), +4.0, t)   # successful tap somewhere in the 0.5 s window
+            else:
+                pending = (t + 1.5, -4.0, t)                  # no tap: the strike lands at the end of the window
             busy_until = t + 1.5; charge_end = None
             next_attack = t + (3.5 if M >= 70 else 5.0)
         elif t >= busy_until:

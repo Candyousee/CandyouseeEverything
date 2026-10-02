@@ -67,8 +67,9 @@ def win_prob(profile, ratio, rnd):
         pp, pc = PROFILES[profile]["clash"]
         r2 = random.Random(zlib.crc32(repr(key).encode()))      # stable seed (no Python hash randomisation)
         res = [clash_fight(key[1], pp, pc, r2) for _ in range(300)]
-        wins = [t for w, t in res if w]
-        _CL[key] = (len(wins) / 300, (sum(wins) / len(wins)) if wins else 45.0)
+        wins = [t for w, t in res if w]; losses = [t for w, t in res if not w]
+        _CL[key] = (len(wins) / 300, (sum(wins) / len(wins)) if wins else 45.0,
+                    (sum(losses) / len(losses)) if losses else 45.0)
     return _CL[key]
 
 # ---------------- the player ----------------
@@ -169,20 +170,17 @@ class Player:
                     self._fuse_once(key); changed = True; break
 
     def manual_fuse(self):
-        """Manual fusion at the Plaza altar (any rarity, equipped allowed): the player makes the trip
-        when at least one fusion raises team power, and does every such fusion on that trip."""
-        trip = False
-        while True:
-            base = self.spirit_mult(); best = None
-            for key, n in self.inv.items():
-                if key[2] < 2 and n >= FUSE_N:
-                    trial = dict(self.inv); z, r, tier, sh = key
-                    trial[key] -= FUSE_N; k = (z, r, tier + 1, sh); trial[k] = trial.get(k, 0) + 1
-                    gain = self.mult_of({a: b for a, b in trial.items() if b > 0}) - base
-                    if gain > 1e-9 and (best is None or gain > best[0]): best = (gain, key)
-            if not best: break
-            if not trip: self.t += ALTAR_TRIP; trip = True
-            self._fuse_once(best[1])
+        """Manual fusion at the Plaza altar (any rarity, equipped allowed). Uses the SAME logic as egg valuation:
+        the player fuses everything fusable (whole chains, normal -> Gold -> Rainbow) when the end result raises
+        team power, even if a single intermediate step alone would not. One 15 s trip."""
+        target = self.fuse_all(self.inv)
+        if self.mult_of(target) <= self.spirit_mult() + 1e-9:
+            return
+        self.t += ALTAR_TRIP
+        for (z, r, tier, sh), n in target.items():
+            if tier == 1 and n > self.inv.get((z, r, 1, sh), 0): self.mark("first Gold fusion")
+            if tier == 2 and n > self.inv.get((z, r, 2, sh), 0): self.mark("first Rainbow fusion")
+        self.inv = target; self._mult = None
 
     def egg_value(self):
         """Exact expected team-power gain of one hatch, INCLUDING fusions it completes (e.g. the 3rd Epic)."""
@@ -220,10 +218,10 @@ class Player:
         gate = self.gates[z] if inf < 0 else self.gates[7] * INFINITY_STEP ** (inf + 1)
         ratio = self.power / gate
         if ratio < PROFILES[self.p]["attempt"] or self.t < self.next_try: return False
-        p, dur = (1.0, OVERPOWER_TIME) if ratio >= OVERPOWER else win_prob(self.p, ratio, self.rnd)
-        self.t += dur
+        p, win_t, loss_t = (1.0, OVERPOWER_TIME, 0.0) if ratio >= OVERPOWER else win_prob(self.p, ratio, self.rnd)
         if self.rnd.random() >= p:
-            self.next_try = self.t + 30; return False
+            self.t += loss_t; self.next_try = self.t + 30; return False
+        self.t += win_t
         if inf >= 0:
             self.deepest += 1; self.mark(f"infinity {inf+1}"); return True
         self.deepest = max(self.deepest, z + 1)

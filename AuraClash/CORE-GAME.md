@@ -1,4 +1,4 @@
-# AURA CLASH: Core Game v2.2 (rules + one balance model, audited)
+# AURA CLASH: Core Game v2.3 (rules + one balance model, audited)
 
 **No monetization here:** the owner designs that separately.
 
@@ -10,7 +10,7 @@
 | `clash_sim.py` | boss fights | `clash_results.txt` |
 | `economy.py` | prices, gates, eggs, fusion, first-run timelines | `RESULTS-economy.txt` |
 | `ascension.py` | Ascension strategies and the first 2 hours | `RESULTS-ascension.txt` |
-| `tests.py` | 7 rule checks that tie the model to this document | `python tests.py` → 7 passed |
+| `tests.py` | 9 rule checks that tie the model to this document | `python tests.py` → 9 passed |
 
 - **Verify:** `python tests.py && python economy.py && python ascension.py` (Python 3, standard library only, about 2 minutes). Seeds are fixed, so the results are identical on every run.
 - **Change a rule → change its constant → re-run.**
@@ -20,6 +20,20 @@
   - a hatch takes 2 s;
   - walking and menus are not modelled (add about 10-15%);
   - INDEX bonuses are not modelled (at most +50%, so the times are conservative).
+
+## Changes in v2.3 (third audit)
+
+| # | Finding | Fix | Test |
+|---|---|---|---|
+| 1 | Valuation expected normal → Gold → Rainbow chains, but execution refused a first step that gave no immediate gain (a team stuck at ×15 instead of ×16.4) | Execution now uses the **same** chain logic as valuation: at the altar the player fuses everything fusable whenever the **end result** raises team power | `test_manual_fusion_follows_chains` |
+| 2 | Counter ±4 was applied at the start of the warning; lost fights used the average *winning* duration | ±4 now lands **inside** the strike window (counter at 1.0-1.5 s, a miss at 1.5 s); lost fights use the simulated **loss** duration | `test_counter_lands_in_window` |
+| 3 | Saving / rejoining was never a build requirement | A new section 14 lists persistence requirements + tests (session-locked saves, an incubator rolled at start, atomic collect) | build tests (section 14) |
+| — | Testing cautions | The day-2 invite is labelled a **return-experience** test, not retention; the odds test is statistical (section 14.3) | — |
+
+**Effect on results:**
+- skilled players win 72% at 0.9× (was 74%);
+- boss 6 = 91 B, boss 8 = 45 T;
+- everything else is within rounding.
 
 ## Changes in v2.2 (audit: the model must follow the written rules)
 
@@ -190,7 +204,7 @@ Coins per release = gain × STONE BASE × STONE LEVEL
 - **Auto-fuse:** a toggle, **default ON for Commons and Rares**. It runs **anywhere**, instantly, but only on spirits that are **unequipped and unfavourited**.
 - **Manual fusion** (any rarity, including equipped spirits) happens **only at the Fusion Altar in the Plaza**. It shows the team-power preview ("Team ×12.4 → ×13.1") and asks for confirmation.
 - **When manual fusion is possible,** the Spirits button shows a "Fusion ready" badge, so players know a Plaza trip is worth it.
-- **How the model plays it:** a trip to the altar (15 s) whenever any fusion would raise team power, doing every such fusion on that trip.
+- **How the model plays it** (and how the altar's **"Fuse All"** button works): one trip (15 s) whenever fusing everything fusable, **including whole normal → Gold → Rainbow chains**, would raise team power. A step that gains nothing on its own is still taken when the chain it completes does gain.
 - **Favourited spirits** are never used by fusion or deletion.
 
 ### 3.6 Inventory
@@ -290,14 +304,14 @@ Ascension resets the form part. The permanent part and the halo stay.
 
 | You ÷ boss | Casual (40% / 40%) | Average (60% / 65%) | Skilled (85% / 90%) |
 |---|---|---|---|
-| 0.9× | 0% | 2% | 74% |
-| 1.0× | 1% | 41% | 100% |
+| 0.9× | 0% | 2% | 72% |
+| 1.0× | 1% | 40% | 100% |
 | **1.1× (gold)** | 29% | **94%** | 100% |
 | 1.25× | **98%** | 100% | 100% |
 | 1.5× | 100% (16 s) | 100% (14 s) | 100% (12 s) |
 | 3.0× and above | Overpower: 2 s KO | 2 s | 2 s |
 
-The beam drifts continuously, including during recovery and counters (v2.2 fix).
+The beam drifts continuously, including during recovery and counters (v2.2). The ±4 lands inside the strike window (v2.3).
 
 ### Clear rewards
 
@@ -364,10 +378,10 @@ The beam drifts continuously, including during recovery and counters (v2.2 fix).
 | 3 Frozen Peak (Frost) | 36 | 1,100 | 2,800 | 8,500 | 2.7 M | 3.0 M | 13,000 |
 | 4 Storm Temple (Storm) | 216 | 6,400 | 17,000 | 51,000 | 120 M | 130 M | 76,000 |
 | 5 Sakura Realm (Nature) | 1,296 | 38,000 | 100,000 | 310,000 | 3.5 B | 3.9 B | 460,000 |
-| 6 Sky Sanctuary (Light) | 7,776 | 230,000 | 610,000 | 1.8 M | 89 B | 98 B | 2.8 M |
+| 6 Sky Sanctuary (Light) | 7,776 | 230,000 | 610,000 | 1.8 M | 91 B | 100 B | 2.8 M |
 | 7 Void Rift (Void) | 46,656 | 1.4 M | 3.7 M | 11 M | 2.0 T | 2.2 T | 17 M |
-| 8 Galaxy Throne (Cosmic) | 279,936 | 8.3 M | 22 M | 66 M | 46 T | 51 T | — |
-| Infinity tier k | (zone 8) | (zone 8) | — | — | 46 T × 1.6ᵏ | ×1.1 | — |
+| 8 Galaxy Throne (Cosmic) | 279,936 | 8.3 M | 22 M | 66 M | 45 T | 50 T | — |
+| Infinity tier k | (zone 8) | (zone 8) | — | — | 45 T × 1.6ᵏ | ×1.1 | — |
 
 ---
 
@@ -407,7 +421,7 @@ The beam drifts continuously, including during recovery and counters (v2.2 fix).
 | Boss 3 | 28 m | 17.4 m [15.8-18.4] | 12.2 m | 64 m |
 | Boss 4 | 51 m | 29.9 m [27.7-31.6] | 20 m | 2.0 h |
 | Boss 5 | 87 m | 48 m | 31 m | — |
-| Boss 8 | 5.2 h | 2.7 h [2.4-2.9] | 1.5 h | — |
+| Boss 8 | 5.1 h | 2.7 h [2.4-2.9] | 1.5 h | — |
 
 **First 2 hours** (average player, one seed, waits for 2 shards):
 
@@ -418,16 +432,16 @@ The beam drifts continuously, including during recovery and counters (v2.2 fix).
 | 1:06 | FLAME |
 | 1:24 | first Gold (auto-fuse, 3 Commons) |
 | 3:18 | boss 1 + 4th slot |
-| 6:24 | first Rainbow |
+| 6:30 | first Rainbow |
 | 9:24 | boss 2 |
 | 16:18 | boss 3 + 5th slot |
-| 28:12 | boss 4 |
+| 28:18 | boss 4 |
 | 47:48 | boss 5 + 6th slot |
-| 51:24 | **Ascension 1** |
-| 70:36 | **Ascension 2** |
-| 80:12 | **Ascension 3** |
-| 96:36 | **Ascension 4** |
-| 106:30 | **Ascension 5** |
+| 51:30 | **Ascension 1** |
+| 70:54 | **Ascension 2** |
+| 80:54 | **Ascension 3** |
+| 97:24 | **Ascension 4** |
+| 107:48 | **Ascension 5** |
 
 ---
 
@@ -485,7 +499,7 @@ One every 10 min online (up to 6 a day), each 1 Ticket.
 
 ## 11. ENDGAME
 
-- **The Infinity Gate:** tier k = 46 T × 1.6ᵏ. These tiers are **required** for Ascension 10+.
+- **The Infinity Gate:** tier k = 45 T × 1.6ᵏ. These tiers are **required** for Ascension 10+.
 - **Leaderboards:** server + global, with the top-3 statues in the Plaza.
 - **Halo stars never cap.**
 - **Collections:**
@@ -523,7 +537,9 @@ One every 10 min online (up to 6 a day), each 1 Ticket.
 - auto-fuse + the Fusion Altar;
 - the incubator.
 
-**Two sessions:** day 1 (free play, no instructions), then **day 2** (we just invite them back).
+**Two sessions:** day 1 (free play, no instructions), then **day 2** (we invite them back).
+
+The invitation means day 2 tests the **return experience** (is there something worth collecting, and does it pull them into more play?), **not** spontaneous retention. Real retention is only measured later: unprompted D1 / D7 returns in a private test group or live analytics.
 
 | # | We watch (behaviour) | Pass |
 |---|---|---|
@@ -533,7 +549,7 @@ One every 10 min online (up to 6 a day), each 1 Ticket.
 | 4 | Keeps playing after boss 1 with no prompt | 10+ min |
 | 5 | Opens the zone-2 egg, **chooses to wear the Fire look** (via the prompt or the Mirror) and lets Equip Best upgrade power | yes, without being told |
 | 6 | Starts the incubator before leaving day 1 | yes |
-| 7 | **Day 2: comes back and collects** the incubator / streak, then keeps playing | yes, 10+ min |
+| 7 | **Day 2 (invited): collects** the incubator / streak and **keeps playing** afterwards | yes, 10+ min after collecting |
 | 8 | Timing behaviour at 10+ min: still aiming for PERFECTs, using Overdrive, idling when tired | not abandoning timing |
 
 **What they say counts less than what they do:**
@@ -541,3 +557,49 @@ One every 10 min online (up to 6 a day), each 1 Ticket.
 - an answer only breaks a tie.
 
 **If #1, #3 or #8 fails, fix the input before any art.**
+
+---
+
+## 14. PERSISTENCE (build requirement for the two-zone test)
+
+The day-2 test is meaningless if progress or the incubator can be lost or duplicated. These are required and tested **before playtest #1**.
+
+### 14.1 What's saved (one profile per player, session-locked)
+
+| Saved | Includes |
+|---|---|
+| Run state | power, coins, zone access, stone levels, form |
+| Spirits | inventory (with favourites), equipped list, auto-fuse / auto-delete settings |
+| Wardrobe | unlocked looks, chosen look / Auto, slots, first-clear history, index |
+| Daily systems | streak day + last-claim date, Tickets, Charms, Boss Seals, rematch dates |
+| Incubator | `{state, zone, startTime, readyTime, rolledReward, rewardId}` |
+| Mailbox | its contents |
+
+### 14.2 Rules
+
+- **Session lock:** a profile is used by **one server at a time**. Rejoining elsewhere waits for, or takes over, the lock safely, so two servers can never both grant.
+- **When to save:**
+  - immediately (queued) after every hatch, fusion, purchase, incubator start / collect, and streak claim;
+  - autosave every 60 s;
+  - on leaving and on server shutdown.
+- **The incubator reward is rolled when you START it** and stored (`rolledReward` + a unique `rewardId`). Rejoining can never re-roll it.
+  - The timer uses **server time** (`os.time()`), so changing the device clock does nothing.
+- **Collect is one atomic server transaction:**
+  - **check:** `state == "ready"` and `rewardId` not yet granted;
+  - **then, in ONE save write:** grant the reward (or put it in the mailbox), set `state = "empty"`, record `rewardId` as granted.
+  - **Double clicks, two devices, or a crash mid-collect can never pay twice or lose the reward.**
+- **The same pattern** (check + grant + mark in one write, with an id) covers streak claims, rematch rewards and mailbox claims.
+- **Studio without API access:** play without saving, with a visible "NOT SAVING" banner. Never stall.
+
+### 14.3 Tests (the build isn't playtest-ready until all pass)
+
+| # | Test | Pass |
+|---|---|---|
+| P1 | Play 5 min, leave, rejoin (another server) | everything in 14.1 identical |
+| P2 | Start the incubator, leave, rejoin before ready / after ready | same reward; ready at the stored server time |
+| P3 | Spam "Collect" (20 clicks), and collect from two clients at once | exactly one grant |
+| P4 | Kill the server during collect (forced shutdown test) | after rejoin: either granted once or still ready, never zero or twice |
+| P5 | Change the device clock ±1 day | no effect on the incubator or streak |
+| P6 | **Odds test (statistical):** an automated server-side hatch of **200,000** eggs | each rarity's count within **±4 standard deviations** of its expected value (Mythic: 200 expected, accepted 144-256). A manual 1,000-hatch run is NOT a pass / fail test: about 37% of such runs show zero Mythics |
+| P7 | Crack colour vs result over the same 200,000 hatches | 100% match |
+

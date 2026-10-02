@@ -29,6 +29,23 @@ def test_manual_fusion_never_lowers_power():
     p = fresh(); p.inv = {(0, 2, 0, False): 3, (0, 0, 0, False): 4}; p._mult = None
     before = p.spirit_mult(); p.manual_fuse(); assert p.spirit_mult() >= before
 
+def test_manual_fusion_follows_chains():     # audit v2.2-1: execution must match valuation (normal -> Gold -> Rainbow)
+    p = fresh()                                                        # 3 slots
+    p.inv = {(0, 4, 0, False): 2, (1, 3, 0, False): 1,                 # equipped: 2 Mythic (4.0) + z2 Legendary (3.75)
+             (0, 2, 1, False): 2, (0, 2, 0, False): 3}                 # 2 Gold Epics + 3 normal Epics
+    p._mult = None
+    one_step = dict(p.inv); one_step[(0, 2, 0, False)] = 0; one_step[(0, 2, 1, False)] = 3
+    assert abs(p.mult_of({k: v for k, v in one_step.items() if v}) - p.spirit_mult()) < 1e-9   # Gold alone: no gain
+    p.manual_fuse()
+    assert p.inv.get((0, 2, 2, False)) == 1 and abs(p.spirit_mult() - (1 + 5.4 + 4.0 + 4.0)) < 1e-9
+
+def test_counter_lands_in_window():          # audit v2.2-2: +4/-4 applies inside the strike window, not at the tell
+    trace = []
+    for seed in range(50):
+        clash_sim.clash(1.0, 0.6, 0.65, random.Random(seed), trace)
+    assert trace and all(1.0 - 0.011 <= dt <= 1.5 + 0.011 for dt, _ in trace), min(trace)
+    assert all(abs(dt - 1.5) < 0.011 for dt, d in trace if d < 0)     # missed strikes land at the end of the window
+
 def test_drift_continues_during_recovery():  # audit 1: beam keeps moving in recovery / counters
     rnd = random.Random(3)
     won, t = clash_sim.clash(2.0, 0.0, 0.0, rnd)     # never PERFECT, never counters: drift alone must still win at 2x
