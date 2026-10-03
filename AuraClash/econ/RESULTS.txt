@@ -76,3 +76,15 @@ AURA CLASH v7 model results (python model.py). Free player, no monetization.
 
 8. AFK-only player (never hunts): Power keeps growing, but the boss gate never opens
    (rank quests need kills and hatches, which need coins, which only hunting gives).
+
+9. Friction check (GAME-BIBLE 1.1): median minutes per quest step, average free player (steps over 8 min flagged *)
+    1 focus 2.4  kill 0.6  hatch 0.0  kill 0.0  power 1.3
+    2 focus 1.3  kill 1.4  hatch 8.0*  kill 0.0  level 0.0  power 2.7
+    3 focus 1.6  kill 1.2  hatch 13.7*  kill 0.0  level 0.0  power 4.1
+    4 focus 1.6  kill 2.1  hatch 17.4*  kill 0.0  kill 0.0  level 0.0  power 10.9*
+    5 focus 2.1  kill 2.2  hatch 28.4*  kill 0.0  kill 0.0  level 0.0  power 9.3*
+    6 focus 2.2  kill 2.1  hatch 24.9*  kill 0.0  kill 0.0  level 0.0  power 14.0*
+    7 focus 2.5  kill 3.6  hatch 52.1*  kill 0.0  kill 0.0  mutated 0.0  stars 0.0  power 20.7*
+    8 focus 2.7  kill 3.3  hatch 58.8*  kill 0.0  kill 0.0  mutated 0.0  stars 0.0  power 24.4*
+    9 focus 3.3  kill 5.6  hatch 93.7*  kill 0.0  kill 0.0  mutated 0.0  stars 0.0  level 0.0  power 25.7*
+   10 focus 3.4  kill 5.9  hatch 128.4*  kill 0.0  kill 0.0  mutated 0.0  stars 0.0  level 0.0  power 26.0*

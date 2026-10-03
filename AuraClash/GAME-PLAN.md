@@ -122,4 +122,5 @@ These are **model targets for a free player playing solo, not promises.** The mo
 | **Free first run (boss 10) in about 10-12 h** (owner) | **10 h 15-10 h 28** (two model samples) |
 | **Whale first run about 3 h** (owner) | **3 h 07** |
 | Pets 30-50% of damage (never more than your blasts), and every pet upgrade adds hit | 46%; yes (no hard cap) |
+| **No quest step over ~8 min; Power gate wait under ~5 min** (friction, GAME-BIBLE 1.1) | **zones 1-2: yes (~8 min worst); zones 3-10: no** ("hatch N" 14 min-2 h, Power gates 10-26 min). **Must be fixed before zones 3-10 ship** |
 | Average player wins the clash ≥ 90% at recommended Power; weak ≥ 60%; under-powered (½) average ≤ 40% | 100% / 79% / 23% |

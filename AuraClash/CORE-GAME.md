@@ -40,9 +40,10 @@ Old versions are in `archive/`, for history only. **Nothing in `archive/` is a r
 | Pets | every pet (id, species, zone, stars 0-5, level, XP, favourite / lock, Exclusive / Limited serial), equipped list, auto-fuse / auto-delete settings, mailbox |
 | Upgrades | Bag, Mat, Surge levels; pet slots |
 | Tutorial / guarantees | tutorial step, **lifetime hatch count**, guaranteed-Rare used, Boss Shards claimed per boss, Shop Exclusive pity counters |
-| Purchases + rewards | owned passes, **2× Boost ladder tier**, **slot packs bought (0-10)**, active potion end times (server time), Starter Pack used, Aura Pass season / tier / XP, daily-cycle day (1-7) + week + last claim date, hourly-reward progress, group-chest time, Limited serials owned, processed `PurchaseId`s (MONETIZATION.md) |
+| Purchases + rewards | **earned and paid coin balances**, the free / paid **source tag** on every egg, crystal, vault shard and boost (MONETIZATION 17.1), owned passes, **2× Boost ladder tier**, **slot packs bought (0-10)**, active potion end times (server time), Starter Pack used, Aura Pass season / tier / XP, daily-cycle day (1-7) + week + last claim date, hourly-reward progress, group-chest time, Limited serials owned, processed `PurchaseId`s (MONETIZATION.md) |
 | Offline | `lastSeen` (server time), `offlineClaimId` |
-| Operations | each critical operation's id → `committed` (with `revealed` yes/no) or `cancelled`, kept 30 days (2.2) |
+| Operations | each critical operation's id → status **`committed`** (with `revealed` yes/no) or **`cancelled`**, kept 30 days (2.2). **Only `committed` ever counts as done** |
+| Receipts | **a separate, permanent receipt ledger:** each `PurchaseId` → status **`delivered`** + what was granted + time. **Never pruned** (Roblox can re-send an unresolved receipt at any later join, even years later); a receipt is **never** marked cancelled (2.2) |
 | Settings | effects, camera, flashing, Low effects |
 
 ### 2.2 Rules
@@ -53,7 +54,7 @@ Old versions are in `archive/`, for history only. **Nothing in `archive/` is a r
 
   | State | How the server knows | What happens |
   |---|---|---|
-  | **1. CONFIRMED SAVED** | the `UpdateAsync` call returned success, **or** a later successful `UpdateAsync` finds the operation id in the stored profile | show the result (play the cutscene / the fused pet / the offline gain); never apply it again |
+  | **1. CONFIRMED SAVED** | the `UpdateAsync` call returned success, **or** a later successful `UpdateAsync` finds the operation id stored **with status `committed`** (an id stored as `cancelled` is state 2, never state 1) | show the result (play the cutscene / the fused pet / the offline gain); never apply it again |
   | **2. CONFIRMED NOT COMMITTED** | a later **successful** `UpdateAsync` finds the id absent, and in that same write stores the id as **cancelled** (so a delayed original write can never apply afterwards: its version is stale and the id is now taken) | undo it in memory (the coins are released, the pets stay unfused) and say "Not saved, nothing was spent. Try again." |
   | **3. UNKNOWN** | the write errored or timed out, and no later `UpdateAsync` has succeeded yet | **don't show the result, don't refund, don't say "cancelled".** Hold the operation as **pending** (below) and keep reconciling |
 
@@ -62,7 +63,7 @@ Old versions are in `archive/`, for history only. **Nothing in `archive/` is a r
   - **conflicting transactions are blocked:** no other purchase, hatch, fusion or sell that touches the same coins or pets, and no second critical operation, until it resolves. The UI shows "Saving…";
   - **safe play continues:** hunting, meditating and quests keep working as ordinary progress;
   - the server retries the reconcile with backoff (2, 4, 8, 16… s, capped at 60 s), and resolves to state 1 or 2 on the first successful `UpdateAsync`;
-  - **every later write is also a reconcile:** the autosave, the leave save and the shutdown save all run inside `UpdateAsync`, which first resolves pending ids against the stored profile. If the id is present, the stored effect is kept; if it's absent, it's marked cancelled. **No save ever writes the "refunded" or "spent" coins on a guess.**
+  - **every later write is also a reconcile:** the autosave, the leave save and the shutdown save all run inside `UpdateAsync`, which first resolves pending ids against the stored profile. If the id is stored as `committed`, the stored effect is kept; if it's stored as `cancelled`, it stays cancelled; if it's absent, it's marked cancelled. **Presence alone never means done: the status decides.** **No save ever writes the "refunded" or "spent" coins on a guess.**
 
   **If the server crashes while an operation is UNKNOWN:** the pending memory is gone, but storage holds exactly one truth:
   - **committed:** the profile already contains the cost, the result and the id, with `revealed = false`. On the next join (any server), the game finds the unrevealed operation and **plays it then** ("Your Mythic hatch finished saving!"), then marks it revealed;
@@ -77,7 +78,7 @@ Old versions are in `archive/`, for history only. **Nothing in `archive/` is a r
   - the Boss Shard reward (once per boss);
   - **every Robux purchase** (below).
 
-  The operation ids (including cancelled ones) are kept in the profile for 30 days, then pruned.
+  The operation ids (both statuses) are kept in the profile for 30 days, then pruned, **except** ids that a serial ledger entry still lists as `claimed` (below). **Robux receipts never use this list:** they have their own permanent receipt ledger (below).
 
 - **Offline gain:**
   - computed once per session from `lastSeen` to now (server time, capped at 8 h), in **one write** with a new `offlineClaimId`;
@@ -85,17 +86,25 @@ Old versions are in `archive/`, for history only. **Nothing in `archive/` is a r
   - a rejoin can't claim the same span twice;
   - the device clock does nothing.
 - **AFK rejoin:** the rejoin teleport saves first, then puts you back on a mat (the gain continues).
-- **Robux purchases (developer products):** Roblox calls `MarketplaceService.ProcessReceipt` and retries it until we answer `PurchaseGranted`. So:
-  - the receipt's **`PurchaseId` is the operation id**: grant + record the id in **one** `UpdateAsync`;
-  - return `PurchaseGranted` **only** when that write is **confirmed saved** (state 1), or when a reconcile finds the id already stored;
-  - on state 3 (unknown), return `NotProcessedYet`: Roblox will call again, and the id check makes the retry grant exactly once;
+- **Robux purchases (developer products).** What Roblox documents (MarketplaceService `ProcessReceipt`, creator-docs):
+  - there is **no time-based retry**: an unresolved receipt is re-sent only when the buyer joins a server again or starts another purchase, **and unresolved purchases are never removed**, so one can come back **at any later time**;
+  - the same receipt **can run on two servers at once** (the buyer joins a second server before the first returns);
+  - **returning `PurchaseGranted` can still fail to be recorded**, so a receipt we already delivered can arrive again.
+
+  So:
+  - **The permanent receipt ledger** (in the profile, never pruned, separate from the 30-day operation list) maps each `PurchaseId` → **`delivered`**. A receipt has only two states: **absent** or **`delivered`**. It is **never `cancelled`**: a receipt is a real payment, so "not committed" only means "grant it now".
+  - **Processing a receipt:** in **one** `UpdateAsync`: if the ledger has the `PurchaseId` as `delivered`, change nothing; otherwise grant the item **and** write `delivered`. Return `PurchaseGranted` **only** when that write is **confirmed** and the stored ledger shows `delivered`.
+  - **On state 3 (unknown):** return `NotProcessedYet`. The next call (rejoin or next purchase) runs the same write, which sees `delivered` or grants. **Never acknowledged on a guess, never on an id that merely exists.**
+  - **Two servers at once:** the session lock + `UpdateAsync` mean only one write can add `delivered`; the other sees it and returns `PurchaseGranted` without granting.
+  - **Re-sent after a lost acknowledgement:** the ledger says `delivered`, so it returns `PurchaseGranted` again with no second grant, whenever it arrives.
+  - **Size:** about 60 bytes per receipt; even 10,000 purchases is ~0.6 MB of the 4 MB profile. If a profile ever nears the limit, the oldest entries move to a per-player archive key **first** (confirmed), and only then leave the profile; lookups check both.
   - Robux is never charged without the item, and the item is never granted twice.
 - **Game passes** are checked with `UserOwnsGamePassAsync` on join (and `PromptGamePassPurchaseFinished` during play); their effects are never stored as a substitute for that check.
 - **Serials: a ledger, not one atomic write.** A global serial counter and a player profile are **two different keys**, and Roblox can't write both in one transaction. So serials use a **ledger** plus recovery, and the rule is **never a duplicate serial, never a lost item**:
   - **The ledger:** one DataStore key per serialized line (e.g. `serials/AuroraDragon`), holding `next` and a map **operation id → serial + userId + status**. Status is **`claimed`** (the serial exists, the grant may not have finished) or **`granted`** (the profile is confirmed to have received it; final). Claiming is one `UpdateAsync` on that key and is **idempotent**: if the operation id is already there, it returns the same serial instead of a new one. A serial number is never reused.
   - **Recovery restores only unfinished grants, never removed pets:**
-    - every profile keeps the operation ids it has **received** (the processed-id list);
-    - recovery looks only at ledger entries with status **`claimed`**. For each one: if the profile's processed-id list **has** the operation id, the grant finished, so whatever happened to the pet since (traded, fused, deleted) is legitimate. The ledger entry is set to `granted` and **nothing is restored**. Only if the id is **absent** is the item granted (in one profile write that also records the id), and then the entry is set to `granted`;
+    - **proof of delivery** is the profile's own record: the receipt ledger shows the `PurchaseId` as **`delivered`** (paid Limiteds), or the operation list shows the hatch id as **`committed`** (Secret+ hatches). An id stored as `cancelled` is **not** proof of delivery;
+    - recovery looks only at ledger entries with status **`claimed`**. For each one: if the profile has **proof of delivery** for it, the grant finished, so whatever happened to the pet since (traded, fused, deleted) is legitimate. The ledger entry is set to `granted` and **nothing is restored**. Only if there's no proof of delivery is the item granted (in one profile write that also writes the proof), and then the entry is set to `granted`. (A hatch whose id is `cancelled` never happened: its serial is retired unused and the entry is set to `void`);
     - **`granted` entries are never restored, ever.** A trade or fusion therefore can't be undone by recovery;
     - **pruning order:** an operation id is pruned from the profile (after 30 days) **only once its ledger entry is `granted`**. So recovery can never find a `claimed` entry whose proof of delivery has been pruned.
   - **Secret+ hatches (profile first):**
@@ -112,12 +121,12 @@ Old versions are in `archive/`, for history only. **Nothing in `archive/` is a r
     - **The shard order is fixed per operation, never random:** start at shard `hash(operation id) mod 10`, then go up in order (wrapping round).
     - In each shard's `UpdateAsync`, the server **first checks whether the operation id is already there** (and returns that serial) and only then whether the shard is full.
     - A retry walks the same order, so it reaches the shard holding its earlier claim before any later one: **one operation can never hold two serials**, even if that shard has filled up since. Different purchases still spread over the 10 keys.
-- **Limited stock and late receipts:**
-  - **Before the prompt:** the server reserves a unit in MemoryStore (userId + time). **Stock shown = 1,000 − sold − open reservations − the late reserve.** If it's 0, the prompt never opens.
-  - **A reservation ends** when `PromptProductPurchaseFinished` reports "not purchased", when its receipt is granted, or after **10 minutes**.
-  - **A valid receipt is always honoured, even after its reservation ended.** Serials **#951-1,000 are a late reserve**, used only for receipts whose reservation had already ended. The sale shows "Sold out" at 950.
-  - **If the reserve were ever used up** (it would take 50 late receipts), a late receipt still grants the item, as a "Late Edition" with no number, logged for the owner. The store's small print says so.
-  - The Robux is never kept without the item, and the 1,000 numbered copies are never exceeded.
+- **Limited stock and late receipts (resolved product promise, MONETIZATION 7):**
+  - **Why "only 1,000 will ever exist" can't be promised on Roblox:** a paid receipt can come back at any later join, and `PromptProductPurchaseFinished` must not be trusted for purchases (both from the MarketplaceService docs). So any hard total can, in rare cases, meet a valid payment with no number left.
+  - **So the promise is: "Numbered Limited. On sale for 7 days or until 1,000 sold. Every buyer gets a numbered copy."** It never says only 1,000 will exist. **Every buyer always gets exactly what was advertised: the item with its number.** There is no "Late Edition" and no substitute item.
+  - **Keeping late receipts rare:** before the prompt, the server reserves a unit in the ledger (DataStore, not MemoryStore). **Stock shown = 1,000 − sold − open reservations.** At 0 the prompt never opens and the store shows "Sold out". A reservation ends when its receipt is delivered, or **15 minutes** after the prompt closed with no receipt.
+  - **A late receipt** (its reservation had ended and the sale was full) **gets the next number after the last one issued** (#1,001, #1,002 …). The sale page's final count and the leaderboard show the true edition size ("1,003 issued"). Late receipts are logged for the owner.
+  - The Robux is never kept without the numbered item.
 - **Paid random items (MONETIZATION.md 17):** `PolicyService:GetPolicyInfoForPlayerAsync(player)` is read on join (retried; **restricted until known**). If `ArePaidRandomItemsRestricted`: no Exclusive Eggs (direct-buy shop instead), **no Robux-bought coins** (so coin eggs stay free random items), **no paid luck**, no Enchant Crystal packs, Mutation Storm / Magnet, Nursery+ / Hurry or Raid Summon, and restricted versions of packs and the Aura Pass. The server applies this on every grant and every multiplier, not just in the UI. If `IsPaidItemTradingAllowed` is false, trading is closed for that player. Free reward eggs can always be hatched.
 - **Studio without API access:** play without saving, with a "NOT SAVING" banner. Never stall.
 - **Follow Roblox's data store guidance:** https://create.roblox.com/docs/cloud-services/data-stores/best-practices
@@ -141,15 +150,15 @@ Old versions are in `archive/`, for history only. **Nothing in `archive/` is a r
 | P13 | **Robux product:** buy a Luck Potion with the data store mocked to (a) fail, (b) commit then time out | (a) `NotProcessedYet`, then exactly one grant when Roblox retries; (b) the reconcile finds the `PurchaseId`: granted once, never twice |
 | P14 | Studio mock: every save fails during a Mythic hatch attempt, then the server is shut down | rejoin with the write **not committed**: no Mythic and no coins spent. Rejoin with the write **committed** (response lost): the Mythic and its cost are both there once, and the cutscene plays on join ("finished saving"). No path refunds coins for a committed hatch or shows a result that isn't stored |
 | P15 | **Limited stock:** two servers buy the last 5 units at once (20 buyers) | exactly 5 sold; nobody is charged without receiving one |
-| P16 | **Paid random items:** test accounts with (a) `ArePaidRandomItemsRestricted = true`; (b) restricted + already owns VIP and 2× Coins; (c) `IsPaidItemTradingAllowed = false`; (d) the policy call fails; (e) a restricted player in a server where someone else bought Server Luck | (a) can't buy Exclusive Eggs (sees the direct-buy shop), coin packs, paid luck, Enchant Crystals, Mutation Storm / Magnet, Nursery+ / Hurry or Raid Summon; packs and the Aura Pass show fixed pets; the ladder is Power-only; reward eggs still hatch; (b) earns coins at ×1 and has no paid luck; (c) trading booths closed with a message; (d) treated as restricted until the call succeeds; (e) gets the server luck |
+| P16 | **Paid random items:** test accounts with (a) `ArePaidRandomItemsRestricted = true`; (b) restricted + already owns VIP and 2× Coins; (c) `IsPaidItemTradingAllowed = false`; (d) the policy call fails; (e) a restricted player in a server where someone else bought Server Luck; (f) a player with paid coins, paid-tagged eggs and an active Luck Potion becomes restricted; (g) then becomes allowed again; (h) a friend tries to gift an egg pack to a restricted player; (i) a 2× Coins sale | (a) can't buy Exclusive Eggs (sees the direct-buy shop), coin packs, paid luck, Enchant Crystals, Mutation Storm / Magnet, Nursery+ / Hurry or Raid Summon; packs and the Aura Pass show fixed pets; the ladder is Power-only; reward eggs still hatch; (b) earns coins at ×1 and has no paid luck; (c) trading booths closed with a message; (d) treated as restricted until the call succeeds; (e) gets the server luck; (f) coin eggs take only earned coins, paid coins still buy upgrades, paid eggs are locked or exchangeable for the shown pet, the potion's luck pauses; (g) everything unlocks, the potion resumes; (h) only deterministic gifts are offered; (i) half the gain is booked as paid coins |
 | P17 | **Luck + odds card:** stack 2× Boost ×2,048 + VIP + Luck Potion + Server Luck + group + 2× Secret Luck | no cap applied; the card's odds add to 100% and equal the rolled odds over 1,000,000 hatches (±4 SD for Legendary and Mythic) |
 | P19 | **Serials:** 3 servers hatch Secrets of the same species at the same moment (forced test odds) | numbers 1, 2, 3 each used once; a failed save never burns or duplicates a number |
 | P20 | **Slot packs:** buy +2 Pet Slots 11 times | 10 succeed (+20 slots); the 11th prompt never opens |
 | P21 | **Machines (as each ships):** Nursery stays use server time and can't be collected twice; enchant rolls, Reactor infusions and relic levels happen on the server, each consuming its cost in the same save as its result | no duplicate collects, no free rolls, no lost shards |
-| P23 | **Raid reward share:** (a) {strong 1,000, A 1, B 1} where A and B tap once; (b) the same where A and B blast all raid; (c) a 500-damage one-shot then AFK; (d) 20 equal fighters + a tapper; (e) 20 fighters where one deals 100× each of the others; (f) 20 fighters from 1× to 100× + 30 tappers; (g) a mid-raid joiner and a last-10-seconds joiner | (a) only the strong player; (b) all three; (c) not paid; (d)-(e) all 20 fighters, no tapper; (f) everyone within 4× of the median active fighter, no tapper; (g) the mid-raid joiner qualifies, the last-second one doesn't. Rule: active (own blasts in half the 10-s windows, ≥ 3) AND 8% of the damage or a quarter of the median active fighter's, from the server's logs; the HUD meter matches |
+| P23 | **Raid reward share:** (a) {strong 1,000, A 1, B 1} where A and B tap once; (b) the same where A and B blast all raid; (b2) two friends, 1,000 vs 1, both fighting all raid; (b3) a player in every window dealing a tenth of their own build's output next to a giant; (c) a 500-damage one-shot then AFK; (d) 20 equal fighters + a tapper; (e) 20 fighters where one deals 100× each of the others; (f) 20 fighters from 1× to 100× + 30 tappers; (g) a mid-raid joiner and a last-10-seconds joiner | (a) only the strong player; (b) all three; (b2) both; (b3) not paid; (c) not paid; (d)-(e) all 20 fighters, no tapper; (f) everyone within 4× of the median active fighter, no tapper; (g) the mid-raid joiner qualifies, the last-second one doesn't. Rule: active (own blasts in half the 10-s windows, ≥ 3) AND (8% of the damage, or a quarter of the median active fighter's, or half of their own build's expected output), from the server's logs; the HUD meter matches |
 | P24 | **Weekly Limited Egg + Titan:** the egg ends at the update time (server time) and can't be hatched after; the Titan respawns 60 s after each death; XP Shards and Awakening levels save like XP | no hatches after the end; no double rewards per kill; levels 31-50 only from XP Shards |
 | P25 | **Serial recovery:** kill the server (a) after a Secret hatch's profile write but before the ledger claim, (b) after the claim but before the serial is written; (c) for a Limited purchase, after ledger claim A but before profile write B; (d) 30 servers hatch Secret+ of the same line at once; (e) a Limited is granted, then **traded away**, and the `granted` status write is lost; rejoin; (f) a Limited claim lands in shard 3, shard 3 then fills, and the receipt is retried | (a)-(b) after rejoin the pet gets exactly one serial, the same one on every retry; (c) the receipt retry grants the item with the same serial; (d) no duplicate serials; (e) **nothing is restored** (the profile has the id), the entry becomes `granted`; (f) the retry gets the **same** serial from shard 3, never a second one |
-| P26 | **Late Limited receipt:** a purchase whose reservation expired (10 min) and stock reached "Sold out" | the item is granted with a reserve serial (#951-1,000); never more than 1,000 numbered copies; a reservation is released when the prompt reports "not purchased" |
+| P26 | **Receipts:** (a) a Limited receipt arriving after its reservation ended and the sale sold out; (b) a receipt re-sent after `PurchaseGranted` failed to record; (c) the same receipt on two servers at once; (d) a receipt whose earlier grant write was unknown, then the store recovers; (e) a hatch operation stored as `cancelled` whose id a reconcile later finds | (a) granted with the next number (#1,001), logged; (b) `PurchaseGranted` again, no second item; (c) exactly one grant; (d) granted once, then `delivered`; (e) treated as not done (nothing shown or granted), never acknowledged as delivered |
 | P22 | **Secret+ scaling:** get a better normal pet while owning a Secret and a Boundless | their Strength updates to ×1 and ×1,000 of the new best pet, immediately and after a rejoin |
 | P18 | **Daily login:** claim, change the device clock, rejoin another server; skip 2 days, then log in | one claim per server (UTC) day; after the skip you claim the **next** day of the cycle (nothing resets) |
 
@@ -176,12 +185,16 @@ Old versions are in `archive/`, for history only. **Nothing in `archive/` is a r
 | 9 | Logs off on a mat (or asks about offline) | yes, or explained in one line |
 | 10 | **Day 2:** sees the offline gain and keeps playing after it | 10+ min |
 | 11 | Timing behaviour at 15+ min: still aiming for PERFECTs, using Overdrive | not abandoning timing |
+| 12 | **No chores (friction, GAME-BIBLE 1.1):** gaps in the session log with no reward event (sell, hatch, star, quest step, mutation, Power gate) | no gap over 3 min in zones 1-2 |
+| 13 | **Upgrades are felt:** time-to-kill on the same monster type in the minute after buying an egg / pet / shop upgrade, vs the minute before | drops ≥ 20% on average, and the player reacts to it (comments, or moves to a harder monster) |
+| 14 | **Meditation isn't waiting:** player stands idle on a mat with nothing else to do | under 60 s at a time, unless they chose to AFK |
+| 15 | **"Which part felt like a chore?"** (asked last) | no single part named by most testers; anything named gets a fix before art |
 
 **What they say counts less than what they do:**
 - secondary: fun 1-10, the best and the most boring moment;
 - an answer only breaks a tie.
 
-**If #1, #4 or #11 fails, fix the core before any more art.**
+**If #1, #4, #11, #12 or #13 fails, fix the core before any more art.** Friction beats originality: a familiar loop with no chores wins; gorgeous effects can't rescue chores.
 
 **If #4 fails:**
 - only hunting → raise the Shrine rate or the Power gates;

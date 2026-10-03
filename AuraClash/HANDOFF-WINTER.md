@@ -45,6 +45,17 @@
 - **Zones:** every zone must look completely different from the others. Build from its design table in GAME-BIBLE Part B (landmarks, sky, materials, ambient VFX).
 - **Hero moments:** hatches, transformations and Mutation Storms run at VFX ladder level 5, plus a +1 pass.
 
+## The other bar: no chores (owner)
+
+**Friction, not originality, is the biggest risk.** Build to GAME-BIBLE 1.1:
+- meditation never asks you to stand still;
+- one-hit monsters are swept by holding the button, and timing is saved for monsters that matter;
+- quest steps take at most ~8 min and show minutes left;
+- every upgrade shows a before/after card and makes the next few minutes faster;
+- something rewarding happens at least every ~3 min.
+
+The greybox fun gate checks these (CORE-GAME 3, #12-#15) **before** any art.
+
 ## Rules that are easy to get wrong
 
 - **Economy:**
@@ -68,9 +79,10 @@
   - **Shared monsters, personal loot:** everyone whose hit landed gets their own full drop and quest credit. (The protected beginner pack is **removed**, owner decision.)
 - **Secret+ Strength is live:** Secret = your best normal pet, Divine ×10, Impossible ×100, Boundless ×1,000, recomputed when your best pet changes.
 - **Progress:**
-  - **Bosses are server raids** every 15 min, plus a solo Trial any time. Raid rewards need you to be **active** (your own blasts land in half the raid's 10-second windows, at least 3) **and** 8% of the damage **or a quarter of the median active fighter's** (server-side logs). The first win gives the form, the Boss Shards and the next zone.
+  - **Bosses are server raids** every 15 min, plus a solo Trial any time. Raid rewards need you to be **active** (your own blasts land in half the raid's 10-second windows, at least 3) **and** 8% of the damage, a quarter of the median active fighter's, **or half of their own build's expected output** (server-side logs and stats; active friends of any strength always share). The first win gives the form, the Boss Shards and the next zone.
   - **The boss gate** = all of that zone's quests done (the last one is the Power target). Quest difficulty: zones 1-3 very easy, 4-6 easy, 7 medium, 8 hard.
   - **Offline:** server time, 25% of AFK, 8 h cap, claimed once (confirmed save).
+- **Receipts:** a permanent `delivered` ledger, never pruned, never cancelled; acknowledge only on confirmed `delivered`. Hatch ids count only when stored `committed`.
 - **Saving has three outcomes:** confirmed saved (show it), confirmed not committed (a later successful write finds no id and marks it cancelled, then undo), or **unknown** (hold the cost, block conflicts, keep reconciling, never show the result). A committed but unrevealed operation plays on the next join (CORE-GAME 2.2).
 
 ## You have full access

@@ -784,8 +784,9 @@ def loot_recipients(damage_log):
     return sorted(pid for pid, dmg in damage_log.items() if dmg > 0)
 
 
-RAID_SHARE, RAID_MEDIAN_X = 0.08, 0.25   # raid rewards: 8% of the damage OR a quarter of the median ACTIVE fighter
-RAID_WINDOW, RAID_MIN_WINDOWS = 10, 3     # ... and you must be active: your own blasts land in half the raid's 10-s windows
+RAID_SHARE, RAID_MEDIAN_X = 0.08, 0.25   # raid rewards: 8% of the damage OR a quarter of the median ACTIVE fighter ...
+RAID_EFFORT_X = 0.5                       # ... OR half of what YOUR OWN build deals in the time you fought (effort)
+RAID_WINDOW, RAID_MIN_WINDOWS = 10, 3     # and always: your own blasts land in half the raid's 10-s windows
 
 
 def raid_active(windows_hit, raid_windows):
@@ -795,17 +796,21 @@ def raid_active(windows_hit, raid_windows):
 
 
 def raid_recipients(log, raid_windows):
-    """log = {player: (damage, windows_hit)}. You share a raid's rewards if you were ACTIVE (raid_active) AND you
-    dealt at least 8% of the damage OR at least a quarter of what the median active fighter dealt.
-    - one tap (or a last-second tap) is never active, so it never qualifies and never lowers the median;
-    - one strong player can't push everyone out: the median ignores how big the top hitter is;
-    - crowded raids still pay everyone who really fought."""
-    total = sum(d for d, _ in log.values())
-    active = {pid: d for pid, (d, w) in log.items() if d > 0 and raid_active(w, raid_windows)}
+    """log = {player: (damage, windows_hit, own_expected)}; own_expected = what this player's own Power + team deal
+    with BASIC timing (no PERFECTs) over the windows they hit, computed by the server from their stats.
+    You share a raid's rewards if you were ACTIVE (raid_active) AND any of:
+      - 8% of the total damage;
+      - a quarter of the median active fighter's damage;
+      - half of your own expected damage (you really fought at your own strength).
+    So an active beginner next to a giant always shares (the co-op promise), while a tap, a last-second join or a
+    one-shot-then-AFK never does (not active), and taps can't drag the median down (median of active fighters)."""
+    total = sum(e[0] for e in log.values())
+    active = {pid: e for pid, e in log.items() if e[0] > 0 and raid_active(e[1], raid_windows)}
     if total <= 0 or not active:
         return []
-    med = st.median(active.values())
-    return sorted(pid for pid, d in active.items() if d / total >= RAID_SHARE or d >= RAID_MEDIAN_X * med)
+    med = st.median(e[0] for e in active.values())
+    return sorted(pid for pid, (d, _, own) in active.items()
+                  if d / total >= RAID_SHARE or d >= RAID_MEDIAN_X * med or d >= RAID_EFFORT_X * own)
 
 
 def combo_avg(p):
@@ -849,6 +854,28 @@ def big(x):
         if abs(x) >= v:
             return f"{x / v:.3g}{suf}"
     return f"{x:.3g}"
+
+
+STEP_MAX_MIN = 8   # friction rule: no single quest step should take an average player longer than this
+
+
+def quest_step_minutes(players):
+    """Median minutes each quest step takes (from the previous step / zone entry to its completion)."""
+    rows = list(players)
+    out = []
+    for z in range(ZONES):
+        ms = []
+        for i in range(len(QUESTS[z])):
+            ds = []
+            for x in rows:
+                m = x.milestones
+                start = m.get(f"quest_z{z}_{i - 1}") if i else (m.get(f"boss{z}") if z else 0)
+                end = m.get(f"quest_z{z}_{i}")
+                if start is not None and end is not None:
+                    ds.append((end - start) / 60)
+            ms.append(st.median(ds) if ds else float("nan"))
+        out.append(ms)
+    return out
 
 
 def report(n_full=40, n_two=200):
@@ -930,6 +957,11 @@ def report(n_full=40, n_two=200):
     P("")
     P("8. AFK-only player (never hunts): Power keeps growing, but the boss gate never opens")
     P("   (rank quests need kills and hatches, which need coins, which only hunting gives).")
+    P("")
+    P("9. Friction check (GAME-BIBLE 1.1): median minutes per quest step, average free player (steps over 8 min flagged *)")
+    for z, ms in enumerate(quest_step_minutes(Player("average", 3000 + r).run() for r in range(20))):
+        P(f"   {z + 1:2d} " + "  ".join(f"{QUESTS[z][i][0]} {m:.1f}{'*' if m > STEP_MAX_MIN else ''}"
+                                         for i, m in enumerate(ms)))
     return "\n".join(out)
 
 

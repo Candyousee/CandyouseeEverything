@@ -13,10 +13,14 @@ Change a number = change the model and re-run `python make_bible.py`.
 - `STYLE-SHEET.md`: the look.
 - `GAME-PLAN.md`: market and build order.
 
-**v9 owner changes:** bosses are **server raids** (every 15 min, plus a solo Trial any time). Raid rewards need you to **fight actively** (your own blasts in half the raid) **and** deal **8% of the damage or a quarter of the median active fighter's** (so neither taps nor one huge player decide it). The endgame is the **Nexus Titan** (an always-respawning raid boss with huge coins), a **Weekly Limited Egg**, and **XP Shards** (food) with **Awakening** to level 50.
+**v9 owner changes:** bosses are **server raids** (every 15 min, plus a solo Trial any time). Raid rewards need you to **fight actively** (your own blasts in half the raid) **and** deal 8% of the damage, a quarter of the median active fighter's, **or half of what your own build deals** (so active friends always share; taps never do). The endgame is the **Nexus Titan** (an always-respawning raid boss with huge coins), a **Weekly Limited Egg**, and **XP Shards** (food) with **Awakening** to level 50.
 
 **v9 review fixes:**
-- **Raid share:** you must be **active** (your own blasts in half the raid's 10-s windows) and deal 8% of the damage **or a quarter of the median active fighter's** (a 100× player can't push 19 real fighters out; one-tap freeloaders never qualify).
+- **Raid share:** you must be **active** (your own blasts in half the raid's 10-s windows) and deal 8% of the damage, a quarter of the median active fighter's, **or half your own build's output** (active friends of any strength share; a 100× player can't push anyone out; one-tap freeloaders never qualify).
+- **Saving:** Robux receipts have a **permanent** ledger (`delivered` only; never cancelled, never pruned); hatch operations count as done only when stored `committed`, never just because the id exists.
+- **Limited promise:** "Numbered. On sale for 7 days or until 1,000 sold. Every buyer gets a numbered copy." No substitute items.
+- **Regional rules** now cover stored paid coins (two balances), paid-tagged eggs, gifts and eligibility changes (MONETIZATION 17.1).
+- **Friction and longevity** (owner): binding friction rules (1.1, with the model's honest result) and the after-clear plan (25).
 - **Pet hits:** +10% of Power per doubling of team Strength, **no hard cap** (the old cap was reached at Strength 25, so upgrades stopped adding hit by zone 2). Pets stay at about 46% of damage.
 - **Fusion:** the Fusion Altar stops at ★2 until the Star Forge (zone 5), in the model too.
 - **Times are partial-model estimates** (section 27 lists what is and isn't modeled); Huge Storm, Auto-Sell and Mutation Magnet are now modeled for the whale.
@@ -85,6 +89,29 @@ Change a number = change the model and re-run `python make_bible.py`.
 | **Pet bar** | your equipped pets |
 | **Buffs, Store and Hourly reward buttons** | MONETIZATION.md |
 | **Server leaderboard** | top Power |
+
+### 1.1 Friction rules (owner's biggest concern: the loop must never feel like chores)
+
+Familiar loops work when **every action feels good on its own** and **every upgrade changes the next few minutes**. Gorgeous effects can't rescue chores. These rules are binding for the build and checked in playtest #1 (CORE-GAME 3, #12-#15):
+
+| Risk | Rule |
+|---|---|
+| **Meditation feels like waiting** | Meditation is **never required to stand still**. It runs on its own whenever you're idle 10 s anywhere near a mat, and offline. Focus taps are an **optional bonus**, never needed. The aura **visibly grows** (a size pulse + "+POWER" pop every ~20 s), and the next Power gate is shown as a bar with "about 2 min". **No quest asks for more than ~60 s of meditation.** |
+| **Repeated timed blasts feel like busywork** | Skill is spent **only where it matters**. **Sweep:** monsters that die to one ordinary blast (grey "one-hit" bar) are cleared by **holding** the button while you walk, with no timing needed. PERFECT timing is for green / Big / mutated monsters and bosses. Every PERFECT has a distinct hit-stop, sound and shard burst; combos and Overdrive change the feel, not just the numbers. |
+| **Quests feel like checklists** | Quests count **everything you're already doing** (kills by any means, hatches, stars). The quest bar shows the **estimated minutes left**. **Target: no quest step over ~8 min** for an average player. A quest step never asks you to go back to an old zone. **Today the model fails this from zone 2 on** (below). |
+| **Upgrades don't feel noticeable** | **Every upgrade shows its effect right away:** a 3-second before/after card ("Hunting +34% · Meditation +20%"), HP bars turning green, and the time-to-kill readout on the next monster. The shop and egg card show the **predicted** gain before you buy. |
+| **Dead stretches between rewards** | **Something rewarding at least every ~3 minutes** early on (a sell, hatch, star, quest step, mutation or Power gate). The session log flags any gap over 3 min. |
+| **Walking** | SELL is a teleport; the Shrine, egg and altar sit together; machines have hub teleport pads. |
+
+**What the model says today (`econ/RESULTS.txt` section 9; median minutes per quest step, average free player):**
+- **Zones 1-2 pass** (the playtest build): every step is under ~3 min, except "hatch 8" in zone 2 at ~8 min.
+- **Zones 3-10 fail** in two places:
+  - **"Hatch N eggs" is the whole zone's economy in one step:** 14 min (zone 3) → 52 min (zone 7) → **~2 h (zone 10)**;
+  - **the final Power gate** takes 10-26 min of mostly meditation in zones 4-10, which risks feeling like waiting.
+- **The fix, required before zones 3-10 ship** (re-checked in the model each time):
+  1. Split every long step into **sub-goals of ~5 min, each with a small reward** (hatch 4 → a Daily Exclusive Egg; hatch 8 → Enchant Crystals …), so a reward lands every few minutes. The total time is the same, but the friction is not.
+  2. Shorten the Power-gate wait. Either the gate **fills while you hunt** (a share of Power from kills in that zone), or the gate is lower and egg prices carry the pacing. Pick one in the model, keeping the 10-12 h free target.
+  3. Then the target becomes a model test (no step over 8 min, Power gate under 5 min).
 
 ## 2. Controls: the blast (the only attack)
 
@@ -317,12 +344,17 @@ Every egg has its own pets and its own odds (see each zone). **A pet's tier come
 - **HP:** scales with the number of fighters (about ×1 per player), so a full server and a small group both get a 60-90 s fight.
 
 **Reward sharing (owner): you must do real damage.**
-- **The rule:** you share a raid's rewards if you were **active** AND you dealt **at least 8% of the total damage, OR at least a quarter of what the median active fighter dealt**.
-  - **Active** = **your own blasts** (pets don't count) landed on the boss in **at least half of the raid's 10-second windows**, and in at least 3 of them (every window, if the raid was shorter). Fighting half the raid counts, so a mid-raid joiner qualifies; a last-10-seconds join, a single tap or a one-shot-then-AFK doesn't.
-  - **Taps can't drag the bar down:** the median is taken over **active** fighters only. Reviewer case: {strong 1,000, A 1, B 1} where A and B tapped once → only the strong player. If A and B really fought the whole raid with weak pets → all three share (the co-op promise).
-  - **A huge player can't push everyone out:** the median ignores how big the top hitter is. With 20 active fighters and one dealing 100× each of the others, all 20 qualify.
-  - **Crowded raids still pay everyone who really fought:** 20 equal fighters all qualify; with strengths spread from 1× to 100× (plus 30 tappers), everyone within 4× of the typical fighter is paid and no tapper is (model test).
-  - The HUD shows a **"Reward share"** meter: an activity ring that fills as your blasts land in each window, and a ✔ once you qualify, so nobody is surprised.
+- **The rule:** you share a raid's rewards if you were **active** AND you did **any one** of:
+  - **8% of the total damage**;
+  - **a quarter of what the median active fighter dealt**;
+  - **half of what your own build deals** in the time you fought (the server knows your Power and team, so it knows what "fighting at your own strength" looks like).
+- **Active** = **your own blasts** (pets don't count) landed on the boss in **at least half of the raid's 10-second windows**, and in at least 3 of them (every window, if the raid was shorter). Fighting half the raid counts, so a mid-raid joiner qualifies; a last-10-seconds join, a single tap or a one-shot-then-AFK doesn't.
+- **What this guarantees** (all model tests):
+  - **active friends always share,** whatever their strength: two friends at 1,000 vs 1 damage who both fight the whole raid → both paid;
+  - **freeloaders never do:** {strong 1,000, A 1, B 1} where A and B only tapped → only the strong player; someone in every window but dealing a tenth of what their own build can → not paid;
+  - **a huge player can't push others out:** 20 active fighters, one at 100× → all 20; strengths from 1× to 100× plus 30 tappers → all 20 fighters, no tapper;
+  - **taps can't drag the bar down:** the median counts active fighters only.
+- The HUD shows a **"Reward share"** meter: an activity ring that fills as your blasts land in each window, and a ✔ once you qualify, so nobody is surprised.
 - **So:** one tap with weak pets never qualifies, and everyone who really fights does. A bar on the HUD shows your share live.
 - **Normal monsters are different:** any hit that lands still gives you the drop (section 4.1).
 
@@ -1239,13 +1271,32 @@ This is what players do while they wait for the weekly update.
 
 # PART C: ENDGAME AND LIVE UPDATES
 
-## 25. After zone 10 (endgame)
+## 25. After zone 10: why players stay (owner's longevity concern)
 
-- **The Nexus Titan** raid, around the clock (13.12), the **Weekly Limited Egg**, **Awakening** (levels 31-50 with XP Shards), **Ascension** (13.10), the **Infinity Tower** (13.9), ★5 pets (243 copies), and Shiny, mutated, enchanted teams.
-- **Secret+ hunting:** Secret, Divine, Impossible and the monthly **Boundless**, each with its serial.
-- **Mutation hunting:** Celestial monsters are 1 in 10,000; Mutation Storms double the chances.
-- **Leaderboards:** top Power, most Secrets and Boundless owners, each in the server and globally; the top 3 get statues.
-- **Show-off:** the ASCENDED form, the Impossible / Boundless titles, ★5 halos, and a full Rainbow storm.
+A heavily upgraded player can clear the ten bosses in about **3 hours** (model), and a free player in about **10**. That's fine **only if collecting, improving and showing off the team stays appealing afterwards.** This is the plan for every hour after the first clear.
+
+**1. Improve the team (vertical, never "done"):**
+- **★5 pets** (243 copies each), **Shiny** (Nursery), **pet mutations** (Reactor, up to ×5), **enchants** (I-V), **Awakening** to level 50 (XP Shards from the Titan), relics.
+- Each layer **visibly changes the pet** (coat, halo, enchant glow, size at Awakening), so improving it is also showing it off.
+
+**2. Collect (horizontal):**
+- **Spirit Codex variants:** each species has collectable variants (★, Shiny, each mutation coat). Completing a variant page gives a permanent bonus + a nameplate badge.
+- **Secret+ hunting** with its serials, the **monthly Boundless**, the **Weekly Limited Egg** (never again), Exclusive lines.
+
+**3. Show off (the reason to collect):**
+- **Showcase Plinths** in Lumora Plaza: your best 3 pets stand on your plinth for the whole server, with their serials, stars and coats.
+- **Inspect** any player to see their team; **Admire** a team (one ⭐ per player per day) → a weekly **Most Admired Team** board and statue.
+- Titles, halos, the ASCENDED form, the Leaderboard Wall (Power, Secret+, Boundless, Titan damage, Tower floor).
+
+**4. Things to do every session:**
+- **3 daily endgame goals** (e.g. "earn 3 Titan reward shares", "infuse a mutation", "clear 3 Tower floors") paying XP Shards, Enchant Crystals and Relic Shards;
+- the **Nexus Titan** raid around the clock with its weekly damage board;
+- the **Infinity Tower** (endless floors, leaderboard);
+- **Ascension** (13.10): the long-term loop. Reset zones for permanent ×1.5 Power / +25% luck per Star and a new halo tier, keeping the team. Fast players are expected to Ascend, so a 3-hour first clear is the **start** of their game, not the end.
+
+**5. Every week, something new** (section 26): a new zone, a new Weekly Limited Egg and a stronger Titan.
+
+**How we'll know it works** (soft launch, not the model): the share of players who clear zone 10 and **still play 3+ more sessions**, time spent at the Codex / Showcase / Reactor / Enchant Forge after the clear, Ascension rate, and day-7 return of players who finished. If post-clear players drop fast, the fix goes into layers 1-3 **before** adding more zones.
 
 ## 26. Live updates (the plan after launch)
 
@@ -1290,7 +1341,7 @@ This is what players do while they wait for the weekly update.
   - **Daily Exclusive:** also free from rewards; 49 / 99 / 249;
   - **Shop Exclusive:** 99 / 279 / 849;
   - both use the tier system, with a Boundless line, and have no Huge or Titanic.
-- **Limited:** only the Verity pet and aura for now (a meme, so no licence; our own art), serialized to #1,000.
+- **Limited:** only the Verity pet and aura for now (a meme, so no licence; our own art), numbered; on sale for 7 days or until 1,000 sold (every buyer gets a numbered copy; MONETIZATION 7).
 - **Aura Pass:** 799 R$ (+799 to skip straight to the end).
 - **Packs:** Starter 49, Zone 149, Comeback 99.
 - **Free rewards:** hourly, daily (missed days never reset the cycle) and group rewards.

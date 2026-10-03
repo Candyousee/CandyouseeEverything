@@ -167,10 +167,11 @@ Both eggs use the **same tier bands** as zone eggs, so a 1-in-2M exclusive is a 
 
 | Item | R$ | Stock |
 |---|---|---|
-| **Verity aura** | 99 | 1,000 numbered copies |
-| **Verity pet** (Shop Exclusive strength, Mythic tier) | 399 | 1,000 numbered copies |
+| **Verity aura** | 99 | numbered; on sale 7 days or until 1,000 sold |
+| **Verity pet** (Shop Exclusive strength, Mythic tier) | 399 | numbered; on sale 7 days or until 1,000 sold |
 
-- **Serial:** shown on the item ("#0042"). The counter on the stand is real; when it sells out, it's gone.
+- **Serial:** shown on the item ("#0042"). The counter on the stand is real; when it sells out, the sale is over.
+- **The exact promise (store text): "Numbered Limited. On sale for 7 days or until 1,000 sold. Every buyer gets a numbered copy."** We never say "only 1,000 will ever exist". Roblox can deliver a paid receipt at any later join, so a hard total can't be guaranteed. A rare late payment gets the next number (#1,001…), and the final edition size is shown honestly. Every buyer always gets the advertised numbered item; there is no substitute (CORE-GAME 2.2).
 - **On hold:** titles, other skins and aura colours, as you asked.
 
 > **Verity is a meme, so no licence is needed.** One rule: Winter makes **our own** Verity aura and pet art in our style. Never upload someone else's image or video of the meme, since the original picture can still be someone's copyright.
@@ -277,7 +278,7 @@ Each goes live when its machine ships (GAME-BIBLE 13).
 | **Raid Summon** | 99 | starts the zone's raid boss **now** for the whole server, with a "Thanks to [buyer]!" banner | repeatable |
 
 - **The Weekly Limited Egg** is bought with **coins** (the Nexus Titan's coins), not Robux, so the endgame grind has a goal. Coin packs (section 4) still help, since they scale to your zone.
-- **The reward-share rule** (fight actively, and deal 8% of the damage or a quarter of the median active fighter's; GAME-BIBLE 9) means a Raid Summon buyer can't carry players who don't fight, and a strong buyer can't push real fighters out.
+- **The reward-share rule** (fight actively, and deal 8% of the damage, a quarter of the median active fighter's, or half of your own build's output; GAME-BIBLE 9) means a Raid Summon buyer can't carry players who don't fight, and a strong buyer can't push real fighters out.
 
 ## 16. Build timing and checks
 
@@ -295,7 +296,7 @@ Roblox doesn't let some players (by region / age policy) **buy random items with
 - **`ArePaidRandomItemsRestricted`**: this player can't pay for random results;
 - **`IsPaidItemTradingAllowed`**: whether this player may trade items bought with Robux.
 
-> **Verify before monetization ships:** the Roblox docs site was blocked from my container, so this section is written from the known PolicyService fields and the published rule ("no paid random items for restricted players; odds shown before any paid random purchase"). Winter must check it against the current Roblox monetization policy and PolicyService page, and adopt any stricter wording.
+> **Source:** Roblox's *Paid random items policy guidelines* (creator-docs, read from the official GitHub mirror). It says paid random items include those bought with **in-game currency purchasable with Robux**, and also **probability modifiers** (luck boosts, pity systems, enhanced resource drops). Restricted users must get one of these treatments: an earnable free path, a fixed disclosed order, direct purchase of the outcome, removal or hiding, or a blocked purchase with a message. `IsPaidItemTradingAllowed` false means they must not trade paid items or the results of paid random items. Re-check the page before monetization ships, in case it has changed.
 
 **The principle for a restricted player:** nothing they pay Robux for may be **spent on a random result** or **improve the odds** of one, directly or through a currency or item Robux can buy. Free play stays fully random and fully playable.
 
@@ -316,4 +317,27 @@ Roblox doesn't let some players (by region / age policy) **buy random items with
 - **Trading:** if `IsPaidItemTradingAllowed` is false, the **trading booths are closed for that player** (a clear message). For everyone, trades are items for items, never Robux.
 - **Odds before every random roll** that can involve anything paid: egg cards, enchant tiers (I 50% / II 28% / III 15% / IV 6% / V 1%), Shiny chance, mutation chances, Titan and raid drop tables.
 - **Fail-safe:** the policy is fetched on join and retried. **Until it's known, or if it fails, the player is treated as restricted.**
-- **Tests:** CORE-GAME P16 (a-e).
+
+### 17.1 What a player already owns (stored paid value)
+
+Turning off future purchases isn't enough: coins, eggs and boosts bought **before** a player became restricted are still paid value. So every account tracks **where its value came from, for everyone, all the time**, and the rules apply **when value is used**, not when it was bought.
+
+- **Two coin balances:**
+  - **Earned coins:** selling shards at ×1, quests and rewards;
+  - **Paid coins:** coin packs, pack coins, gifts of coins, and the **extra** part of any paid coin multiplier (2× Coins, VIP, Coin / Mega Potions). For example, a 2× Coins sale of 100 adds 50 earned + 50 paid.
+  - The HUD shows one total. The wallet screen shows the split.
+  - **Spending order for everyone:** deterministic purchases (bag, mat and Surge upgrades) spend **paid coins first**; random purchases (eggs, the Weekly Limited Egg, the Reactor if it ever rolls) spend **earned coins first**. That keeps a player's earned coins free for random items.
+  - **For a restricted player:** random purchases may use **earned coins only**. Paid coins still buy every deterministic thing. Nothing is deleted or frozen beyond that.
+- **Tagged items:** every egg in the inventory, every Enchant Crystal, Shard Vault mutation shard and boost carries a source tag: **free** (rewards, quests, the Titan, hatch rewards) or **paid** (bought with Robux, from a pack or the Aura Pass, gifted by another player, or bought with paid coins).
+  - **Restricted player, paid-tagged unopened eggs:** they can't be opened. The player chooses to **keep them locked** (they open if eligibility returns) or **exchange each one now** for a fixed pet from the direct-buy table worth **at least** the egg's price (the Daily Exclusive Egg → the 49 R$ Common Daily pet, upgraded to the Uncommon pet for a 3-pack or 10-pack egg). The exchange is shown with the exact pet before confirming.
+  - **Paid Enchant Crystals:** same choice: locked, or exchanged 1:1 for **Relic Shards** (deterministic).
+  - **Active paid luck boosts** (potions, the ladder's luck): their **luck part is paused** (the timer stops, so nothing is lost). Power and other fixed parts keep running.
+  - **Free-tagged items always work.**
+- **Gifts:** the Gift button checks the **recipient's** policy on the server before the prompt opens. A restricted recipient (or one whose policy isn't known yet) can only receive deterministic items: no eggs, coins, Enchant Crystals or luck. Gifts already received before the change follow the tag rules above.
+- **Pets already hatched** from paid eggs are **kept and usable**. They are tagged **paid-origin** and can't be traded while `IsPaidItemTradingAllowed` is false.
+- **Eligibility changes either way:** the policy is read on **every join** and applied to every use, not cached on the account.
+  - Restricted → allowed: locked eggs and crystals unlock, paused luck resumes, and paid coins can be used on anything again.
+  - Allowed → restricted: the rules above apply from that join on. Nothing already used is undone.
+- **Odds disclosure** (everyone): every random roll that can involve anything paid has a **"Details" button with a word, not just an (i)**, listing every outcome as a percentage. They sum to exactly 100% (rounded values carry the "Probabilities are rounded" note), and the shown odds update live with your active luck.
+
+- **Tests:** CORE-GAME P16 (a-i).
