@@ -3,7 +3,7 @@
 > **GO (owner):** the gameplay direction is approved. Build the two-zone test, **starting with the steps 1-5 greybox** and its fun gate. The saving contract (CORE-GAME 2) is a hard requirement for step 10. **No monetization in this build** (it comes straight after playtest #1).
 
 **Status:**
-- the design is v8 (meditation + crystal-monster hunting + pets; 10 zones designed in detail, with machines unlocking zone by zone);
+- the design is v9 (meditation + crystal-monster hunting + pets; 10 zones designed in detail, with machines unlocking zone by zone; server raid bosses; the Nexus Titan endgame);
 - the numbers come from `econ/model.py`, and `python tests.py` passes 31/31;
 - the art style is chosen (STYLE-SHEET).
 
@@ -23,7 +23,7 @@
    - If you change a rule while building, change the model constant, re-run both scripts, and update GAME-BIBLE in the same commit.
 7. **The playbook:** RULES section 0, PIPELINE 3a-3c, craft STYLE / VFX / GUI / SYSTEMS / GAMEPLAY.
 
-`MONETIZATION.md` (v2) is for the next phase. Read it so the HUD leaves room for the Store, Buffs and Hourly Reward buttons. **Ignore `archive/`:** old versions, not rules.
+`MONETIZATION.md` (v3) is for the next phase. Read it so the HUD leaves room for the Store, Buffs and Hourly Reward buttons. **Ignore `archive/`:** old versions, not rules.
 
 ## Before step 1
 

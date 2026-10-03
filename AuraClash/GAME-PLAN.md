@@ -28,7 +28,8 @@
 - **Identity:** a pet simulator with two halves: **meditate (Power)** and **hunt (coins → pets)**.
 - **Scope:**
   - 10 zones at launch (GAME-BIBLE Part B), then a new zone about every 1-2 weeks;
-  - a first full run of about 7 hours for an average free player (about 4 h 17 with 62 R$ of ladder tiers, about 2 h 22 with 1,274 R$).
+  - a first full run of about 10 h 34 for an average free player (6 h 25 with the 31 R$ starter spend, about 3 h 14 for a whale);
+  - after zone 10: the endless Nexus Titan, the Weekly Limited Egg and XP Shards keep players busy until the next zone.
 
 ## 3. Research: what we take (owner: "we don't need to be original")
 
