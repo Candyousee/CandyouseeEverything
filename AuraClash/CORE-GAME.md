@@ -165,6 +165,8 @@ Old versions are in `archive/`, for history only. **Nothing in `archive/` is a r
 | P24 | **Weekly Limited Egg + Titan:** the egg ends at the update time (server time) and can't be hatched after; the Titan respawns 60 s after each death; XP Shards and Awakening levels save like XP | no hatches after the end; no double rewards per kill; levels 31-50 only from XP Shards |
 | P25 | **Serial recovery:** kill the server (a) after a Secret hatch's profile write but before the ledger claim, (b) after the claim but before the serial is written; (c) for a Limited purchase, after ledger claim A but before profile write B; (d) 30 servers hatch Secret+ of the same line at once; (e) a Limited is granted, then **traded away**, and the `granted` status write is lost; rejoin; (f) a Limited claim lands in shard 3, shard 3 then fills, and the receipt is retried | (a)-(b) after rejoin the pet gets exactly one serial, the same one on every retry; (c) the receipt retry grants the item with the same serial; (d) no duplicate serials; (e) **nothing is restored** (the profile has the id), the entry becomes `granted`; (f) the retry gets the **same** serial from shard 3, never a second one |
 | P26 | **Receipts:** (a) a Limited receipt arriving after its reservation ended and the sale sold out; (b) a receipt re-sent after `PurchaseGranted` failed to record; (c) the same receipt on two servers at once; (d) a receipt whose earlier grant write was unknown, then the store recovers; (e) a hatch operation stored as `cancelled` whose id a reconcile later finds | (a) granted with the next number (#1,001), logged; (b) `PurchaseGranted` again, no second item; (c) exactly one grant; (d) granted once, then `delivered`; (e) treated as not done (nothing shown or granted), never acknowledged as delivered |
+| P27 | **Onboarding funnel order:** a new player (a) finishes quest 1 before the first SELL; (b) rejoins after step 9; (c) an existing player rejoins; (d) a client fires a fake "step" remote | (a) step 6 is held and logged only after steps 4-5; (b) the funnel continues at step 10 (no repeats beyond one possible re-log); (c) no funnel events at all; (d) nothing is logged (steps come only from server events) |
+| P28 | **Funnel ↔ session log:** run playtest #1's day 1 in Studio | the session log lists the same 22 steps with timestamps, the custom events (FirstPerfect, FirstOverdrive, MutationKill …) and `SessionEnd` with the last step |
 | P22 | **Secret+ scaling:** get a better normal pet while owning a Secret and a Boundless | their Strength updates to ×1 and ×1,000 of the new best pet, immediately and after a rejoin |
 | P18 | **Daily login:** claim, change the device clock, rejoin another server; skip 2 days, then log in | one claim per server (UTC) day; after the skip you claim the **next** day of the cycle (nothing resets) |
 
@@ -174,7 +176,7 @@ Old versions are in `archive/`, for history only. **Nothing in `archive/` is a r
 - zones 1-2, complete per GAME-BIBLE Part A + zones 1-2 (no monetization);
 - the tutorial;
 - the cheat panel (set Power / coins / zone / spawn a mutation);
-- a session log (where the player went, what they bought, how long they meditated vs hunted, when they stopped).
+- a session log (where the player went, what they bought, how long they meditated vs hunted, when they stopped), which **also records the onboarding funnel steps and custom events** (ONBOARDING.md), so the playtest produces the same funnel as the live game.
 
 **Two sessions:** day 1 (free play, no instructions) and **day 2** (invited back). Day 2 tests the **return experience** (the offline gain, the next goals). It doesn't test real retention, which is measured later, unprompted.
 
@@ -245,5 +247,5 @@ Old versions are in `archive/`, for history only. **Nothing in `archive/` is a r
   - walking between areas (beyond a per-kill overhead);
   - the machines (enchants, pet mutations, the Nursery, relics, the Codex, Ascension), Exclusive and reward-track pets, coin packs, potions, the Aura Pass, Offline+ (the model plays in one sitting), raid co-op;
   - **so the progression times are partial-model estimates, not validated pacing.** Most unmodeled systems speed players up. Each machine is added to the model before it ships, and playtests measure the real times;
-  - saving and purchases (tests P1-P26 are for the real game).
+  - saving and purchases (tests P1-P28 are for the real game).
 - **Decisions** (like when to meditate) follow a simple "average player" policy. **The playtest is the real test.**

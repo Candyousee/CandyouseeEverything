@@ -106,3 +106,28 @@ AURA CLASH v7 model results (python model.py). Free player, no monetization.
    10         4.7  7.3  10.4           7.4 10.4  11.2               2.3 /  6.3, 3.0
    (the model's player meditates in sittings of at most 3 min, hunting 60 s between
     gate sittings; a player who prefers one long AFK sitting can take it, that's voluntary.)
+
+11. Onboarding funnel timeline (ONBOARDING.md; 200 new players per profile; minutes from join: median / 90th pct)
+   step  name                              average          weak
+      1  Joined                             0.0 /   0.0     0.0 /   0.0
+      2  Tutorial meditation                0.3 /   0.3     0.3 /   0.3
+      3  First monster defeated             0.4 /   0.4     0.4 /   0.5
+      4  First SELL                         1.8 /   2.2     2.8 /   3.2
+      5  First egg hatched                  1.9 /   2.2     2.9 /   3.3
+      6  Quest 1: Focus 20 s                2.4 /   2.7     3.4 /   3.8
+      7  Quest 2: 20 Shardlings             2.9 /   3.3     4.0 /   4.5
+      8  Quest 3: hatch 5                   3.2 /   6.3     4.3 /   7.5
+      9  Quest 4: 10 Boars                  3.2 /   6.3     4.3 /   7.6
+     10  Boss gate open (Power 300)         4.8 /   7.1     6.3 /   8.8
+     11  Boss 1 attempted                   4.8 /   7.1     6.3 /   8.8
+     12  Boss 1 won (BLAZE)                 5.5 /   7.8     7.7 /  11.0
+     13  Zone 2 quest 1: Focus 60 s         6.9 /   9.2     9.1 /  12.4
+     14  First zone 2 egg                   8.3 /  10.6    10.8 /  14.1
+     15  Zone 2 quest 2: 50 Ember Slimes    8.3 /  10.6    10.8 /  14.1
+     16  Zone 2 hatch bonus (5 hatches)    15.8 /  20.0    20.4 /  25.4
+     17  Zone 2 quest 3: hatch 8           17.4 /  22.0    23.7 /  28.1
+     18  Zone 2 quest 4: 20 Lava Hounds    17.5 /  22.0    23.7 /  28.1
+     19  Zone 2 quest 5: a pet at level 10  17.5 /  22.0    23.7 /  28.1
+     20  Zone 2 boss gate open             18.9 /  23.0    26.1 /  29.5
+     21  Boss 2 attempted                  18.9 /  23.0    26.1 /  29.5
+     22  Boss 2 won (INFERNO)              20.4 /  24.4    29.0 /  34.3

@@ -4,7 +4,7 @@
 
 **Status:**
 - the design is v9 (meditation + crystal-monster hunting + pets; 10 zones designed in detail, with machines unlocking zone by zone; server raid bosses; the Nexus Titan endgame);
-- the numbers come from `econ/model.py`, and `python tests.py` passes 34/34;
+- the numbers come from `econ/model.py`, and `python tests.py` passes 35/35;
 - the art style is chosen (STYLE-SHEET).
 
 **Don't rewrite the concept.** The next evidence must come from the real game.
@@ -17,11 +17,12 @@
    - server authority;
    - **section 2 (saving tests)** and **section 3 (playtest #1)** are the **acceptance criteria**.
 4. **`GAME-PLAN.md` section 5a:** the 11 build steps and the quality bar.
-5. **`STYLE-SHEET.md`:** glossy toon anime.
-6. **`econ/`:** the reference model.
+5. **`ONBOARDING.md`:** the onboarding funnel, built in step 8 (server-side steps logged strictly in order; the session log mirrors it in Studio).
+6. **`STYLE-SHEET.md`:** glossy toon anime.
+7. **`econ/`:** the reference model.
    - `python tests.py` must keep passing.
    - If you change a rule while building, change the model constant, re-run both scripts, and update GAME-BIBLE in the same commit.
-7. **The playbook:** RULES section 0, PIPELINE 3a-3c, craft STYLE / VFX / GUI / SYSTEMS / GAMEPLAY.
+8. **The playbook:** RULES section 0, PIPELINE 3a-3c, craft STYLE / VFX / GUI / SYSTEMS / GAMEPLAY.
 
 `MONETIZATION.md` (v3) is for the next phase. Read it so the HUD leaves room for the Store, Buffs and Hourly Reward buttons. **Ignore `archive/`:** old versions, not rules.
 

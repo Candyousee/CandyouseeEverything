@@ -479,6 +479,7 @@ class Player:
                         self.mut_coins += val * (vx - 1)
         self.give_xp(KILL_XP[mi] * XP_STEP ** z)        # XP goes straight to every equipped pet
         self.kills[(z, mi)] = self.kills.get((z, mi), 0) + 1
+        self.note("first_kill")
         if mut:
             self.reward_times.append(self.t)
             rank = MUTATIONS.index(mut)
@@ -611,6 +612,7 @@ class Player:
             sp = roll_species(self.rng, z, self.paid["luck"], self.paid["secret_x"])
         self.pets.append(Pet(z, EGGS[z][sp][1], sp))
         self.note("first_hatch", "first hatch")
+        self.note(f"hatch_z{z}")
         self.reward_times.append(self.t)
         n, target = self.zone_hatches[z], HATCH_TARGET[z]  # THE quest counter: every hatch in this zone counts
         if n % SUBGOAL_HATCHES == 0 and n < target:          # bought, free, quest-reward and bonus eggs alike
@@ -734,6 +736,7 @@ class Player:
 
     def boss_fight(self):
         z = self.zone
+        self.note(f"boss_try{z + 1}")
         rec = BOSS[z]["rec"]
         dps = self.exp_dps()
         hx = BOSS_HP_X[z]
@@ -931,6 +934,27 @@ def pct(sorted_vals, p):
     return sorted_vals[min(len(sorted_vals) - 1, int(p * len(sorted_vals)))] if sorted_vals else float("nan")
 
 
+# The onboarding funnel (ONBOARDING.md): strictly ordered steps -> the model milestone that marks each one
+FUNNEL = [(1, "Joined", None), (2, "Tutorial meditation", "tutorial"), (3, "First monster defeated", "first_kill"),
+          (4, "First SELL", "first_sell"), (5, "First egg hatched", "first_hatch"),
+          (6, "Quest 1: Focus 20 s", "quest_z0_0"), (7, "Quest 2: 20 Shardlings", "quest_z0_1"),
+          (8, "Quest 3: hatch 5", "quest_z0_2"), (9, "Quest 4: 10 Boars", "quest_z0_3"),
+          (10, "Boss gate open (Power 300)", "quest_z0_4"), (11, "Boss 1 attempted", "boss_try1"),
+          (12, "Boss 1 won (BLAZE)", "boss1"), (13, "Zone 2 quest 1: Focus 60 s", "quest_z1_0"),
+          (14, "First zone 2 egg", "hatch_z1"), (15, "Zone 2 quest 2: 50 Ember Slimes", "quest_z1_1"),
+          (16, "Zone 2 hatch bonus (5 hatches)", "subgoal_z1_5"), (17, "Zone 2 quest 3: hatch 8", "quest_z1_2"),
+          (18, "Zone 2 quest 4: 20 Lava Hounds", "quest_z1_3"), (19, "Zone 2 quest 5: a pet at level 10", "quest_z1_4"),
+          (20, "Zone 2 boss gate open", "quest_z1_5"), (21, "Boss 2 attempted", "boss_try2"),
+          (22, "Boss 2 won (INFERNO)", "boss2")]
+
+
+def funnel_times(players):
+    """Minutes from join to each funnel step: {step: sorted list}."""
+    rows = list(players)
+    return {n: sorted(x.milestones[k] / 60 for x in rows if k in x.milestones) if k else [0.0] * len(rows)
+            for n, _, k in FUNNEL}
+
+
 def report(n_full=40, n_two=200):
     out = []
     P = out.append
@@ -1031,6 +1055,13 @@ def report(n_full=40, n_two=200):
           f"              {pct(gate_tot[z], .5):4.1f} / {gate_tot[z][-1]:4.1f}, {max(sits[z] or [0]):.1f}")
     P(f"   (the model's player meditates in sittings of at most {PACE_CAP // 60} min, hunting {GATE_HUNT} s between")
     P("    gate sittings; a player who prefers one long AFK sitting can take it, that's voluntary.)")
+    P("")
+    P("11. Onboarding funnel timeline (ONBOARDING.md; 200 new players per profile; minutes from join: median / 90th pct)")
+    ft = {prof: funnel_times(Player(prof, 4000 + r).run(until_zone=2) for r in range(200)) for prof in ("average", "weak")}
+    P("   step  name                              average          weak")
+    for n, name, _ in FUNNEL:
+        a, w = ft["average"][n], ft["weak"][n]
+        P(f"   {n:4d}  {name:32s} {pct(a, .5):5.1f} / {pct(a, .9):5.1f}   {pct(w, .5):5.1f} / {pct(w, .9):5.1f}")
     return "\n".join(out)
 
 

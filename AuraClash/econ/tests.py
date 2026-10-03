@@ -423,6 +423,14 @@ def test_hatch_bonus_follows_the_quest_counter():           # one counter: every
     assert pl.subgoal_log == [(1, 5)]
 
 
+def test_onboarding_funnel_is_complete():                  # ONBOARDING.md: 22 numbered steps, all reachable
+    assert [n for n, _, _ in M.FUNNEL] == list(range(1, len(M.FUNNEL) + 1)) and len(M.FUNNEL) == 22
+    rows = [M.Player("average", 4000 + r).run(until_zone=2) for r in range(10)]
+    assert all(k is None or k in x.milestones for x in rows for _, _, k in M.FUNNEL)
+    ft = M.funnel_times(rows)
+    assert M.pct(ft[12], .5) <= 9 and M.pct(ft[22], .5) <= 30     # boss 1 and boss 2 inside the targets
+
+
 def test_reproducible():
     assert M.Player("average", 11).run(until_zone=3).milestones == M.Player("average", 11).run(until_zone=3).milestones
 
