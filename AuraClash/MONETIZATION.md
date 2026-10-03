@@ -1,166 +1,293 @@
-# AURA CLASH: Monetization v1
+# AURA CLASH: Monetization v2 (owner rework, 3 October 2026)
 
-**Goal (owner):** money is the top priority. Paid crates, limiteds and pop-ups are all allowed. We **follow Roblox's rules**, because breaking them gets games removed, and that costs more than any sale.
+**Goal (owner):** money is the top priority. Paid eggs, Limiteds, pop-ups and big ladders are all in. We **follow Roblox's rules**, because a removed game earns nothing.
 
-**How we make money without breaking the game:**
-1. **Sell multipliers, not resources.** A 2× Coins pass doubles what you earn by playing. It doesn't hand out coins, so payers still play the loop and stay longer, which is where the money is.
-2. **Free players must be able to finish.** They fill servers, and payers need an audience to show off to. Model: an average free player beats all 8 bosses in about **7 h 11**.
-3. **Every paid item should be seen in use by others:**
-   - VIP mats are gold;
-   - Robux-egg hatches get server announcements;
-   - Server Luck boosts thank the buyer by name;
-   - Limiteds show their serial number.
+**The four principles:**
+1. **Sell multipliers and exclusives, not raw resources.** Boosts multiply what you earn by playing, so payers keep playing (and keep buying). Coins still only come from selling shards, and Power only from meditating.
+2. **Free players can finish everything,** and get exclusive eggs from hourly and daily rewards. They fill the servers payers show off in.
+3. **Everything bought is visible:** titles over heads, serial numbers, server-wide boosts that thank the buyer, announcements.
 4. **Odds, stock and timers are always real.**
 
 ---
 
-## 1. What paying changes (model, average player, time to beat each boss)
+## 1. The buff system (rework)
 
-| Zone | Free | VIP pass | Full bundle (VIP + 2× Coins + 2× Meditation + Lucky + 3 Slots) |
-|---|---|---|---|
-| 1 | 5:30 | 4:31 | 3:59 |
-| 2 | 21:44 | 17:37 | 12:03 |
-| 3 | 38:20 | 28:34 | 22:26 |
-| 4 | 59:52 | 45:06 | 36:26 |
-| 5 | 1:41:25 | 1:12:10 | 50:45 |
-| 6 | 2:34:37 | 1:48:38 | 1:10:31 |
-| 7 | 4:11:15 | 2:58:08 | 1:44:12 |
-| 8 | **7:13:26** | **4:55:58** | **2:52:53** |
+Every boost in the game is one of three kinds, and they **multiply together**. The **Buffs panel** (a button by the Power counter) lists each active buff with its source and timer, plus the **total** for each stat.
 
-(`econ/RESULTS.txt` section 5. Potions, paid eggs and Limiteds come on top of this and aren't modelled.)
-
-**Why this is the right shape:** passes feel worth it (about 1.5× to 2.5× faster), and nobody is locked out.
-
----
-
-## 2. Game passes (one-time purchases)
-
-| Pass | Price (R$) | What it does |
+| Kind | Examples | Lasts |
 |---|---|---|
-| **VIP** | 499 | ×1.5 coins from selling, ×1.5 meditation (offline too), +1 pet slot, a **gold VIP mat** at every Shrine, VIP chat tag and name colour |
-| **2× Coins** | 399 | everything you SELL is worth ×2 (stacks with VIP: ×3) |
-| **2× Meditation** | 349 | Power from meditation ×2, including AFK and offline |
-| **Lucky** | 299 | ×2 luck on eggs: Legendary, Mythic, Divine and Secret chances doubled (the egg card shows your real odds) |
-| **Super Lucky** | 699 (needs Lucky) | ×3 luck in total |
+| **Permanent** | Power ladder, Luck ladder, VIP, 2× Coins, 2× Secret Luck, 2× Hatch Speed, group, Roblox Premium | forever |
+| **Timed** | Luck / Coin / Power / XP / Mega potions (bought, or from hourly and daily rewards) | 5-60 min, and buying more stacks the time |
+| **Server-wide** | Server Luck Boost, Mutation Storm (bought by any player), events (Later) | 10-15 min, for everyone in the server |
 
-**Luck stacking:** passes × potions × Server Luck multiply, **capped at ×10 in total**. The egg card always shows the odds at your current luck.
+**The four stats buffs touch:**
 
+| Stat | Multiplied by | Cap |
+|---|---|---|
+| **Power gain** (meditation, incl. AFK and offline) | Power ladder × VIP 1.5 × Power potions | none |
+| **Coins** (from selling) | 2× Coins × VIP 1.5 × Coin potions × Premium 1.1 | none |
+| **Luck** (normal eggs) | Luck ladder × Luck potions × Server Luck × group 1.1 | **×10,000 total** |
+| **Secret luck** (the three Secret tiers only) | the Luck total above, then × 2× Secret Luck pass | (inside the luck cap) |
+
+Also: **Hatch speed** (2× Hatch Speed pass), **XP** (XP potions).
+
+## 2. The two ladders: Power and Luck (the core of the store)
+
+Each ladder is a row of permanent upgrades. **Each tier doubles the stat, forever.** You buy them in order.
+
+| Tier | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| Multiplier | ×2 | ×4 | ×8 | ×16 | ×32 | ×64 | ×128 | ×256 | ×512 | ×1,024 | ×2,048 |
+| Price (R$) | 3 | 9 | 19 | 29 | 49 | 79 | 149 | 249 | 399 | 799 | 999 |
+| Total spent | 3 | 12 | 31 | 60 | 109 | 188 | 337 | 586 | 985 | 1,784 | 2,783 |
+
+- **Power ladder:** multiplies Power gained from meditation (also AFK and offline).
+- **Luck ladder:** multiplies egg luck (section 4).
+
+**Why it works:**
+- **The 3 R$ first tier** is the easiest "first purchase" possible. A player who has bought once buys again far more readily, so this is the best conversion hook in the game.
+- **Every tier is a clear, visible doubling,** and the next tier always waits one tap away.
+
+**What the model says** (average player, time to beat all 8 bosses):
+
+| Spend | Profile | All 8 zones |
+|---|---|---|
+| 0 R$ | free | **7 h 13** |
+| 62 R$ | starter: 3 tiers of each ladder | **4 h 17** |
+| 1,274 R$ | VIP + 2× Coins + 6 tiers of each ladder | **2 h 22** |
+| 7,511 R$ | whale: everything permanent | **2 h 19** |
+
+**Important:** past about ×64, more Power barely speeds up the game, because coins and quests become the limit (that's intended: payers can't skip the game entirely). So the top tiers sell **status and luck**:
+- **Power tiers:** a big Power number on the **server and global leaderboard** and the biggest aura in the server (aura size grows with Power).
+- **Luck tiers:** hunting the crazy-rare Secrets (section 4).
+
+## 3. Game passes (one-time)
+
+| Pass | R$ | What it does |
+|---|---|---|
+| **VIP** | 499 | **"VIP" title over your head and in chat** (gold, animated), ×1.5 coins, ×1.5 Power, +1 pet slot, access to VIP-only Limited cosmetic drops. (Mats stay **communal**: no VIP floor mats) |
+| **2× Coins** | 399 | everything you sell ×2 |
+| **2× Secret Luck** | 199 | doubles your chance of **Secret, Ultra Secret and Infinity Secret** pets |
+| **2× Hatch Speed** | 399 | hatch animations play twice as fast (more eggs per minute) |
 | **+3 Pet Slots** | 449 | 3 more equipped pets (above the 10 from quests) |
 | **Hatch ×8 + Auto-Hatch** | 349 | hatch 8 at once; auto-hatch keeps buying the selected egg |
-| **Huge Storm** | 249 | ×2 bag capacity (the storm visual stays capped, so no lag) |
-| **Auto-Sell** | 199 | your storm sells itself the moment it's full, with no teleport and full value |
-| **Offline+** | 199 | offline meditation at 50% (not 25%) and up to 16 h (not 8) |
+| **Huge Storm** | 249 | ×2 bag capacity (the storm visual stays capped: no lag) |
+| **Auto-Sell** | 199 | the storm sells itself when full: no teleport, full value |
+| **Offline+** | 199 | offline meditation at 50% (not 25%), up to 16 h (not 8) |
 | **Mutation Magnet** | 299 | your mutated shards are worth ×1.5 |
 
-**Bundle offer:** VIP + 2× Coins + 2× Meditation + Lucky for **1,199** instead of 1,546. It's shown in the store as "Best value". Model: the bundle plus +3 Slots is the "full bundle" in section 1.
+**Removed (replaced by the ladders):** Lucky, Super Lucky, 2× Meditation.
 
-## 3. Developer products (buy again and again)
+**Bundle:** VIP + 2× Coins + 2× Secret Luck + 2× Hatch Speed for **1,099** (instead of 1,496), shown in the store as "Best value".
 
-| Product | Price (R$) | What it does |
+## 4. Luck and the crazy-rare Secrets
+
+**Every zone egg now has 9 rarities.** Two new tiers sit above Secret, and in practice only high-luck players will ever see them:
+
+| Rarity | Base chance | Base Strength | How much luck helps |
+|---|---|---|---|
+| Common / Rare / Epic | 60% / 28% / 10% | 1 / 2 / 4 | they shrink as luck grows (keeping their 60:28:10 ratio) |
+| Legendary | 1.88989798% | 10 | a little (luck^0.3) |
+| Mythic | 1 in 1,000 | 20 | some (luck^0.5) |
+| Divine | 1 in 10,000 | 40 | a lot (luck^0.7) |
+| Secret | 1 in 1,000,000 | 100 | most (luck^0.85) |
+| **Ultra Secret** | **1 in 50,000,000** | **400** | almost fully (luck^0.95) |
+| **Infinity Secret** | **1 in 1,000,000,000** | **2,000** | fully (luck^1) |
+
+**Why luck is weighted like this:** if luck simply multiplied every rare chance, ×2,048 luck would push past 100% and every egg would be Mythic or better. Weighting it toward the rarest tiers keeps eggs exciting at every luck level. The odds always add to 100%, and Legendary-and-up can never exceed 90%.
+
+**What players actually see** (from the model):
+
+| Luck | Legendary | Mythic | Divine | Secret | Ultra Secret | Infinity Secret |
+|---|---|---|---|---|---|---|
+| ×1 (free) | 1.89% | 1 in 1,000 | 1 in 10,000 | 1 in 1M | 1 in 50M | 1 in 1B |
+| ×8 (31 R$) | 3.53% | 1 in 354 | 1 in 2,333 | 1 in 171K | 1 in 6.9M | 1 in 125M |
+| ×64 (188 R$) | 6.58% | 1 in 125 | 1 in 544 | 1 in 29K | 1 in 962K | 1 in 15.6M |
+| ×2,048 + 2× Secret Luck | 18.61% | 4.53% | 2.08% | 1 in 766 | 1 in 17,872 | 1 in 244,141 |
+
+- **The egg card always shows your current real odds,** with your active buffs applied.
+- **Every egg has its own Ultra Secret and Infinity Secret** (names in GAME-BIBLE Part B). They're hidden as "???" until someone hatches one.
+- **Their hatches:** the Ultra Secret plays a 12 s cutscene; the Infinity Secret plays a **15 s cutscene that pauses every server** for a global announcement and gives a permanent animated "INFINITY" title.
+
+## 5. Developer products (buy any number)
+
+| Product | R$ | What it does |
 |---|---|---|
-| **Coin Potion** | 49 (5 for 199) | ×2 sell value for 15 min (time stacks) |
-| **Luck Potion** | 49 (5 for 199) | ×2 egg luck for 15 min (stacks with Lucky) |
-| **Meditation Potion** | 49 (5 for 199) | ×2 meditation for 15 min |
+| **Luck Potion** | 49 (5 for 199) | ×2 luck for 15 min |
+| **Coin Potion** | 49 (5 for 199) | ×2 coins for 15 min |
+| **Power Potion** | 49 (5 for 199) | ×2 Power gain for 15 min |
 | **XP Potion** | 39 | ×2 pet XP for 15 min |
 | **Mega Potion** | 129 | all four for 15 min |
-| **Server Luck Boost** | 199 | **everyone in the server** gets ×2 egg luck for 15 min. A big banner reads "Thanks to [buyer]!" (social pressure, and the buyer is a hero) |
-| **Mutation Storm** | 299 | **everyone in the server** gets ×2 monster mutation chance for 10 min |
-| **Treasure Shards** | 49 / 199 | a sack of the current zone's shards dropped into your storm, worth about 10 / 50 minutes of average hunting. You sell them like any shards (the most "pay-to-skip" item: kept, because the owner wants every lever, but never shown in pop-ups) |
-| **Exclusive Egg** (paid random item, section 4) | 99 / 3 for 279 / 10 for 849 | exclusive pets |
-| **Limited pet** (section 5) | 1,499 | a numbered pet with real, capped stock |
-| **Starter Pack** (one-time) | 99 | section 6 |
-| **Zone Pack** | 299 | section 6 |
-| **Aura cosmetics** | 99-399 | aura colours, fist trails, storm skins (sakura petals, galaxy dust…). Looks only |
+| **Server Luck Boost** | 199 | **everyone in the server** gets ×2 luck for 15 min, with a banner: "Thanks to [buyer]!" |
+| **Mutation Storm** | 299 | **everyone in the server** gets ×2 mutation chance for 10 min |
+| **Streak Saver** | 29 | restores a missed daily-login streak (section 9) |
+| **Aura Pass tier skip** | 49 | +1 tier |
+| **Treasure Shards** | 49 / 199 | a sack of the current zone's shards (about 10 / 50 min of average hunting), sold like any shards. **Never shown in pop-ups** |
 
-**Gifting:** every pass and product has a **Gift** button that sends it to a friend in the server.
+## 6. Exclusive Eggs (two kinds)
 
-## 4. Exclusive Eggs (paid random items: the biggest earner in pet sims)
+| | **Daily Exclusive Egg** | **Shop Exclusive Egg** |
+|---|---|---|
+| **How you get it** | **free** from hourly and daily rewards, the group chest and the Aura Pass, **or** buy it | **shop only** (also as Aura Pass premium rewards) |
+| **Price** | **49**, 3 for **99**, 10 for **249** | **99**, 3 for **279**, 10 for **849** |
+| **Odds** | Epic 70% / Legendary 25% / Mythic 4.5% / Divine 0.49% / **Huge 0.01%** | Legendary 75% / Mythic 20% / Divine 4.5% / **Huge 0.45%** / **Titanic 0.05%** |
+| **Strength** | the normal rarity table **×2**, scaled to your best unlocked zone (it never goes out of date) | the normal table **×4**, scaled to your best zone. **Huge** base 200, **Titanic** base 800 |
+| **Guarantee** | none | every 10-pack contains at least one Mythic or better; every 50 hatches without a Divine+ guarantees one (the counter shows on the card) |
+| **Luck** | doesn't change paid-egg odds (the card never changes) | same |
 
-- **The egg:** a rotating **Exclusive Egg** (a new theme every month), sold for Robux at a glowing stand by the zone 1 Shrine, visible from spawn.
-- **Its pets:** exclusive pets that **scale to your best unlocked zone**, so they stay useful all game.
-  - **Odds:** Epic 70% / Legendary 25% / Mythic 4.5% / Divine 0.45% / **Huge 0.05%**.
-  - **Huge:** a giant version with its own 10 s hatch and a global announcement.
-- **Strength:** the same rarity table as normal pets ×1.5, at your best zone's scale (an "Exclusive" badge). A **Huge** has base Strength 150 (×1.5 a Secret) and is 3× the size.
+- **"Crazy pets":** exclusives are the best-looking pets in the game.
+  - **Animated bodies:** neon, holographic, flaming.
+  - **Their own attack animations** and a particle trail.
+  - **Huge pets** are 3× size and **Titanic pets** are 6× size, with a ground-shaking walk.
+  - **Every Huge or Titanic hatch is a global announcement.**
+- **New theme every month.** Month 1 examples:
+  - **Daily: "Neon Spirits":** Neon Cat (Epic), Neon Wolf (Legendary), Neon Dragon (Mythic), Neon Phoenix (Divine), **Huge Neon Dragon**.
+  - **Shop: "Royal Spirits":** Royal Lion (Legendary), Royal Griffin (Mythic), Royal Phoenix (Divine), **Huge Royal Lion**, **Titanic Royal Dragon**.
+- **Old themes never come back.** Owners keep them forever, which makes them valuable for trading later.
 - **Roblox rules for paid random items (required):**
-  1. **The odds are shown on the egg card before purchase.** They add to 100% and are the real odds; Lucky and potions do **not** change paid-egg odds, so the card never lies.
-  2. **Regional restrictions:** on join, the server calls `PolicyService:GetPolicyInfoForPlayerAsync(player)`. If `ArePaidRandomItemsRestricted` is true, that player **never sees the Exclusive Egg**. They see a **direct-buy shop** instead (pick the exact exclusive pet, at a fixed price: Epic 149, Legendary 399, Mythic 999).
-  3. **No cash-out:** paid pets can only be traded for items, never sold for Robux.
-- **Pity** (honest): every 50 Exclusive hatches without a Mythic or better guarantees one. The counter is shown on the card.
+  - **odds on the card before purchase,** adding to 100%;
+  - **`PolicyService` check:** if `ArePaidRandomItemsRestricted`, that player can't buy either egg and sees a **direct-buy shop** instead (pick the exact exclusive pet: Epic 99, Legendary 249, Mythic 699);
+  - **free eggs still work for them:** eggs from rewards aren't purchases, so they can still hatch those;
+  - **no cash-out:** paid items trade only for items, never for Robux.
 
-## 5. Limited pets (real scarcity)
+## 7. Limited items (serials up to #1,000)
 
-- **What:** one **Limited** pet a month (for example the "Founder's Phoenix"), **5,000 copies worldwide**, 1,499 R$ each, numbered #1-#5,000.
-- **The counter is real:** a global count kept on the server (MemoryStore + DataStore), with a live counter on the stand. When it hits 0, it's gone forever.
-- **The end date is real.** Leftover stock after 30 days is retired, never quietly restocked.
-- **Status:** the serial number shows on the pet card and over the pet ("#0042"). Low numbers are status, and tradable later (item-for-item).
+Every cosmetic and every Limited pet is a **numbered Limited**: at most **1,000 copies**, with the serial shown on it ("#0042"). When it sells out, it's gone forever, and the counter on the stand is real.
 
-## 6. Packs (offered at the right moments)
+| Item | R$ | Notes |
+|---|---|---|
+| **Limited pet of the month** | 399 | e.g. "Founder's Phoenix" (Shop Exclusive strength, Divine tier) |
+| **Limited aura of the month** | 149 | a unique aura style (shape + colour + particles) |
+| **Aura colours** | 25-49 | every colour is a numbered Limited run |
+| **Fist trails** | 49 | |
+| **Storm skins** (sakura petals, galaxy dust, gold coins…) | 79 | |
+| **Titles** | 25 | e.g. "Storm Chaser" |
+| **Creator collab skin** (e.g. Verity) | 99 | **only with a signed collab or licence** (see the note) |
+| **Creator collab pet** (e.g. Verity) | 399 | same |
 
-| Pack | When it's offered | Contents | Price |
+> **⚠ Verity (correcting you on this one):** if Verity is a real creator or brand, selling a "Verity" skin or pet **without their written permission** breaks Roblox's rules on using other people's names and likeness, and it can get the items **or the whole game taken down**. Do it as an **official collab**: reach out, agree a revenue share, and they'll promote it to their audience, which is worth far more than the sales. Until there's a signed deal, sell an original design inspired by the trend, with no name, logo or likeness.
+
+**How the stock counter works:** the global stock is reserved on the server **before** the purchase prompt opens, so it's never oversold (CORE-GAME 2.2).
+
+## 8. Gifting
+
+Every pass, product, egg pack and Limited has a **Gift** button for a friend in the server. The gift arrives with a big "🎁 from [name]" animation.
+
+## 9. Free rewards (retention: "massive")
+
+### 9.1 Hourly rewards (playtime, AFK counts)
+
+A reward track that fills while you're in the game. At 60 minutes it resets and starts again.
+
+| Minute | 1 | 3 | 5 | 10 | 20 | 30 | 45 | **60** |
+|---|---|---|---|---|---|---|---|---|
+| Reward | Luck Potion (5 min) | Coin Potion (5 min) | XP Potion (10 min) | Mega Potion (5 min) | 3 eggs of your zone | Luck Potion (15 min) | Mega Potion (15 min) | **Daily Exclusive Egg** |
+
+**Why it works:** there's always a reward a few minutes away, and **every hour played is an exclusive egg**. AFK counts, so players leave the game running, which raises concurrent players, and that raises our place in Roblox's recommendations.
+
+### 9.2 Daily login (7-day cycle, by server date)
+
+| Day | Reward |
+|---|---|
+| 1 | 3 Luck + 3 Coin Potions |
+| 2 | **3 Daily Exclusive Eggs** |
+| 3 | 2 Mega Potions + 1 h ×2 Power |
+| 4 | **5 Daily Exclusive Eggs** |
+| 5 | a **Server Luck Boost** token (use any time, for everyone) + 3 Mega Potions |
+| 6 | **1 Shop Exclusive Egg** |
+| 7 | **8 Daily Exclusive Eggs** + a **guaranteed Mythic-or-better Daily Exclusive pet** + a "Week N" title |
+
+- **Each new week:** +1 egg on days 2, 4 and 7.
+- **Day 28:** a **guaranteed Huge** Daily Exclusive pet.
+- **Missing a day** resets you to day 1, unless you use the **Streak Saver** (29 R$, offered the next time you join).
+- **Roblox Premium members get double daily rewards.**
+
+### 9.3 Group rewards
+
+Join the Aura Clash Roblox group to get:
+- **+10% luck** (permanent while you're in the group);
+- a **group chest** every 24 h with **1 Daily Exclusive Egg** + 1 Mega Potion.
+
+### 9.4 Roblox Premium
+
+- **The perks:** +10% coins and double daily rewards.
+- **Why it pays:** it keeps Premium members playing longer, and Roblox's **Premium Payouts** pay us for the time they spend.
+
+## 10. Aura Pass (season pass, 30 days, "extremely good")
+
+**50 tiers,** earned with Pass XP from daily and weekly challenges:
+- defeat 300 monsters;
+- meditate 15 min;
+- hatch 50 eggs;
+- defeat 5 mutated monsters;
+- beat a boss;
+- log in 5 days.
+
+| Track | Price | What's in it |
+|---|---|---|
+| **Free** | free | a reward every 2 tiers: potions, **10 Daily Exclusive Eggs** in total, an exclusive **Epic pass pet** at tier 25 and an exclusive **Legendary pass pet** at tier 50 |
+| **Premium** | **499 R$** | a reward **every tier** on top of the free track: **45 Daily Exclusive Eggs + 5 Shop Exclusive Eggs** (more than 1,600 R$ of eggs at store prices); **Mythic-tier exclusive pets at tiers 10, 20, 30 and 40**; a **Huge season pet** at tier 50; the season's exclusive aura, storm skin and title; **+25% luck for the whole season** |
+| **Premium+** | **1,499 R$** | everything in Premium, **25 tiers unlocked instantly**, an extra exclusive Premium+ pet, and a gold season title |
+
+Every season's pets and cosmetics are never sold again.
+
+## 11. Packs (real timers)
+
+| Pack | Offered | Contents | R$ |
 |---|---|---|---|
-| **Starter Pack** (once per account) | after your first egg (about 2 min); available for 48 real hours | exclusive **Starter Spirit** pet (Epic, scales to your zone), 3 Luck + 3 Coin Potions, 1 h 2× Meditation | **99 R$** (shows "worth 400 R$") |
-| **Zone Pack** | when you enter a new zone; for 24 real hours | 5 eggs of that zone + a Mega Potion + a zone-themed aura trail | 299 R$ |
-| **Comeback Pack** | after 3+ days away | 3 Mega Potions + 1 Exclusive Egg | 199 R$ |
+| **Starter Pack** (once per account) | after your first egg; for 48 h | exclusive **Starter Spirit** (Epic, scales with your zone) + 3 Daily Exclusive Eggs + 3 Mega Potions + **Power ladder tier 1** | 99 |
+| **Zone Pack** | when you enter a new zone; for 24 h | 10 eggs of that zone + 3 Daily Exclusive Eggs + a Mega Potion | 299 |
+| **Comeback Pack** | after 3+ days away; for 24 h | 5 Daily Exclusive Eggs + 3 Mega Potions | 199 |
 
-## 7. Aura Pass (season, every 30 days)
+Every pack shows what it contains and its real store value, with no inflated "worth" claims.
 
-- **Tiers:** 50, earned with Pass XP from daily and weekly challenges (defeat 200 monsters, meditate 10 min, hatch 30 eggs, defeat 3 mutated monsters…).
-- **Free track:** potions, eggs, a title at tier 50.
-- **Premium track** (**499 R$**, or **1,199 R$ with 15 tiers skipped**):
-  - an exclusive season pet (scales);
-  - an exclusive aura colour and fist trail;
-  - storm skins and Exclusive Eggs;
-  - a "Season X Champion" title.
-- **Tier skips:** 79 R$ each.
-- **Why it earns:** it pays well and pulls players back daily (retention is revenue).
-
-## 8. Pop-up offers (allowed, with hard limits so they don't drive players away)
+## 12. Pop-up offers (reworked)
 
 | Trigger (a real "want" moment) | Offer |
 |---|---|
-| Storm full twice within 2 minutes | Huge Storm / Auto-Sell |
-| First Legendary-or-better hatch | Lucky pass ("Double your chances") |
-| Boss lost twice in a row | 2× Meditation / a Meditation Potion. **Always alongside the free tip** "or meditate about N more minutes" |
-| Entering a new zone | Zone Pack (24 h, real timer) |
-| After the first egg | Starter Pack (48 h, real timer) |
-| The "while you were away" screen | Offline+ |
-| A Rainbow or better mutation spawns | Mutation Storm ("Make it rain mutations for everyone!") |
+| **Your first meditation ends** | **"×2 Power forever: 3 R$"** (Power ladder tier 1, the best first-purchase hook) |
+| First Legendary-or-better hatch | the next Luck ladder tier |
+| Boss lost twice | the next Power ladder tier (**always alongside the free tip** "or meditate about N more minutes") |
+| Hourly reward reaches 60 min (a free Daily Exclusive Egg hatched) | a Shop Exclusive Egg 3-pack |
+| Day 7 of the login streak | the Aura Pass |
+| A missed day | Streak Saver |
+| Entering a new zone | Zone Pack |
+| Storm full twice within 2 minutes | Auto-Sell / Huge Storm |
+| A Rainbow-or-better mutation spawns | Mutation Storm |
 | Inventory full | +3 Pet Slots / Hatch ×8 |
 
 **Limits:**
-- **Frequency:** at most 1 pop-up per 10 minutes and 4 per session, and none in the first 2 minutes (except the Starter Pack after the first egg).
-- **Never** during a boss fight, a hatch reveal or a cutscene.
-- **Always a clear, easy-to-hit ✕.** Closing it never costs anything.
-- **No fake timers, fake stock or fake discounts.** Every "worth X" is the real sum of the parts at store prices.
+- **Frequency:** at most 1 pop-up per 10 minutes and 4 per session.
+- **Never** during a boss, a hatch reveal or a cutscene.
+- **Always a big, easy ✕.**
+- **No fake timers, stock or discounts.**
 
-## 9. Free growth levers (they bring players who later pay)
+## 13. Where the store lives
 
-- **Group reward:** join the Roblox group for +5% egg luck, permanently.
-- **Roblox Premium members:** +10% coins. This keeps them playing, which earns Premium engagement payouts.
-- **Private servers:** 100 R$/month (players farm mutations in peace).
-- **Daily reward:** a small potion each day, so it feeds the potion habit.
+- **The HUD:** the **R$ Store** button (glowing), the **Buffs** button, and the **Hourly Reward** bar with its countdown.
+- **At every Shrine:**
+  - the Daily Exclusive Egg stand and the Shop Exclusive Egg stand, each with this month's pets spinning on pedestals;
+  - the Limited stand with live counters;
+  - the leaderboards (top Power, most Secrets).
+- **Mats stay communal:** VIPs are seen through their title, not a floor mat.
 
-## 10. Where the store lives
+## 14. Expected best sellers (genre pattern, not a forecast)
 
-- **Store button:** on the HUD (a glowing **R$ Store** button).
-- **Stands at every Shrine:** the Exclusive Egg stand (glowing, with the current pets spinning on pedestals) and the Limited stand with its live counter.
-- **VIP mats** are gold and sit at the front of the Shrine ring, where everyone sees them.
+1. Exclusive eggs (both kinds).
+2. The Luck and Power ladders (the cheap tiers sell to almost every payer, the top tiers to whales).
+3. ×2 passes and VIP.
+4. Limiteds (serials).
+5. The Aura Pass.
+6. Potions and server boosts.
 
-## 11. Expected best sellers (genre pattern, not a forecast)
+**Track:** payer %, revenue per daily player, D1 / D7 retention, best sellers, and each pop-up's conversion. Cut any pop-up that shortens sessions.
 
-In pet simulators, most revenue usually comes from:
-1. paid eggs;
-2. luck items (Lucky passes, Luck Potions, Server Luck);
-3. ×2 passes;
-4. Limiteds;
-5. season passes.
+## 15. Build timing
 
-Our plan covers all five. Real numbers come only from live data:
-- **Track:** payer %, revenue per daily player, best-selling items, and conversion of each pop-up trigger.
-- **Rule:** cut any pop-up that drops session length.
-
-## 12. Build timing
-
-- **Not in the two-zone playtest build.** The playtest must prove the game is fun on its own first.
-- **Built straight after playtest #1 passes,** before zones 3-8 go live, so launch has the full store. Stubs (the Store button and stands) can be placed early as art.
-- **Before launch, check:** every odds card adds to 100%; PolicyService gating is tested in Studio with a restricted test account; Limited counters are tested with two servers buying at once (never oversold).
+- **Not in the two-zone playtest build.** The game must prove it's fun first.
+- **Built straight after playtest #1,** before zones 3-8 go live, so launch has the full store.
+- **Before launch, check (CORE-GAME tests):**
+  - every odds card adds to 100% and matches the rolls at the player's current luck;
+  - `PolicyService` gating;
+  - Limited counters with two servers buying at once;
+  - every Robux purchase granted exactly once.

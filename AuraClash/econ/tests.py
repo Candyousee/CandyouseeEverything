@@ -9,30 +9,48 @@ def within_4sd(count, n, p):
 
 
 # ---------- odds ----------
-def test_egg_odds_sum_to_one_and_match():          # BIBLE 3.2: the egg card shows the real odds
+def test_egg_odds_sum_to_one_and_match():          # BIBLE 5.1: the egg card shows the real odds
+    assert len(M.RARITIES) == len(M.ODDS) == len(M.R_STR) == len(M.SPECIES) == len(M.LUCK_EXP) == 9
     assert abs(sum(M.ODDS) - 1) < 1e-12
-    assert M.ODDS[5] == 1 / 10_000 and M.ODDS[6] == 1 / 1_000_000   # Divine 1 in 10,000; Secret 1 in 1,000,000
+    assert M.ODDS[5] == 1 / 10_000 and M.ODDS[6] == 1 / 1_000_000
+    assert M.ODDS[7] == 1 / 50_000_000 and M.ODDS[8] == 1 / 1_000_000_000
     assert M.RARITIES.index("Divine") == M.RARITIES.index("Mythic") + 1
     rng, n = random.Random(1), 400_000
-    counts = [0] * 7
+    counts = [0] * 9
     for _ in range(n):
         counts[M.egg_roll(rng)] += 1
     for r in range(6):
         assert within_4sd(counts[r], n, M.ODDS[r]), (M.RARITIES[r], counts[r], n * M.ODDS[r])
-    assert counts[6] <= 6
+    assert counts[6] + counts[7] + counts[8] <= 6
 
 
-def test_luck_odds_still_sum_to_one():                  # MONETIZATION: Lucky shows its real boosted odds
-    for luck in (1.0, 2.0, 3.0):
+def test_luck_odds_are_valid_at_every_luck():          # MONETIZATION 2: the Luck ladder up to x2048 (+ boosts, cap x10,000)
+    prev = None
+    for luck in (1, 2, 8, 64, 2048, 10_000, 10**9):
+        for sx in (1.0, 2.0):
+            o = M.odds_with_luck(luck, sx)
+            assert abs(sum(o) - 1) < 1e-9 and all(x > 0 for x in o), (luck, sx)
+            assert sum(o[3:]) <= M.RARE_SHARE_CAP + 1e-12
+            assert abs(o[0] / o[1] - 60 / 28) < 1e-9                       # Common : Rare keep their ratio
         o = M.odds_with_luck(luck)
-        assert abs(sum(o) - 1) < 1e-12 and all(x > 0 for x in o)
-        assert abs(o[6] - M.ODDS[6] * luck) < 1e-15
+        if prev:
+            assert all(a >= b - 1e-15 for a, b in zip(o[3:], prev[3:]))   # more luck never lowers a rare chance
+        prev = o
+    assert M.odds_with_luck(10**9) == M.odds_with_luck(M.LUCK_CAP)        # capped
+    assert abs(M.odds_with_luck(1, 2.0)[6] - 2 * M.ODDS[6]) < 1e-15        # 2x Secret Luck doubles the Secret tiers
+    assert abs(M.odds_with_luck(2048)[8] - 2048 * M.ODDS[8]) < 1e-15       # luck works fully on Infinity Secret
 
 
-def test_paid_player_is_faster_but_free_player_finishes():   # MONETIZATION: boosts speed up, never gate
+def test_ladder_prices():                              # MONETIZATION 2: x2 per tier, 11 tiers to x2048
+    assert M.LADDER_PRICES == [3, 9, 19, 29, 49, 79, 149, 249, 399, 799, 999]
+    assert M.ladder_cost(11) == 2_783 and 2 ** 11 == 2048
+
+
+def test_paid_player_is_faster_but_free_player_finishes():   # boosts speed up, never gate
     free = st.median(M.Player("average", 3000 + r).run().milestones["boss8"] for r in range(10))
-    paid = st.median(M.Player("average", 3000 + r, paid="bundle").run().milestones["boss8"] for r in range(10))
-    assert paid < free * 0.75 and free < 9 * 3600
+    starter = st.median(M.Player("average", 3000 + r, paid="starter").run().milestones["boss8"] for r in range(10))
+    whale = st.median(M.Player("average", 3000 + r, paid="whale").run().milestones["boss8"] for r in range(10))
+    assert whale < starter < free * 0.75 and free < 9 * 3600
 
 
 def test_mutation_odds_are_the_advertised_odds():
@@ -189,6 +207,7 @@ def test_level_and_strength():
     p = M.Pet(2, 6, 0)                                       # zone 3 Secret
     p.stars, p.lv = 5, 30
     assert abs(p.strength() - 100 * 4 * 32 * (1 + 0.05 * 29)) < 1e-6
+    assert M.R_STR[7:] == [400, 2000]                        # Ultra Secret, Infinity Secret
 
 
 # ---------- economy rules ----------

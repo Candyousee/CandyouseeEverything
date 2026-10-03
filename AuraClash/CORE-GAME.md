@@ -25,7 +25,8 @@ Old versions are in `archive/`, for history only. **Nothing in `archive/` is a r
   - offline gains use server timestamps only.
 - **Loot:** the server rolls mutations, drops and eggs. Shared monsters use the server's damage log: **every player whose hit landed gets their own full drop and quest credit** (GAME-BIBLE 4.1).
 - **Pets:** each pet has a unique id. Fusion is one server transaction (3 removed + 1 added in the same save). XP is added by the server on each kill.
-- **Luck:** the total luck multiplier (passes × potions × server boosts) is capped at ×10, and the egg card shows the real odds at the current luck.
+- **Luck:** the total luck (Luck ladder × potions × server boosts × group) is capped at ×10,000 and applied by rarity weight (GAME-BIBLE 5.1). The egg card shows the real odds at the player's current luck, computed by the same server function that rolls.
+- **Rewards:** hourly-reward progress counts server time in the game (AFK included, one session at a time). Daily login uses the server's UTC date, and each day can be claimed once (a confirmed save).
 
 ## 2. Saving and purchases (build requirement for the two-zone test)
 
@@ -38,7 +39,7 @@ Old versions are in `archive/`, for history only. **Nothing in `archive/` is a r
 | Pets | every pet (id, species, zone, stars 0-5, level, XP, favourite / lock, Exclusive / Limited serial), equipped list, auto-fuse / auto-delete settings, mailbox |
 | Upgrades | Bag, Mat, Surge levels; pet slots |
 | Tutorial / guarantees | tutorial step, **lifetime hatch count**, guaranteed-Rare used, Boss Shards claimed per boss, Exclusive Egg pity counter |
-| Purchases | owned passes, active potion end times (server time), Starter Pack used, Aura Pass tier / XP, processed `PurchaseId`s (MONETIZATION.md) |
+| Purchases + rewards | owned passes, **Power / Luck ladder tiers**, active potion end times (server time), Starter Pack used, Aura Pass season / tier / XP, daily streak day + last claim date, hourly-reward progress, group-chest time, Exclusive Egg pity counters, Limited serials owned, processed `PurchaseId`s (MONETIZATION.md) |
 | Offline | `lastSeen` (server time), `offlineClaimId` |
 | Operations | each critical operation's id → `committed` (with `revealed` yes/no) or `cancelled`, kept 30 days (2.2) |
 | Settings | effects, camera, flashing, Low effects |
@@ -70,7 +71,7 @@ Old versions are in `archive/`, for history only. **Nothing in `archive/` is a r
 
   **Used for:**
   - the offline meditation claim;
-  - Mythic / Divine / Secret hatches and every Exclusive Egg hatch (the cost and the rolled result, saved before the cutscene);
+  - Mythic / Divine / Secret / Ultra / Infinity hatches and every Exclusive Egg hatch (the cost and the rolled result, saved before the cutscene);
   - fusion to ★2 or higher, and fusion of Epic+ pets;
   - the Boss Shard reward (once per boss);
   - **every Robux purchase** (below).
@@ -104,7 +105,7 @@ Old versions are in `archive/`, for history only. **Nothing in `archive/` is a r
 | P4 | Kill the server during a Mythic hatch (forced shutdown) | after rejoin: the Mythic is there exactly once |
 | P5 | Studio mock of the data store: (a) the write fails before committing; (b) **the write commits, then the call reports a timeout**; (c) the store is down for 2 min after an unknown write | (a) a later successful reconcile finds no id: "nothing spent, try again", the id is stored as cancelled; (b) the reconcile finds the id: the result is shown once, **never refunded**; (c) during the outage the coins are **held** (not refunded, not spendable), conflicting purchases / fusions / hatches are blocked, and hunting / meditating still work; when the store recovers it resolves to (a) or (b) exactly once |
 | P6 | Rejoin before the 3rd hatch and after the tutorial egg | the guarantees happen exactly once, in order |
-| P7 | **Odds test:** 1,000,000 automated server-side hatches | each rarity Common-Divine within ±4 standard deviations (Mythic: 1,000 expected; Divine: 100 expected, accepted 60-140); Secret 0-6 |
+| P7 | **Odds test:** 1,000,000 automated server-side hatches at ×1 luck | each rarity Common-Divine within ±4 standard deviations (Mythic: 1,000 expected; Divine: 100 expected, accepted 60-140); Secret + Ultra + Infinity 0-6 |
 | P8 | Crack colour vs result over the same 1,000,000 hatches | 100% match |
 | P9 | **Mutation test:** 200,000 automated spawns | each mutation within ±4 SD of its chance (GAME-BIBLE 4.2) |
 | P10 | Fill the bag in Overdrive with mutated shards | never above capacity; every mutated shard sells at its multiplier |
@@ -114,7 +115,8 @@ Old versions are in `archive/`, for history only. **Nothing in `archive/` is a r
 | P14 | Studio mock: every save fails during a Mythic hatch attempt, then the server is shut down | rejoin with the write **not committed**: no Mythic and no coins spent. Rejoin with the write **committed** (response lost): the Mythic and its cost are both there once, and the cutscene plays on join ("finished saving"). No path refunds coins for a committed hatch or shows a result that isn't stored |
 | P15 | **Limited stock:** two servers buy the last 5 units at once (20 buyers) | exactly 5 sold; nobody is charged without receiving one |
 | P16 | **Paid random items:** a test account with `ArePaidRandomItemsRestricted = true` | never sees the Exclusive Egg; sees the direct-buy shop |
-| P17 | **Luck cap + odds card:** stack Super Lucky + Luck Potion + Server Luck | luck ≤ ×10; the card's odds equal the rolled odds over 200,000 hatches (±4 SD) |
+| P17 | **Luck cap + odds card:** stack Luck ladder ×2,048 + Luck Potion + Server Luck + group + 2× Secret Luck | luck ≤ ×10,000; the card's odds add to 100% and equal the rolled odds over 1,000,000 hatches (±4 SD for Legendary-Divine) |
+| P18 | **Daily login:** claim, change the device clock, rejoin another server; miss a day, use the Streak Saver | one claim per UTC day; the streak resets on a miss and is restored once by the Saver |
 
 ## 3. PLAYTEST #1 (behaviour first)
 
@@ -169,11 +171,11 @@ Old versions are in `archive/`, for history only. **Nothing in `archive/` is a r
   - all 8 zones: 24 monsters, mutations, the bag cap and SELL, Boss Shards;
   - shop spending, eggs with real odds (7 rarities) and guarantees, stars 0-5, automatic XP and levels, the team-hit cap;
   - rank quests by difficulty tier, boss HP and the beam clash;
-  - the effect of the main passes (VIP, 2× Coins, 2× Meditation, Lucky, +3 Slots).
+  - the effect of the ladders and main passes (Power and Luck ladders, VIP, 2× Coins, 2× Secret Luck, 2× Hatch Speed, +3 Slots).
 - **It doesn't cover:**
   - monsters hitting the player (only time lost, assumed small);
   - other players sharing monsters (personal loot means crowded servers pay faster than the model);
   - walking between areas (beyond a per-kill overhead);
   - potions, paid eggs, Limiteds and the Aura Pass (MONETIZATION.md);
-  - saving and purchases (tests P1-P17 are for the real game).
+  - saving and purchases (tests P1-P18 are for the real game).
 - **Decisions** (like when to meditate) follow a simple "average player" policy. **The playtest is the real test.**

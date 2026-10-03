@@ -4,7 +4,7 @@
 
 **Status:**
 - the design is v6 (meditation + crystal-monster hunting + pets; 8 zones designed);
-- the numbers come from `econ/model.py`, and `python tests.py` passes 25/25;
+- the numbers come from `econ/model.py`, and `python tests.py` passes 26/26;
 - the art style is chosen (STYLE-SHEET).
 
 **Don't rewrite the concept.** The next evidence must come from the real game.
@@ -23,7 +23,7 @@
    - If you change a rule while building, change the model constant, re-run both scripts, and update GAME-BIBLE in the same commit.
 7. **The playbook:** RULES section 0, PIPELINE 3a-3c, craft STYLE / VFX / GUI / SYSTEMS / GAMEPLAY.
 
-`MONETIZATION.md` is for the next phase. Read it so the HUD leaves room for the Store button. **Ignore `archive/`:** old versions, not rules.
+`MONETIZATION.md` (v2) is for the next phase. Read it so the HUD leaves room for the Store, Buffs and Hourly Reward buttons. **Ignore `archive/`:** old versions, not rules.
 
 ## Before step 1
 
@@ -31,7 +31,7 @@
 - **Greybox first:** steps 1-5 in grey boxes, **including the minimal pet loop** (earn → buy a pet → become stronger). Then **Winter's fun gate** and owner playtest #1 greybox, before any art.
 - **Concept sheets** (GPU → Blender):
   - 6 monsters + 6 mutation looks;
-  - 18 pets (9 per zone; Divine and Secret as silhouettes);
+  - 22 pets (11 per zone; Divine and the three Secret tiers as silhouettes);
   - Spark / BLAZE / INFERNO;
   - the Shrine hub;
   - the Stone Golem, the Magma Oni;
@@ -49,7 +49,7 @@
   - **The team's hit is capped at 100% of your Power.** Meditation's +10% per Strength is not capped.
   - **Pets never attack on their own** and **never die** (they get dazed).
 - **Odds:**
-  - **7 rarities:** Common 60 / Rare 28 / Epic 10 / Legendary 1.8899 / Mythic 0.1 / **Divine 0.01** / **Secret 0.0001** %. The card shows the real odds; the crack colour always equals the result.
+  - **9 rarities:** Common 60 / Rare 28 / Epic 10 / Legendary 1.88989798 % / Mythic 1 in 1,000 / **Divine 1 in 10,000** / **Secret 1 in 1M** / **Ultra Secret 1 in 50M** / **Infinity Secret 1 in 1B**. Luck is weighted toward the rarest (GAME-BIBLE 5.1). The card shows the real odds at your current luck; the crack colour always equals the result.
   - **Mutation odds:** one roll per spawn against the table.
 - **Combat:**
   - **The combo drops one level on a miss,** not to zero.

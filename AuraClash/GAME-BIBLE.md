@@ -1,6 +1,6 @@
 # AURA CLASH: GAME BIBLE v6 (everything in the game, zone by zone)
 
-**Authority:** this is the master document for every rule and number in the game. Every number comes from `econ/model.py`; `python tests.py` runs the 25 rule checks. Change a number = change the model constant and this file in the same commit.
+**Authority:** this is the master document for every rule and number in the game. Every number comes from `econ/model.py`; `python tests.py` runs the 26 rule checks. Change a number = change the model constant and this file in the same commit.
 
 **Other docs:**
 - `MONETIZATION.md`: everything that's sold.
@@ -9,6 +9,7 @@
 - `GAME-PLAN.md`: market and build order.
 
 **v6 owner changes (2 Oct 2026):**
+- **Monetization v2 (owner):** the buff system with Power and Luck ladders, 2 Exclusive Eggs, Limiteds, the Aura Pass, hourly and daily rewards, VIP as a title (MONETIZATION.md). Two new rarities: **Ultra Secret (1 in 50M)** and **Infinity Secret (1 in 1B)**.
 - **Pets:**
   - pets go up to **5 stars**;
   - **XP goes automatically to equipped pets** (Soul Food is gone);
@@ -157,17 +158,23 @@ Each spawn makes **one roll** against this table, so the shown chance is the rea
 
 ### 5.1 Rarities and egg odds (the same in every zone's egg)
 
-| Rarity | Chance | Base Strength |
+| Rarity | Chance (no luck) | Base Strength |
 |---|---|---|
 | Common | 60% | 1 |
 | Rare | 28% | 2 |
 | Epic | 10% | 4 |
-| Legendary | 1.8899% | 10 |
+| Legendary | 1.88989798% | 10 |
 | Mythic | 0.1% (1 in 1,000) | 20 |
-| **Divine** | **0.01% (1 in 10,000)** | **40** |
-| **Secret** | **0.0001% (1 in 1,000,000)**, shown as "???" | **100** |
+| **Divine** | 0.01% (1 in 10,000) | 40 |
+| **Secret** | 1 in 1,000,000, shown as "???" | 100 |
+| **Ultra Secret** | **1 in 50,000,000**, shown as "???" | **400** |
+| **Infinity Secret** | **1 in 1,000,000,000**, shown as "???" | **2,000** |
 
-The odds above add to exactly 100%. Luck boosts (MONETIZATION.md) multiply Legendary-and-up and take the difference from Common; the egg card always shows your current real odds.
+- **Exact total:** the odds add to exactly 100% (Legendary takes the remainder).
+- **Luck** (ladders, potions, server boosts, group; MONETIZATION.md 1-4) works **hardest on the rarest pets**: each rarity from Legendary up is multiplied by luck^0.3 / 0.5 / 0.7 / 0.85 / 0.95 / 1.0. Common, Rare and Epic share what's left in their 60:28:10 ratio.
+- **Limits:** total luck is capped at ×10,000, and Legendary-and-up can never be more than 90%.
+- **2× Secret Luck:** this pass doubles the three Secret tiers.
+- **The egg card always shows your current real odds.**
 
 ### 5.2 Strength (the one number on every pet card)
 
@@ -236,8 +243,10 @@ The odds above add to exactly 100%. Luck boosts (MONETIZATION.md) multiply Legen
 | Mythic (6 s, unskippable the first time) | **cutscene:** the world freezes, a vortex, the pet forms from raw energy, a shockwave, a server announcement with your name |
 | **Divine (8 s, unskippable the first time)** | **cutscene:** a golden sky floods the **whole server**, angelic choir, wings of light, a **global announcement in every server** |
 | **Secret (10 s, unskippable the first time)** | **cutscene:** the screen cracks, silence, a "???" card, the server's sky changes for 10 s, a unique entrance, a global announcement, and a permanent "Secret Holder" title |
+| **Ultra Secret (12 s)** | **cutscene:** reality shatters into shards, the whole server's sky turns to that zone's element for 30 s, a global announcement in every server, a permanent animated "ULTRA" title |
+| **Infinity Secret (15 s)** | **cutscene:** time freezes **in every server** for a global announcement, an infinity symbol of light circles the planet, a permanent animated "INFINITY" title and a statue at the Celestial Gate |
 
-- **Secrets:** the egg card shows "??? 1 in 1,000,000". After the first hatch anywhere, it shows the silhouette and "First hatched by ___".
+- **Secrets:** the egg card shows "???" with the real chance for all three Secret tiers. After the first hatch anywhere, it shows the silhouette and "First hatched by ___".
 
 ## 7. The shop (by every Shrine; account-wide upgrades)
 
@@ -375,6 +384,8 @@ The full quest list is in each zone below.
 | Mythic | Solar Kirin | 20 |
 | Divine | Radiant Pegasus | 40 |
 | Secret | ??? (Aurora Dragon) | 100 |
+| Ultra Secret | ??? (Prism Archangel) | 400 |
+| Infinity Secret | ??? (Lumen, the Endless) | 2,000 |
 
 **Quests:**
 
@@ -439,6 +450,8 @@ The full quest list is in each zone below.
 | Mythic | Phoenix | 40 |
 | Divine | Sunforge Drake | 80 |
 | Secret | ??? (Volcano Titan) | 200 |
+| Ultra Secret | ??? (Solar Behemoth) | 800 |
+| Infinity Secret | ??? (Ignis Eternal) | 4,000 |
 
 **Quests:**
 
@@ -483,6 +496,8 @@ The full quest list is in each zone below.
 | Mythic | Frost Kirin | 80 |
 | Divine | Aurora Stag | 160 |
 | Secret | ??? (Glacial Leviathan) | 400 |
+| Ultra Secret | ??? (Frostfall Empress) | 1,600 |
+| Infinity Secret | ??? (Absolute Zero) | 8,000 |
 
 **Quests:**
 
@@ -527,6 +542,8 @@ The full quest list is in each zone below.
 | Mythic | Thunderbird | 160 |
 | Divine | Tempest Dragon | 320 |
 | Secret | ??? (Raijin) | 800 |
+| Ultra Secret | ??? (Storm Sovereign) | 3,200 |
+| Infinity Secret | ??? (Thunder Infinite) | 16,000 |
 
 **Quests:**
 
@@ -572,6 +589,8 @@ The full quest list is in each zone below.
 | Mythic | Kitsune | 320 |
 | Divine | Jade Dragon | 640 |
 | Secret | ??? (Celestial Koi) | 1,600 |
+| Ultra Secret | ??? (Eternal Bloom Dragon) | 6,400 |
+| Infinity Secret | ??? (World Tree Spirit) | 32,000 |
 
 **Quests:**
 
@@ -617,6 +636,8 @@ The full quest list is in each zone below.
 | Mythic | Eclipse Dragon | 640 |
 | Divine | Abyss Kraken | 1,280 |
 | Secret | ??? (Null Wyrm) | 3,200 |
+| Ultra Secret | ??? (Abyssal Emperor) | 12,800 |
+| Infinity Secret | ??? (The Void Itself) | 64,000 |
 
 **Quests** (slots are maxed, so quest 1 now gives an egg):
 
@@ -662,6 +683,8 @@ The full quest list is in each zone below.
 | Mythic | Supernova Phoenix | 1,280 |
 | Divine | Cosmic Dragon | 2,560 |
 | Secret | ??? (Starborn Titan) | 6,400 |
+| Ultra Secret | ??? (Galaxy Devourer) | 25,600 |
+| Infinity Secret | ??? (Big Bang) | 128,000 |
 
 **Quests (medium):**
 
@@ -708,6 +731,8 @@ The full quest list is in each zone below.
 | Mythic | Celestial Kirin | 2,560 |
 | Divine | Divine Griffin | 5,120 |
 | Secret | ??? (The First Light) | 12,800 |
+| Ultra Secret | ??? (Seraph Prime) | 51,200 |
+| Infinity Secret | ??? (Aura Infinite) | 256,000 |
 
 **Quests (hard):**
 
@@ -758,7 +783,7 @@ The full quest list is in each zone below.
 - **Pet damage:** about 37% (capped below half).
 - **Boss Shards:** about 12% of all coins.
 
-**Paid boosts shorten it** (section 23): with the VIP pass zone 8 is done at about 4 h 56; with the full bundle at about 2 h 53.
+**Paid boosts shorten it** (section 23): 62 R$ of ladder tiers bring zone 8 to about 4 h 17, and 1,274 R$ to about 2 h 22.
 
 ---
 
@@ -789,20 +814,32 @@ The full quest list is in each zone below.
 
 # PART D: MONEY AND FAIRNESS
 
-## 23. Monetization (summary; full plan in MONETIZATION.md)
+## 23. Monetization (summary; full plan in MONETIZATION.md v2)
 
-**Sold:**
-- **Passes:** VIP, 2× Coins, 2× Meditation, Lucky / Super Lucky, +3 Slots, Hatch ×8 + Auto-Hatch, Huge Storm, Auto-Sell, Offline+.
-- **Potions:** coins, luck, meditation, mutation.
-- **Server boosts and paid eggs:** Server Luck boosts; **Robux eggs** with exclusive pets (odds shown).
-- **Limited pets:** real stock caps.
-- **Packs and season:** a Starter Pack, Zone Packs, the **Aura Pass** season, aura cosmetics.
-- **Pop-up offers:** at real "want" moments, with a cap on how often.
+- **The buff system:**
+  - **permanent:** the **Power ladder** and **Luck ladder** (×2 per tier up to ×2,048; 3 R$ for tier 1 up to 999 R$ for tier 11), VIP, 2× Coins, 2× Secret Luck, 2× Hatch Speed, group, Premium;
+  - **timed:** potions;
+  - **server-wide:** Server Luck, Mutation Storm.
+- **Two Exclusive Eggs:**
+  - **Daily Exclusive:** also free from rewards; 49 / 3 for 99 / 10 for 249;
+  - **Shop Exclusive:** 99 / 3 for 279 / 10 for 849, with Huge and Titanic pets.
+- **Limiteds:** numbered Limited pets and cosmetics, at most 1,000 serials each.
+- **Season pass:** the Aura Pass (499 / 1,499 R$).
+- **Free rewards:**
+  - **hourly:** 1 → 60 min, ending in a free Daily Exclusive Egg;
+  - **daily login:** a 7-day cycle with 3 to 8 exclusive eggs;
+  - **group and Premium rewards.**
+- **Packs, gifting and limited pop-ups.**
+- **VIP:** gives a **title over your head and in chat**. Shrine mats are communal.
+- **What payers get (model):**
 
-**The rules that keep it working:**
-- **Boosts multiply what you earn by playing.** They never hand out raw coins or Power, so the two-halves loop stays intact.
-- **Odds are always shown,** and paid eggs are gated by Roblox's `PolicyService`.
-- **Free players can finish everything** (7 h 11 for an average player). Payers get there faster.
+| Spend | All 8 zones |
+|---|---|
+| free | 7 h 13 |
+| 62 R$ | 4 h 17 |
+| 1,274 R$ | 2 h 22 |
+
+  Past that, spending buys status and luck, not speed. Free players finish everything.
 
 ## 24. Fairness, safety and saving (details in CORE-GAME.md)
 

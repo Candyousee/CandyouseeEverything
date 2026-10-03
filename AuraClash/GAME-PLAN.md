@@ -28,7 +28,7 @@
 - **Identity:** a pet simulator with two halves: **meditate (Power)** and **hunt (coins → pets)**.
 - **Scope:**
   - 8 zones (GAME-BIBLE Part B);
-  - a first full run of about 7 hours for an average free player (about 3 hours with the full pass bundle).
+  - a first full run of about 7 hours for an average free player (about 4 h 17 with 62 R$ of ladder tiers, about 2 h 22 with 1,274 R$).
 
 ## 3. Research: what we take (owner: "we don't need to be original")
 
@@ -37,7 +37,9 @@
 | Pets fight beside you, constant loot stream | Pet Simulator 99 | pets fight and tank crystal monsters |
 | Gold / Rainbow pet machines | Pet Simulator 99 | star fusion up to ★5 |
 | Rank quests | Pet Simulator 99 | 5-9 per zone, very easy → hard; the boss gate opens when they're done |
-| Paid eggs, Huge pets, Limiteds, server boosts | Pet Simulator 99 | Exclusive Eggs (with Huge), numbered Limiteds, Server Luck |
+| Paid eggs, Huge pets, Limiteds, server boosts | Pet Simulator 99 | Daily + Shop Exclusive Eggs (Huge, Titanic), numbered Limiteds, Server Luck |
+| Luck ladders, crazy-rare tiers | RNG games (Sol's RNG) | Power and Luck ladders, Ultra and Infinity Secrets |
+| Hourly and daily rewards | most top sims | a 60-minute hourly track and a 7-day login cycle with exclusive eggs |
 | Stat training + AFK progress | Anime Fighting Simulator | meditation (AFK / Focus / offline) |
 | Mutations raise value | Grow a Garden | monster mutations (Gold → Celestial) |
 | Rarity cutscenes | Sol's RNG | the hatch ladder with Mythic / Divine / Secret cutscenes |
@@ -103,7 +105,7 @@ All of it follows STYLE-SHEET (GPU concepts → Blender, outlines, smooth plasti
 
 ### 5b. After playtest #1 passes (to launch)
 
-1. **Monetization** (MONETIZATION.md): store, passes, products, Exclusive Egg + PolicyService gating, Limiteds, packs, Aura Pass, pop-ups. Tests P13, P15-P17.
+1. **Monetization** (MONETIZATION.md v2): the buff system and ladders, store, passes, products, both Exclusive Eggs + PolicyService gating, Limiteds, packs, Aura Pass, hourly / daily / group rewards, pop-ups. Tests P13, P15-P18.
 2. **Zones 3-8** (GAME-BIBLE 14-19), one at a time, each through the art pipeline and the model.
 3. **Full art pass**, then a **private soft launch** (the owner decides access; Winter never changes it), then the Later systems (GAME-BIBLE 22).
 
@@ -120,4 +122,4 @@ These are **model targets for a free player playing solo, not promises.** The si
 | 15-50% of play time meditating | 39% (26% in zones 1-2) |
 | Pets 30-50% of damage (never more than your blasts) | 37% |
 | Average player wins the clash ≥ 90% at recommended Power; weak ≥ 60%; under-powered (½) average ≤ 40% | 100% / 79% / 23% |
-| Paid boosts are clearly faster, free players still finish | full bundle 2 h 53 vs free 7 h 13 |
+| Paid boosts are clearly faster, free players still finish | 62 R$: 4 h 17; 1,274 R$: 2 h 22; free 7 h 13 |

@@ -77,10 +77,13 @@ def boss_shard_value(z):
 
 
 # ---------------- RULES: pets ----------------
-RARITIES = ["Common", "Rare", "Epic", "Legendary", "Mythic", "Divine", "Secret"]
-ODDS = [0.60, 0.28, 0.10, 0.018899, 0.001, 0.0001, 0.000001]  # exact: 60 / 28 / 10 / 1.8899 / 0.1 / 0.01 / 0.0001 %
-R_STR = [1, 2, 4, 10, 20, 40, 100]
-SPECIES = [2, 2, 1, 1, 1, 1, 1]                # 9 species per zone
+RARITIES = ["Common", "Rare", "Epic", "Legendary", "Mythic", "Divine", "Secret", "Ultra Secret", "Infinity Secret"]
+_RARE = [0.001, 0.0001, 1e-6, 1 / 50_000_000, 1 / 1_000_000_000]   # Mythic 1/1K, Divine 1/10K, Secret 1/1M, Ultra 1/50M, Infinity 1/1B
+ODDS = [0.60, 0.28, 0.10, 1 - 0.98 - sum(_RARE)] + _RARE   # Legendary takes the remainder (1.88989798%), so the sum is exactly 1
+R_STR = [1, 2, 4, 10, 20, 40, 100, 400, 2000]
+SPECIES = [2, 2, 1, 1, 1, 1, 1, 1, 1]          # 11 species per zone
+SECRET_TIERS = (6, 7, 8)                       # Secret, Ultra Secret, Infinity Secret
+LUCK_EXP = [0, 0, 0, 0.3, 0.5, 0.7, 0.85, 0.95, 1.0]   # luck works hardest on the rarest pets
 PET_STEP = 2                                   # zone pets x2 Strength per zone
 STAR = [1, 2, 4, 8, 16, 32]                    # stars 0-5: each star doubles; 3 copies -> 1 of the next star
 MAX_STARS = 5
@@ -125,10 +128,21 @@ SLOT_QUESTS = {(0, 0), (0, 3), (1, 0), (1, 3), (2, 0), (3, 0), (4, 0)}   # 3 + 7
 # every other quest (except the last, which opens the boss gate) gives a free egg of that zone
 
 # ---------------- MONETIZATION (MONETIZATION.md): what a purchase changes ----------------
-PAID = {
-    "free":    dict(coin_x=1.0, med_x=1.0, luck=1.0, slots=0),
-    "vip":     dict(coin_x=1.5, med_x=1.5, luck=1.0, slots=1),                       # VIP pass
-    "bundle":  dict(coin_x=3.0, med_x=3.0, luck=2.0, slots=4),                       # VIP + 2x Coins + 2x Meditation + Lucky + 3 Slots
+LADDER_PRICES = [3, 9, 19, 29, 49, 79, 149, 249, 399, 799, 999]   # x2 per tier: x2 ... x2048 (Power ladder and Luck ladder)
+
+
+def ladder_cost(tiers):
+    return sum(LADDER_PRICES[:tiers])
+
+
+PAID = {   # what a spending profile changes (MONETIZATION.md); "R$" = what it costs
+    "free":    dict(coin_x=1.0, med_x=1.0, luck=1.0, secret_x=1.0, hatch_x=1.0, slots=0, rs=0),
+    "starter": dict(coin_x=1.0, med_x=8.0, luck=8.0, secret_x=1.0, hatch_x=1.0, slots=0,          # 3 tiers of each ladder
+                    rs=2 * ladder_cost(3)),
+    "vip":     dict(coin_x=3.0, med_x=1.5 * 64, luck=64.0, secret_x=1.0, hatch_x=1.0, slots=1,    # VIP + 2x Coins + 6 ladder tiers each
+                    rs=499 + 399 + 2 * ladder_cost(6)),
+    "whale":   dict(coin_x=3.0, med_x=1.5 * 2048, luck=2048.0, secret_x=2.0, hatch_x=2.0, slots=4, # everything permanent
+                    rs=499 + 399 + 2 * ladder_cost(11) + 199 + 399 + 449),
 }
 
 PROFILES = {  # perfect rate, Focus average multiplier, counter success, mean hits taken per boss
@@ -142,22 +156,30 @@ def seed(*parts):
     return zlib.crc32("|".join(map(str, parts)).encode())
 
 
-LUCK_CAP = 10.0                                # passes x potions x server boosts, capped
+LUCK_CAP = 10_000.0                            # Luck ladder x potions x server boosts x group, capped
+RARE_SHARE_CAP = 0.90                          # Legendary-and-up can never be more than 90% of hatches
 
 
-def odds_with_luck(luck=1.0):
-    """Luck multiplies Legendary-and-up chances; the difference comes out of Common. The egg card shows these."""
-    luck = min(luck, LUCK_CAP)
+def odds_with_luck(luck=1.0, secret_x=1.0):
+    """Each rarity from Legendary up is multiplied by luck ** LUCK_EXP (more on rarer pets); the 2x Secret Luck pass
+    doubles the three Secret tiers. Common / Rare / Epic share what's left in their usual 60:28:10 ratio.
+    The egg card shows exactly these odds."""
+    luck = max(1.0, min(luck, LUCK_CAP))
     odds = list(ODDS)
-    extra = sum(o * (luck - 1) for o in ODDS[3:])
     for i in range(3, len(odds)):
-        odds[i] *= luck
-    odds[0] -= extra
+        odds[i] = ODDS[i] * luck ** LUCK_EXP[i] * (secret_x if i in SECRET_TIERS else 1.0)
+    rare = sum(odds[3:])
+    if rare > RARE_SHARE_CAP:
+        odds[3:] = [o * RARE_SHARE_CAP / rare for o in odds[3:]]
+        rare = RARE_SHARE_CAP
+    base_low = sum(ODDS[:3])
+    for i in range(3):
+        odds[i] = ODDS[i] / base_low * (1 - rare)
     return odds
 
 
-def roll_rarity(rng, luck=1.0):
-    odds = ODDS if luck == 1.0 else odds_with_luck(luck)
+def roll_rarity(rng, luck=1.0, secret_x=1.0):
+    odds = ODDS if (luck == 1.0 and secret_x == 1.0) else odds_with_luck(luck, secret_x)
     x, acc = rng.random(), 0.0
     for i, o in enumerate(odds):
         acc += o
@@ -455,7 +477,7 @@ class Player:
         if not free:
             self.coins -= EGG_PRICE[z]
         multi = 3 if self.milestones.get("boss1") is not None else 1   # Hatch x3 unlocks after boss 1
-        self.t += HATCH_TIME / multi
+        self.t += HATCH_TIME / multi / self.paid["hatch_x"]
         self.hatches += 1
         self.zone_hatches[z] = self.zone_hatches.get(z, 0) + 1
         if self.hatches == 1:
@@ -463,7 +485,7 @@ class Player:
         elif self.hatches == 3 and not any(p.r >= 1 for p in self.pets):
             r, sp = 1, 0                                     # guaranteed Rare on the 3rd hatch
         else:
-            r = roll_rarity(self.rng, self.paid["luck"])
+            r = roll_rarity(self.rng, self.paid["luck"], self.paid["secret_x"])
             sp = self.rng.randrange(SPECIES[r])
         self.pets.append(Pet(z, r, sp))
         self.note("first_hatch", "first hatch")
@@ -742,12 +764,17 @@ def report(n_full=40, n_two=200):
     P(f"   over all 8 zones: meditating {ms * 100:.0f}% of play time; pets {pd * 100:.0f}% of damage; "
       f"Boss Shards {bc * 100:.0f}% of all coins")
     P("")
-    P(f"5. What purchases change (average player, {n_full // 2} players each; time to beat each boss, h:mm)")
-    P("   zone   free        VIP pass    full bundle (VIP + 2x Coins + 2x Meditation + Lucky + 3 Slots)")
+    P(f"5. What purchases change (average player, {n_full // 2} players each; time to beat each boss, h:mm:ss)")
+    P("   profiles: " + "; ".join(f"{k} = {v['rs']:,} R$" for k, v in PAID.items()))
+    P("   zone   " + "".join(f"{k:12s}" for k in PAID))
     paid_rows = {k: [Player("average", 2000 + r, paid=k).run() for r in range(n_full // 2)] for k in PAID}
     for z in range(ZONES):
         cells = [fmt(st.median(x.milestones.get(f"boss{z + 1}", 24 * 3600) for x in paid_rows[k])) for k in PAID]
         P(f"   {z + 1}      " + "".join(f"{c:12s}" for c in cells))
+    P("   hatch odds at each profile's luck (Legendary / Mythic / Divine / Secret / Ultra / Infinity):")
+    for k, v in PAID.items():
+        o = odds_with_luck(v["luck"], v["secret_x"])
+        P(f"   {k:8s} " + " / ".join(("1 in " + f"{1 / x:,.0f}") if x < 0.01 else f"{x * 100:.2f}%" for x in o[3:]))
     P("")
     P("6. Beam clash win rate (2,000 fights per cell; 2 hits taken in phases 1-2)")
     P("   Power / recommended:    0.5     0.75    1.0     1.5     2.0")
