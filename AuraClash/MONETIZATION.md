@@ -149,7 +149,7 @@ Both eggs use the **same tier bands** as zone eggs, so a 1-in-2M exclusive is a 
 - **Fixed odds:** luck does **not** change paid-egg odds, so the card is always exactly what you buy.
 - **Roblox rules for paid random items:**
   - **odds on the card before purchase;**
-  - **`PolicyService` check:** if `ArePaidRandomItemsRestricted`, the player can't buy these eggs and sees a **direct-buy shop** instead (the exact pet, fixed price):
+  - **`PolicyService` check:** if `ArePaidRandomItemsRestricted`, the player can't buy these eggs and sees a **direct-buy shop** instead (the exact pet, fixed price). Section 17 covers everything else (coin eggs, paid luck, enchants, packs, trading):
 
     | Tier | Daily Exclusive pet | Shop Exclusive pet |
     |---|---|---|
@@ -277,14 +277,43 @@ Each goes live when its machine ships (GAME-BIBLE 13).
 | **Raid Summon** | 99 | starts the zone's raid boss **now** for the whole server, with a "Thanks to [buyer]!" banner | repeatable |
 
 - **The Weekly Limited Egg** is bought with **coins** (the Nexus Titan's coins), not Robux, so the endgame grind has a goal. Coin packs (section 4) still help, since they scale to your zone.
-- **The reward-share rule** (8% of the damage or a quarter of the median fighter; GAME-BIBLE 9) means a Raid Summon buyer can't carry players who don't fight, and a strong buyer can't push real fighters out.
+- **The reward-share rule** (fight actively, and deal 8% of the damage or a quarter of the median active fighter's; GAME-BIBLE 9) means a Raid Summon buyer can't carry players who don't fight, and a strong buyer can't push real fighters out.
 
 ## 16. Build timing and checks
 
 - **Not in the two-zone playtest build.** Built straight after playtest #1, before zones 3-10 go live.
 - **Before launch (CORE-GAME tests):**
   - every odds card adds to 100% and matches the rolls at the player's luck;
-  - `PolicyService` gating;
+  - `PolicyService` gating for every item in section 17 (fail-safe: restricted until known);
   - Limited counters with two servers buying at once;
   - every Robux purchase granted exactly once;
   - serial numbers never duplicated.
+
+## 17. Regional rules for paid random items (PolicyService)
+
+Roblox doesn't let some players (by region / age policy) **buy random items with Robux**. That includes random items bought with **anything Robux can buy**, such as coins from coin packs. `PolicyService:GetPolicyInfoForPlayerAsync(player)` says who:
+- **`ArePaidRandomItemsRestricted`**: this player can't pay for random results;
+- **`IsPaidItemTradingAllowed`**: whether this player may trade items bought with Robux.
+
+> **Verify before monetization ships:** the Roblox docs site was blocked from my container, so this section is written from the known PolicyService fields and the published rule ("no paid random items for restricted players; odds shown before any paid random purchase"). Winter must check it against the current Roblox monetization policy and PolicyService page, and adopt any stricter wording.
+
+**The principle for a restricted player:** nothing they pay Robux for may be **spent on a random result** or **improve the odds** of one, directly or through a currency or item Robux can buy. Free play stays fully random and fully playable.
+
+| Thing | Why it's a paid random item | For a restricted player |
+|---|---|---|
+| **Daily / Shop Exclusive Eggs** | bought with Robux, random pet | not sold; the **direct-buy shop** (section 6) sells the exact pet |
+| **Zone eggs and the Weekly Limited Egg** (coins) | coins can be bought with Robux, so a coin egg could be Robux-funded | **coins must stay 100% earned:** coin packs, the coins in packs, Coin Potions and the coin parts of 2× Coins and VIP are **not sold or not applied**. Then coin eggs are free random items and stay open |
+| **Paid luck:** 2× Boost ladder (its luck half), 2× Secret Luck, VIP's Secret luck, Luck / Mega Potions, Server Luck Boost, the Aura Pass's +50% luck | improves the odds of a random roll for Robux | not sold / not applied. The ladder is shown as a **2× Power ladder** (same prices, Power only). A **Server Luck Boost bought by someone else** still applies (they paid, not this player) |
+| **Enchant Crystal packs** | random enchant rolls for Robux | not sold; crystals earned in play still roll |
+| **Mutation Storm (product), Mutation Magnet** | changes the chance / value of random mutations for Robux | not sold; natural storms still happen |
+| **Nursery+ and Nursery Hurry** | more or faster Shiny rolls for Robux | not sold |
+| **Raid Summon** | starts a raid whose drops include random items | not sold (others' summons still apply) |
+| **Packs** (Starter, Zone, Comeback) | contain eggs and coins | a **restricted version**: the eggs become fixed pets of the same tier (the direct-buy prices' worth), the coins become Power Potions |
+| **Aura Pass** | gives Exclusive Eggs | the eggs become fixed pets of the same tier; no luck bonus |
+| **Fixed items** (slot packs, Power / XP Potions, Hatch ×8, 2× Hatch Speed, Huge Storm, Auto-Sell, Offline+, Relic Shards, XP Shards, the Verity Limiteds) | deterministic | sold normally |
+
+- **Already-owned passes:** a pass bought before a player became restricted keeps its **non-random** parts. Its luck and coin parts don't apply while restricted, and the pass page says so.
+- **Trading:** if `IsPaidItemTradingAllowed` is false, the **trading booths are closed for that player** (a clear message). For everyone, trades are items for items, never Robux.
+- **Odds before every random roll** that can involve anything paid: egg cards, enchant tiers (I 50% / II 28% / III 15% / IV 6% / V 1%), Shiny chance, mutation chances, Titan and raid drop tables.
+- **Fail-safe:** the policy is fetched on join and retried. **Until it's known, or if it fails, the player is treated as restricted.**
+- **Tests:** CORE-GAME P16 (a-e).

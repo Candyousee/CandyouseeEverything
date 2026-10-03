@@ -348,22 +348,33 @@ def test_quest_difficulty_tiers():                          # zones 1-3 very eas
     assert all(q[-1] == ("power", M.BOSS[z]["rec"]) for z, q in enumerate(M.QUESTS))
 
 
-def test_raid_reward_share_needs_real_damage():          # owner: 8% of the damage to share raid rewards
+def test_raid_reward_share_needs_real_damage_and_real_fighting():   # owner: no freeloading; reviewer cases
     assert M.RAID_SHARE == 0.08 and M.RAID_MEDIAN_X == 0.25
-    small = {"a": 50, "b": 40, "tapper": 1}                    # one tap with weak pets gets nothing
-    assert M.raid_recipients(small) == ["a", "b"]
-    crowd = {f"p{i}": 5 for i in range(20)}                    # 20 equal fighters (5% each) all qualify
-    crowd["tapper"] = 0.1
-    assert len(M.raid_recipients(crowd)) == 20 and "tapper" not in M.raid_recipients(crowd)
-    whale = {f"p{i}": 1 for i in range(19)}                    # one player deals 100x everyone else
-    whale["whale"] = 100
-    assert len(M.raid_recipients(whale)) == 20                 # the strong player can't push the others out
-    mixed = {f"p{i}": 100 ** (i / 19) for i in range(20)}      # strengths spread evenly from 1x to 100x
-    mixed["tapper"] = 0.05
-    got = M.raid_recipients(mixed)
-    med = st.median(mixed.values())
-    assert "tapper" not in got and all(f"p{i}" in got for i in range(20) if mixed[f"p{i}"] >= med / 4)
-    assert len(got) >= 15                                      # everyone within 4x of the typical fighter is paid
+    W = 12                                                     # a 2-minute raid = 12 ten-second windows
+    fight = lambda d: (d, W)                                   # blasted in every window
+    tap = lambda d: (d, 1)                                     # one hit
+    assert M.raid_recipients({"a": fight(50), "b": fight(40), "tapper": tap(1)}, W) == ["a", "b"]
+    # reviewer: {strong 1000, weak A 1, weak B 1} where A and B only tapped -> only the strong player
+    assert M.raid_recipients({"strong": fight(1000), "A": tap(1), "B": tap(1)}, W) == ["strong"]
+    # ... but if A and B really fought the whole raid with weak pets, they share (cooperative promise)
+    assert M.raid_recipients({"strong": fight(1000), "A": fight(1), "B": fight(1)}, W) == ["A", "B", "strong"]
+    # a big one-shot then AFK is not active either
+    assert M.raid_recipients({"oneshot": (500, 1), "a": fight(50), "b": fight(50)}, W) == ["a", "b"]
+    # fighting half the raid (a mid-raid joiner) counts; a last-10-seconds join does not
+    assert M.raid_active(6, W) and not M.raid_active(5, W) and M.raid_active(2, 2) and not M.raid_active(1, 2)
+    crowd = {f"p{i}": fight(5) for i in range(20)}
+    crowd["tapper"] = tap(0.1)
+    got = M.raid_recipients(crowd, W)
+    assert len(got) == 20 and "tapper" not in got
+    whale = {f"p{i}": fight(1) for i in range(19)}
+    whale["whale"] = fight(100)
+    assert len(M.raid_recipients(whale, W)) == 20              # the strong player can't push the others out
+    mixed = {f"p{i}": fight(100 ** (i / 19)) for i in range(20)}
+    mixed.update({f"t{i}": tap(0.05) for i in range(30)})      # 30 tappers can't drag the median down
+    got = M.raid_recipients(mixed, W)
+    med = st.median(d for d, _ in (mixed[f"p{i}"] for i in range(20)))
+    assert not any(p.startswith("t") for p in got)
+    assert all(f"p{i}" in got for i in range(20) if mixed[f"p{i}"][0] >= med / 4) and len(got) >= 15
 
 
 def test_newcomer_next_to_a_veteran_gets_the_drop():

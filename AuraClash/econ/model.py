@@ -784,20 +784,28 @@ def loot_recipients(damage_log):
     return sorted(pid for pid, dmg in damage_log.items() if dmg > 0)
 
 
-RAID_SHARE, RAID_MEDIAN_X = 0.08, 0.25   # raid rewards: 8% of the damage OR a quarter of the median fighter's damage
+RAID_SHARE, RAID_MEDIAN_X = 0.08, 0.25   # raid rewards: 8% of the damage OR a quarter of the median ACTIVE fighter
+RAID_WINDOW, RAID_MIN_WINDOWS = 10, 3     # ... and you must be active: your own blasts land in half the raid's 10-s windows
 
 
-def raid_recipients(damage_log):
-    """You share a raid's rewards if you dealt at least 8% of the damage, OR at least a quarter of what the
-    median fighter dealt. One strong player can't push everyone else out (the median ignores how big the top
-    hitter is), crowded raids still pay everyone who fought, and one tap with weak pets never qualifies."""
-    total = sum(damage_log.values())
-    fighters = sum(1 for d in damage_log.values() if d > 0)
-    if total <= 0 or fighters == 0:
+def raid_active(windows_hit, raid_windows):
+    """Active = your OWN blasts (not just pets) landed on the boss in at least half of the raid's 10-second windows,
+    and in at least 3 of them (or every window, if the raid was shorter than that)."""
+    return windows_hit >= max(min(RAID_MIN_WINDOWS, raid_windows), math.ceil(raid_windows / 2))
+
+
+def raid_recipients(log, raid_windows):
+    """log = {player: (damage, windows_hit)}. You share a raid's rewards if you were ACTIVE (raid_active) AND you
+    dealt at least 8% of the damage OR at least a quarter of what the median active fighter dealt.
+    - one tap (or a last-second tap) is never active, so it never qualifies and never lowers the median;
+    - one strong player can't push everyone out: the median ignores how big the top hitter is;
+    - crowded raids still pay everyone who really fought."""
+    total = sum(d for d, _ in log.values())
+    active = {pid: d for pid, (d, w) in log.items() if d > 0 and raid_active(w, raid_windows)}
+    if total <= 0 or not active:
         return []
-    med = st.median(d for d in damage_log.values() if d > 0)
-    return sorted(pid for pid, d in damage_log.items()
-                  if d > 0 and (d / total >= RAID_SHARE or d >= RAID_MEDIAN_X * med))
+    med = st.median(active.values())
+    return sorted(pid for pid, d in active.items() if d / total >= RAID_SHARE or d >= RAID_MEDIAN_X * med)
 
 
 def combo_avg(p):

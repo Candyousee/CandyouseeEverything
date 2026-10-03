@@ -13,14 +13,15 @@ Change a number = change the model and re-run `python make_bible.py`.
 - `STYLE-SHEET.md`: the look.
 - `GAME-PLAN.md`: market and build order.
 
-**v9 owner changes:** bosses are **server raids** (every 15 min, plus a solo Trial any time). Raid rewards need **8% of the damage, or a quarter of what the median fighter dealt** (so one huge player can't push everyone out). The endgame is the **Nexus Titan** (an always-respawning raid boss with huge coins), a **Weekly Limited Egg**, and **XP Shards** (food) with **Awakening** to level 50.
+**v9 owner changes:** bosses are **server raids** (every 15 min, plus a solo Trial any time). Raid rewards need you to **fight actively** (your own blasts in half the raid) **and** deal **8% of the damage or a quarter of the median active fighter's** (so neither taps nor one huge player decide it). The endgame is the **Nexus Titan** (an always-respawning raid boss with huge coins), a **Weekly Limited Egg**, and **XP Shards** (food) with **Awakening** to level 50.
 
 **v9 review fixes:**
-- **Raid share:** 8% of the damage **or a quarter of the median fighter's damage** (a 100× player no longer pushes 19 real fighters out).
+- **Raid share:** you must be **active** (your own blasts in half the raid's 10-s windows) and deal 8% of the damage **or a quarter of the median active fighter's** (a 100× player can't push 19 real fighters out; one-tap freeloaders never qualify).
 - **Pet hits:** +10% of Power per doubling of team Strength, **no hard cap** (the old cap was reached at Strength 25, so upgrades stopped adding hit by zone 2). Pets stay at about 46% of damage.
 - **Fusion:** the Fusion Altar stops at ★2 until the Star Forge (zone 5), in the model too.
 - **Times are partial-model estimates** (section 27 lists what is and isn't modeled); Huge Storm, Auto-Sell and Mutation Magnet are now modeled for the whale.
-- **Serials and Limited sales** got an explicit ledger and recovery protocol (CORE-GAME 2.2).
+- **Serials and Limited sales** got an explicit ledger and recovery protocol (CORE-GAME 2.2): recovery restores only unfinished grants, never traded or fused pets; one purchase can never hold two serials.
+- **Paid random items:** the regional rules now cover coin eggs, paid luck, enchant rolls, every random roll and trading (MONETIZATION 17).
 
 **v8 owner changes (3 October 2026):**
 - **Zones renamed** with one theme, a made-up "-ora" word plus a place: Lumora Grove, Pyrora Dojo, Glacora Peaks, Voltora Cliffs, Blossora Gardens, Nyxora Rift, Astora Throne, Seraphora Gate, Drakora Sanctum, Aurora Nexus. **Every zone now has a detailed art design** (Part B).
@@ -28,7 +29,7 @@ Change a number = change the model and re-run `python make_bible.py`.
 - **New machines unlock zone by zone** (section 13): Spirit Codex, Enchant Forge, Spirit Nursery (daycare), Star Forge, Mutation Reactor, Aura Forge, Relic Shrine, Infinity Tower, Ascension Gate.
 - **Hatch ×3 is free again after boss 1.**
 - **Secret and rarer pets scale with you:** Secret = your best pet, Divine ×10, Impossible ×100, Boundless ×1,000.
-- **Bosses are server raids** (owner picked option B; section 9), with a damage rule for rewards (8%, or a quarter of the median fighter), plus the endgame **Nexus Titan**, the **Weekly Limited Egg** and **XP Shards** with Awakening (section 13.12).
+- **Bosses are server raids** (owner picked option B; section 9), with an activity + damage rule for rewards, plus the endgame **Nexus Titan**, the **Weekly Limited Egg** and **XP Shards** with Awakening (section 13.12).
 
 **v7 owner changes:**
 - **10 zones** (zones 9 and 10 added; now Drakora Sanctum and Aurora Nexus):
@@ -316,11 +317,12 @@ Every egg has its own pets and its own odds (see each zone). **A pet's tier come
 - **HP:** scales with the number of fighters (about ×1 per player), so a full server and a small group both get a 60-90 s fight.
 
 **Reward sharing (owner): you must do real damage.**
-- **The rule:** you share a raid's rewards if you dealt **at least 8% of the total damage, OR at least a quarter of what the median fighter dealt**.
-  - **One tap with weak pets never qualifies** (it's far below both bars).
-  - **A huge player can't push everyone out:** the median ignores how big the top hitter is. With 20 fighters and one dealing 100× each of the others, all 20 qualify.
-  - **Crowded raids still pay everyone who really fought:** 20 equal fighters (5% each) all qualify; with strengths spread from 1× to 100×, everyone within 4× of the typical fighter is paid (model test).
-  - The HUD shows a **"Reward share ✔"** tick as soon as you qualify, so nobody is surprised.
+- **The rule:** you share a raid's rewards if you were **active** AND you dealt **at least 8% of the total damage, OR at least a quarter of what the median active fighter dealt**.
+  - **Active** = **your own blasts** (pets don't count) landed on the boss in **at least half of the raid's 10-second windows**, and in at least 3 of them (every window, if the raid was shorter). Fighting half the raid counts, so a mid-raid joiner qualifies; a last-10-seconds join, a single tap or a one-shot-then-AFK doesn't.
+  - **Taps can't drag the bar down:** the median is taken over **active** fighters only. Reviewer case: {strong 1,000, A 1, B 1} where A and B tapped once → only the strong player. If A and B really fought the whole raid with weak pets → all three share (the co-op promise).
+  - **A huge player can't push everyone out:** the median ignores how big the top hitter is. With 20 active fighters and one dealing 100× each of the others, all 20 qualify.
+  - **Crowded raids still pay everyone who really fought:** 20 equal fighters all qualify; with strengths spread from 1× to 100× (plus 30 tappers), everyone within 4× of the typical fighter is paid and no tapper is (model test).
+  - The HUD shows a **"Reward share"** meter: an activity ring that fills as your blasts land in each window, and a ✔ once you qualify, so nobody is surprised.
 - **So:** one tap with weak pets never qualifies, and everyone who really fights does. A bar on the HUD shows your share live.
 - **Normal monsters are different:** any hit that lands still gives you the drop (section 4.1).
 
@@ -552,6 +554,7 @@ This is what players do while they wait for the weekly update.
 - **How it works:** a safe trade window. Both players confirm, there's a 3 s lock, and the server validates and logs every trade.
 - **Rules:**
   - items for items only (no Robux);
+  - **closed for players whose region doesn't allow trading paid items** (`IsPaidItemTradingAllowed` false; MONETIZATION 17);
   - Secret+ serials stay with the pet;
   - Limited serials show in the trade window.
 
