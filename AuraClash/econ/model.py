@@ -162,10 +162,12 @@ STARTER_SPECIES = 0                                     # the tutorial Light Fox
 PET_STEP = 2                                   # zone pets x2 Strength per zone
 STAR = [1, 2, 4, 8, 16, 32]                    # stars 0-5: each star doubles; 3 copies -> 1 of the next star
 MAX_STARS = 5
+ALTAR_MAX_STARS, STAR_FORGE_ZONE = 2, 4         # the Fusion Altar goes to 2 stars; 3-5 stars need the Star Forge (zone 5)
 LEVEL_X, MAX_LEVEL = 0.05, 30                  # +5% Strength per level above 1
 XP_TO_NEXT = lambda lv, pz: 10 * lv * XP_STEP ** pz   # a pet from zone pz needs this XP for lv -> lv+1
-PET_HIT_EVERY, PET_HIT_X = 1.5, 0.04           # each pet hits every 1.5 s for Strength x 4% of Power ...
-TEAM_HIT_CAP = 1.0                             # ... but the whole team's hit is capped at 100% of your Power
+PET_HIT_EVERY, PET_HIT_X = 1.5, 0.10           # the team hits every 1.5 s for 10% of your Power per DOUBLING of
+                                               # team Strength (log2(1 + Strength)): every upgrade still adds hit,
+                                               # but pets never run away from your blasts
 MED_PER_STR = 0.10                             # meditation +10% per point of equipped Strength
 AUTO_FUSE_MAX_RARITY = 2                       # auto-fuse: Commons, Uncommons, Rares; unequipped copies only
 BASE_SLOTS, INVENTORY = 3, 250
@@ -223,6 +225,8 @@ PAID = {   # what a spending profile changes (MONETIZATION.md); rs = what it cos
     "vip":     dict(coin_x=3.0, med_x=1.5 * 64, luck=64.0, secret_x=1.5, hatch_x=1.5, multi=1, slots=1,   # VIP + 2x Coins
                     rs=PASS_PRICES["vip"] + PASS_PRICES["coins2"] + ladder_cost(6)),  # + 6 ladder tiers
     "whale":   dict(coin_x=3.0, med_x=1.5 * 2048, luck=2048.0, secret_x=3.0, hatch_x=3.0, multi=8, slots=1 + 20,
+                    bag_x=2, auto_sell=True, mut_x=1.5,     # Huge Storm, Auto-Sell, Mutation Magnet (Offline+ only
+                                                            # matters offline; this model plays in one sitting)
                     rs=sum(PASS_PRICES.values()) + ladder_cost(11) + SLOT_PACK_PRICE * SLOT_PACK_MAX),
 }
 
@@ -347,8 +351,12 @@ class Player:
         return self.power * (p * PERFECT_X * combo_avg(p) + (1 - p) * 0.75 * EARLY_X + (1 - p) * 0.25 * LATE_X)
 
     def team_hit_x(self):
-        """The team's combined hit as a share of your Power (each pet Strength x 4%, capped at 100% in total)."""
-        return min(TEAM_HIT_CAP, self.team_str() * PET_HIT_X)
+        """The team's combined hit as a share of your Power: +10% per doubling of team Strength. No hard cap, so a
+        better pet always hits harder, but the gain per upgrade shrinks and pets stay below your blasts."""
+        return PET_HIT_X * math.log2(1 + self.team_str())
+
+    def max_stars(self):
+        return MAX_STARS if self.zone >= STAR_FORGE_ZONE else ALTAR_MAX_STARS
 
     def exp_dps(self):
         return self.exp_blast() / BLAST_TIME + self.team_hit_x() * self.power / PET_HIT_EVERY
@@ -405,6 +413,9 @@ class Player:
                 best, best_rate = i, value / kt
         return best
 
+    def bag_cap(self):
+        return BAG[self.bag_lv] * self.paid.get("bag_x", 1)              # Huge Storm pass: x2 bag
+
     def in_mutation_storm(self):
         """A natural Mutation Storm hits every server for 5 min every 45 min (mutation chances x2)."""
         return self.t % STORM_EVERY < STORM_LENGTH
@@ -450,10 +461,10 @@ class Player:
         sv = shard_val(z)
         n_bright = int(br) + (1 if self.rng.random() < br - int(br) else 0)
         n_gem = 1 if self.rng.random() < gem else 0
-        vx = mut[2] if mut else 1
+        vx = mut[2] * self.paid.get("mut_x", 1.0) if mut else 1   # Mutation Magnet: mutated shards x1.5
         for val, n in ((sv[0], sh), (sv[1], n_bright), (sv[2], n_gem)):
             for _ in range(n):
-                if self.bag < BAG[self.bag_lv]:          # 1 shard = 1 slot, whatever its mutation
+                if self.bag < self.bag_cap():          # 1 shard = 1 slot, whatever its mutation
                     self.bag += 1
                     self.bag_val += val * vx
                     if mut:
@@ -507,7 +518,7 @@ class Player:
         for m in dead:
             self.field.remove(m)
             self.loot(m, "target" if m is target else "chain", in_od)
-            if self.bag >= BAG[self.bag_lv]:
+            if self.bag >= BAG[self.bag_lv]:      # sell at the normal size; Huge Storm's extra room keeps the overflow
                 self.sell()
         if target_died:
             over = OVERHEAD[mi]
@@ -534,7 +545,7 @@ class Player:
 
     # ---------- money ----------
     def sell(self, extra=0):
-        self.t += SELL_TIME
+        self.t += 0 if self.paid.get("auto_sell") else SELL_TIME      # Auto-Sell pass: no teleport
         gained = int((self.bag_val + extra) * self.paid["coin_x"])
         self.coins += gained
         self.coins_earned += gained
@@ -608,7 +619,7 @@ class Player:
             team = set(map(id, self.team()))
             groups = {}
             for p in self.pets:
-                if p.r <= AUTO_FUSE_MAX_RARITY and p.stars < MAX_STARS and id(p) not in team:
+                if p.r <= AUTO_FUSE_MAX_RARITY and p.stars < self.max_stars() and id(p) not in team:
                     groups.setdefault((p.z, p.r, p.sp, p.stars), []).append(p)
             for (z, r, sp, s), lst in groups.items():
                 if len(lst) >= 3:
@@ -634,7 +645,7 @@ class Player:
             for p in self.pets:
                 groups.setdefault((p.z, p.r, p.sp, p.stars), []).append(p)
             for (z, r, sp, s), lst in groups.items():
-                if len(lst) < 3 or s >= MAX_STARS:
+                if len(lst) < 3 or s >= self.max_stars():
                     continue
                 lst.sort(key=lambda p: -p.lv)
                 before = self.team_str()
@@ -773,18 +784,20 @@ def loot_recipients(damage_log):
     return sorted(pid for pid, dmg in damage_log.items() if dmg > 0)
 
 
-RAID_SHARE = 0.08          # raid bosses: you need 8% of the damage to share the rewards ...
+RAID_SHARE, RAID_MEDIAN_X = 0.08, 0.25   # raid rewards: 8% of the damage OR a quarter of the median fighter's damage
 
 
 def raid_recipients(damage_log):
-    """... or half of an equal share when the raid is crowded (with 20 players nobody could otherwise all reach 8%).
-    One tap with weak pets never qualifies."""
+    """You share a raid's rewards if you dealt at least 8% of the damage, OR at least a quarter of what the
+    median fighter dealt. One strong player can't push everyone else out (the median ignores how big the top
+    hitter is), crowded raids still pay everyone who fought, and one tap with weak pets never qualifies."""
     total = sum(damage_log.values())
     fighters = sum(1 for d in damage_log.values() if d > 0)
     if total <= 0 or fighters == 0:
         return []
-    need = min(RAID_SHARE, 0.5 / fighters)
-    return sorted(pid for pid, d in damage_log.items() if d / total >= need)
+    med = st.median(d for d in damage_log.values() if d > 0)
+    return sorted(pid for pid, d in damage_log.items()
+                  if d > 0 and (d / total >= RAID_SHARE or d >= RAID_MEDIAN_X * med))
 
 
 def combo_avg(p):

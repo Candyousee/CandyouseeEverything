@@ -4,7 +4,7 @@
 
 **Status:**
 - the design is v9 (meditation + crystal-monster hunting + pets; 10 zones designed in detail, with machines unlocking zone by zone; server raid bosses; the Nexus Titan endgame);
-- the numbers come from `econ/model.py`, and `python tests.py` passes 31/31;
+- the numbers come from `econ/model.py`, and `python tests.py` passes 32/32;
 - the art style is chosen (STYLE-SHEET).
 
 **Don't rewrite the concept.** The next evidence must come from the real game.
@@ -53,8 +53,9 @@
   - **Bosses give Boss Shards** (worth about 3 eggs of the next zone, sold at that zone's altar), **not a free egg**.
 - **Pets:**
   - **XP is automatic:** every kill gives XP to every **equipped** pet. There is no food.
-  - **Stars go to ★5** (×2 per star; 3 copies → the next star). Fusion keeps the highest level and never lowers the team.
-  - **The team's hit is capped at 100% of your Power.** Meditation's +10% per Strength is not capped.
+  - **Stars go to ★5** (×2 per star; 3 copies → the next star; ★3+ from zone 5). Fusion keeps the highest level and never lowers the team.
+  - **Team hit = 10% of your Power per doubling of team Strength** (log2(1 + Strength)); no hard cap. Meditation's +10% per Strength is not capped either. The pet card shows both gains.
+  - **The Fusion Altar stops at ★2;** ★3-★5 need the Star Forge (zone 5).
   - **Pets never attack on their own** and **never die** (they get dazed).
 - **Odds:**
   - **10 tiers defined by odds band:** Common, Uncommon, Rare, Epic, Legendary, Mythic, **Secret 1 in 1M+**, **Divine 1 in 10M+**, **Impossible 1 in 1B+**, **Boundless 1 in 1T+** (in every egg; a new one every month).
@@ -67,7 +68,7 @@
   - **Shared monsters, personal loot:** everyone whose hit landed gets their own full drop and quest credit. (The protected beginner pack is **removed**, owner decision.)
 - **Secret+ Strength is live:** Secret = your best normal pet, Divine ×10, Impossible ×100, Boundless ×1,000, recomputed when your best pet changes.
 - **Progress:**
-  - **Bosses are server raids** every 15 min, plus a solo Trial any time. Raid rewards need 8% of the damage (or half an equal share when crowded). The first win gives the form, the Boss Shards and the next zone.
+  - **Bosses are server raids** every 15 min, plus a solo Trial any time. Raid rewards need 8% of the damage **or a quarter of the median fighter's damage** (server-side damage log). The first win gives the form, the Boss Shards and the next zone.
   - **The boss gate** = all of that zone's quests done (the last one is the Power target). Quest difficulty: zones 1-3 very easy, 4-6 easy, 7 medium, 8 hard.
   - **Offline:** server time, 25% of AFK, 8 h cap, claimed once (confirmed save).
 - **Saving has three outcomes:** confirmed saved (show it), confirmed not committed (a later successful write finds no id and marks it cancelled, then undo), or **unknown** (hold the cost, block conflicts, keep reconciling, never show the result). A committed but unrevealed operation plays on the next join (CORE-GAME 2.2).

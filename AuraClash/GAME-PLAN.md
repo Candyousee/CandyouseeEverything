@@ -28,7 +28,7 @@
 - **Identity:** a pet simulator with two halves: **meditate (Power)** and **hunt (coins → pets)**.
 - **Scope:**
   - 10 zones at launch (GAME-BIBLE Part B), then a new zone about every 1-2 weeks;
-  - a first full run of about 10 h 34 for an average free player (6 h 25 with the 31 R$ starter spend, about 3 h 14 for a whale);
+  - a first full run of about 10 h 15-10 h 30 for an average free player (6 h 22 with the 31 R$ starter spend, about 3 h 07 for a whale): **partial-model estimates** (GAME-BIBLE 27), to be measured in playtests;
   - after zone 10: the endless Nexus Titan, the Weekly Limited Egg and XP Shards keep players busy until the next zone.
 
 ## 3. Research: what we take (owner: "we don't need to be original")
@@ -85,12 +85,12 @@ Everything gameplay-facing is built from scratch. **Steps 1-5 are first proved i
 | 2 | **Monsters zones 1-2:** 3 types each, AI (wander, telegraph, hit), green HP bars, spawns + the Big cap, knockout to Shrine, **mutations** (one exact roll per spawn), shared monsters with personal loot (GAME-BIBLE 4.1-4.2, 14-15) | P9, P11 pass; ≤ 30 monsters, 60 fps on mobile |
 | 3 | **Shard Storm + SELL + the Lumora Plaza hub:** storm (4 looks, ≤ 12 meshes), SELL teleport + Stay, the shop (Egg / Bag / Mat / Surge), **the hub with the Leaderboard Wall (server boards), the teleporter ring, and empty store stands as art placeholders** (GAME-BIBLE 4.3, 7, 12) | P10, P12 pass |
 | 4 | **Meditation:** mats, AFK, Focus, the rate formula, offline from server time, AFK idle-rejoin (GAME-BIBLE 3) | Rates match the model |
-| 5 | **Minimal pets (greybox):** the zone 1 egg (real odds, a simple pop); 3 slots + Equip Best; pets follow, attack (team hit capped at 100% of Power), get dazed, boost meditation; **XP from kills**. No fusion, cutscenes or idle animations yet | Hunt → sell → buy an egg → the pet visibly speeds up hunting **and** meditation. **Greybox fun gate on steps 1-5**, then owner playtest #1 greybox (PIPELINE 3b) |
+| 5 | **Minimal pets (greybox):** the zone 1 egg (real odds, a simple pop); 3 slots + Equip Best; pets follow, attack (team hit = 10% of Power per doubling of team Strength), get dazed, boost meditation; **XP from kills**. No fusion, cutscenes or idle animations yet | Hunt → sell → buy an egg → the pet visibly speeds up hunting **and** meditation. **Greybox fun gate on steps 1-5**, then owner playtest #1 greybox (PIPELINE 3b) |
 | 6 | **Eggs (full):** odds card (each egg's own table, 10 tiers), honest cracks, guarantees, the hatch ladder incl. the Mythic-to-Boundless cutscenes, serials for Secret+, Hatch ×3 free after boss 1 (GAME-BIBLE 5.1, 6) | P6-P8 pass |
 | 7 | **Pets (full):** tank AI, idle / charge / meditate behaviours, stars 0-2 at the Fusion Altar (★3-★5 come with the Star Forge in zone 5), auto-fuse, Secret+ scaling to your best pet, levels 1-30 with XP bars, inventory 250 + auto-delete + locks + mailbox (GAME-BIBLE 5) | Model rule tests mirrored in-game; 10 pets × full server at 60 fps |
 | 8 | **Rank quests + tutorial** (zones 1-2 lists; the first 8 minutes; the hand pointer) (GAME-BIBLE 8, 11, 14) | A new player reaches boss 1 unaided |
 | 9 | **Bosses:** Stone Golem + Magma Oni (3 phases, beam clash), **Boss Shards**, forms Spark → BLAZE → INFERNO (GAME-BIBLE 9, 10, 14-15). **Server raids** every 15 min + the solo **Trial** at the arena gate, with the 8% reward-share rule (GAME-BIBLE 9) | The solo Trial's scripted-bot win rates resemble `econ/RESULTS.txt` section 6; a 4-client raid works with the shared beam meter and the reward share (P23) |
-| 10 | **Saving** with the three-outcome contract (CORE-GAME 2) | P1-P8, P10-P12, P14 pass in the real game |
+| 10 | **Saving** with the three-outcome contract (CORE-GAME 2) | P1-P8, P10-P12, P14, P25 pass in the real game |
 | 11 | **Test tools:** cheat panel, session log, Low effects | The owner can run playtest #1 without help |
 
 **Quality bar for the test: representative art, not greybox** (after the step 5 fun gate):
@@ -112,14 +112,14 @@ All of it follows STYLE-SHEET (GPU concepts → Blender, outlines, smooth plasti
 
 ## 6. Design targets (checked by `econ/tests.py`)
 
-These are **model targets for a free player playing solo, not promises.** The simulations check that the rules hang together and the pacing is sane; **they say nothing about retention or revenue.** Only playtests and live data can. The session logs measure the real values, and the model is re-tuned to them.
+These are **model targets for a free player playing solo, not promises.** The model covers the core loop only (GAME-BIBLE 27 lists what isn't modeled yet). The simulations check that the rules hang together and the pacing is sane; **they say nothing about retention or revenue.** Only playtests and live data can. The session logs measure the real values, and the model is re-tuned to them.
 
 | Target | Model (average player) |
 |---|---|
 | Boss 1 at 4-9 min | ~5.5 min |
-| Boss 2 at 15-30 min | ~24 min |
+| Boss 2 at 15-30 min | ~23.5 min |
 | Every zone takes longer than the one before | yes |
-| **Free first run (boss 10) in about 10-12 h** (owner) | **10 h 34** |
-| **Whale first run about 3 h** (owner) | **3 h 14** |
-| Pets 30-50% of damage (never more than your blasts) | 37% |
+| **Free first run (boss 10) in about 10-12 h** (owner) | **10 h 15-10 h 28** (two model samples) |
+| **Whale first run about 3 h** (owner) | **3 h 07** |
+| Pets 30-50% of damage (never more than your blasts), and every pet upgrade adds hit | 46%; yes (no hard cap) |
 | Average player wins the clash ≥ 90% at recommended Power; weak ≥ 60%; under-powered (½) average ≤ 40% | 100% / 79% / 23% |

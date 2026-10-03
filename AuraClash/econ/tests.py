@@ -167,6 +167,7 @@ def test_overdrive_starts_when_the_triggering_blast_lands():
 def test_stars_go_to_five_and_double_each_time():   # BIBLE 3.4: 3 copies -> next star, up to 5 stars
     assert M.STAR == [1, 2, 4, 8, 16, 32] and M.MAX_STARS == 5
     pl = M.Player("average", 0)
+    pl.zone = M.STAR_FORGE_ZONE                              # stars 3-5 need the Star Forge (zone 5)
     pl.slots = 1
     pets = [M.Pet(0, 4, 6) for _ in range(3)]               # Legendary
     for p in pets:
@@ -182,6 +183,20 @@ def test_stars_go_to_five_and_double_each_time():   # BIBLE 3.4: 3 copies -> nex
     pl.dirty()
     pl.fuse()
     assert len(pl.pets) == 3                                  # nothing above 5 stars
+
+
+def test_fusion_altar_stops_at_two_stars_before_the_star_forge():   # BIBLE 13.1
+    pl = M.Player("average", 0)
+    pl.slots = 1
+    pl.pets = [M.Pet(0, 4, 6) for _ in range(3)]
+    for p in pl.pets:
+        p.stars = 2
+    pl.dirty()
+    pl.fuse()
+    assert len(pl.pets) == 3 and pl.max_stars() == 2       # zone 1: no 3-star fusion yet
+    pl.zone = M.STAR_FORGE_ZONE
+    pl.fuse()
+    assert len(pl.pets) == 1 and pl.pets[0].stars == 3
 
 
 def test_auto_fuse_never_touches_equipped_or_epics():
@@ -230,15 +245,21 @@ def test_xp_scales_with_zone():
     assert M.XP_TO_NEXT(1, 0) == 10 and M.XP_TO_NEXT(1, 7) == 10 * 3 ** 7
 
 
-def test_team_hit_is_capped_at_your_power():             # BIBLE 3.3: your blasts always matter
+def test_every_pet_upgrade_adds_hit_but_pets_stay_below_blasts():   # BIBLE 3.3
     pl = M.Player("average", 1)
-    pl.slots = 10
-    pl.pets = [M.Pet(7, 5, 7) for _ in range(10)]
-    pl.dirty()
-    assert pl.team_hit_x() == M.TEAM_HIT_CAP == 1.0
+    pl.slots = 3
+    hits = []
+    for strength_pets in ([M.Pet(0, 0, 0)], [M.Pet(1, 3, 5)] * 3, [M.Pet(4, 4, 6)] * 3, [M.Pet(9, 5, 7)] * 3):
+        pl.pets = list(strength_pets)
+        pl.dirty()
+        hits.append(pl.team_hit_x())
+    assert all(b > a for a, b in zip(hits, hits[1:])), hits      # no point where a better pet stops mattering
     pl.pets = [M.Pet(0, 0, 0)]
     pl.dirty()
-    assert abs(pl.team_hit_x() - 0.04) < 1e-12
+    assert abs(pl.team_hit_x() - 0.10) < 1e-12                   # Strength 1 = one doubling = 10% of Power
+    pl.pets = [M.Pet(0, 0, 0)] * 3
+    pl.dirty()
+    assert abs(pl.team_hit_x() - 0.20) < 1e-12                   # Strength 3 -> 4 = two doublings
 
 
 def test_level_and_strength():
@@ -328,12 +349,21 @@ def test_quest_difficulty_tiers():                          # zones 1-3 very eas
 
 
 def test_raid_reward_share_needs_real_damage():          # owner: 8% of the damage to share raid rewards
-    assert M.RAID_SHARE == 0.08
-    small = {"a": 50, "b": 40, "tapper": 1}                    # 3 fighters: need 8%; one tap gets nothing
+    assert M.RAID_SHARE == 0.08 and M.RAID_MEDIAN_X == 0.25
+    small = {"a": 50, "b": 40, "tapper": 1}                    # one tap with weak pets gets nothing
     assert M.raid_recipients(small) == ["a", "b"]
-    crowd = {f"p{i}": 5 for i in range(20)}                    # 20 equal fighters, 5% each: half an equal share = 2.5%
+    crowd = {f"p{i}": 5 for i in range(20)}                    # 20 equal fighters (5% each) all qualify
     crowd["tapper"] = 0.1
     assert len(M.raid_recipients(crowd)) == 20 and "tapper" not in M.raid_recipients(crowd)
+    whale = {f"p{i}": 1 for i in range(19)}                    # one player deals 100x everyone else
+    whale["whale"] = 100
+    assert len(M.raid_recipients(whale)) == 20                 # the strong player can't push the others out
+    mixed = {f"p{i}": 100 ** (i / 19) for i in range(20)}      # strengths spread evenly from 1x to 100x
+    mixed["tapper"] = 0.05
+    got = M.raid_recipients(mixed)
+    med = st.median(mixed.values())
+    assert "tapper" not in got and all(f"p{i}" in got for i in range(20) if mixed[f"p{i}"] >= med / 4)
+    assert len(got) >= 15                                      # everyone within 4x of the typical fighter is paid
 
 
 def test_newcomer_next_to_a_veteran_gets_the_drop():

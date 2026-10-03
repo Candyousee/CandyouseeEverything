@@ -91,7 +91,24 @@ Old versions are in `archive/`, for history only. **Nothing in `archive/` is a r
   - on state 3 (unknown), return `NotProcessedYet`: Roblox will call again, and the id check makes the retry grant exactly once;
   - Robux is never charged without the item, and the item is never granted twice.
 - **Game passes** are checked with `UserOwnsGamePassAsync` on join (and `PromptGamePassPurchaseFinished` during play); their effects are never stored as a substitute for that check.
-- **Limited pets:** the global stock is decremented in a MemoryStore / DataStore transaction **before** the purchase prompt. If the count is 0, the prompt never opens. A failed purchase returns the reserved unit after 2 min. Never oversold.
+- **Serials: a ledger, not one atomic write.** A global serial counter and a player profile are **two different keys**, and Roblox can't write both in one transaction. So serials use a **ledger** plus recovery, and the rule is **never a duplicate serial, never a lost item**:
+  - **The ledger:** one DataStore key per serialized line (e.g. `serials/AuroraDragon`), holding `next` and a map **operation id → serial + userId**. Claiming is one `UpdateAsync` on that key and is **idempotent**: if the operation id is already there, it returns the same serial instead of a new one. A serial number is never reused.
+  - **Secret+ hatches (profile first):**
+    1. the normal critical write (2.2): cost + the pet with **serial = pending** + the operation id + `revealed = false`;
+    2. claim the serial in the ledger with that operation id;
+    3. write the serial into the pet.
+    - The cutscene plays after step 1 is confirmed; the serial reveal waits for step 2 (up to ~5 s, otherwise "#… assigning" and it fills in later).
+    - **Crash after step 1 or 2:** on the next join, every pet with a pending serial re-runs steps 2-3. Step 2 is idempotent, so it gets the same serial: no gaps from crashes, no duplicates.
+  - **Paid Limiteds (receipt first):** in `ProcessReceipt`: (A) claim a serial in the ledger with the `PurchaseId`; (B) one profile `UpdateAsync` with the item + serial + `PurchaseId`; (C) return `PurchaseGranted` **only after B is confirmed**.
+    - **Crash between A and B:** Roblox retries the receipt, A returns the same serial, B grants it.
+    - **The player never comes back to that server:** an owner index key (`serials/owner/<userId>`) lists their claimed serials; on every join the game grants any claimed serial missing from the profile.
+  - **Bursts:** a Limited sale's ledger is split into **10 shard keys of 100 serials** (#1-100, #101-200 …); servers claim from a random non-full shard, so a launch rush doesn't throttle one key.
+- **Limited stock and late receipts:**
+  - **Before the prompt:** the server reserves a unit in MemoryStore (userId + time). **Stock shown = 1,000 − sold − open reservations − the late reserve.** If it's 0, the prompt never opens.
+  - **A reservation ends** when `PromptProductPurchaseFinished` reports "not purchased", when its receipt is granted, or after **10 minutes**.
+  - **A valid receipt is always honoured, even after its reservation ended.** Serials **#951-1,000 are a late reserve**, used only for receipts whose reservation had already ended. The sale shows "Sold out" at 950.
+  - **If the reserve were ever used up** (it would take 50 late receipts), a late receipt still grants the item, as a "Late Edition" with no number, logged for the owner. The store's small print says so.
+  - The Robux is never kept without the item, and the 1,000 numbered copies are never exceeded.
 - **Paid random items:** buying the Daily or Shop Exclusive Egg is offered only when `PolicyService:GetPolicyInfoForPlayerAsync(player).ArePaidRandomItemsRestricted` is false; otherwise the direct-buy shop is shown (MONETIZATION.md 6). Eggs earned from rewards can always be hatched.
 - **Studio without API access:** play without saving, with a "NOT SAVING" banner. Never stall.
 - **Follow Roblox's data store guidance:** https://create.roblox.com/docs/cloud-services/data-stores/best-practices
@@ -120,8 +137,10 @@ Old versions are in `archive/`, for history only. **Nothing in `archive/` is a r
 | P19 | **Serials:** 3 servers hatch Secrets of the same species at the same moment (forced test odds) | numbers 1, 2, 3 each used once; a failed save never burns or duplicates a number |
 | P20 | **Slot packs:** buy +2 Pet Slots 11 times | 10 succeed (+20 slots); the 11th prompt never opens |
 | P21 | **Machines (as each ships):** Nursery stays use server time and can't be collected twice; enchant rolls, Reactor infusions and relic levels happen on the server, each consuming its cost in the same save as its result | no duplicate collects, no free rolls, no lost shards |
-| P23 | **Raid reward share:** a raid of 3 (one player only taps once) and a raid of 20 equal fighters | the tapper gets nothing; all 20 real fighters qualify (8%, or half an equal share when crowded), checked from the server's damage log |
+| P23 | **Raid reward share:** (a) a raid of 3 where one player only taps once; (b) 20 equal fighters; (c) 20 fighters where one deals 100× each of the others; (d) 20 fighters spread from 1× to 100× | (a) the tapper gets nothing; (b) and (c) all 20 qualify; (d) everyone within 4× of the median fighter qualifies. Rule: 8% of the damage OR a quarter of the median fighter's, from the server's damage log; the HUD tick matches |
 | P24 | **Weekly Limited Egg + Titan:** the egg ends at the update time (server time) and can't be hatched after; the Titan respawns 60 s after each death; XP Shards and Awakening levels save like XP | no hatches after the end; no double rewards per kill; levels 31-50 only from XP Shards |
+| P25 | **Serial recovery:** kill the server (a) after a Secret hatch's profile write but before the ledger claim, (b) after the claim but before the serial is written; (c) for a Limited purchase, after ledger claim A but before profile write B; (d) 30 servers hatch Secret+ of the same line at once | (a)-(b) after rejoin the pet gets exactly one serial, the same one on every retry; (c) the receipt retry grants the item with the same serial; (d) no duplicate serials |
+| P26 | **Late Limited receipt:** a purchase whose reservation expired (10 min) and stock reached "Sold out" | the item is granted with a reserve serial (#951-1,000); never more than 1,000 numbered copies; a reservation is released when the prompt reports "not purchased" |
 | P22 | **Secret+ scaling:** get a better normal pet while owning a Secret and a Boundless | their Strength updates to ×1 and ×1,000 of the new best pet, immediately and after a rejoin |
 | P18 | **Daily login:** claim, change the device clock, rejoin another server; skip 2 days, then log in | one claim per server (UTC) day; after the skip you claim the **next** day of the cycle (nothing resets) |
 
@@ -176,13 +195,15 @@ Old versions are in `archive/`, for history only. **Nothing in `archive/` is a r
   - meditation (AFK / Focus / offline);
   - blasts with PERFECT / combo / Overdrive chains;
   - all 10 zones: 30 monsters, mutations (with natural storms), the bag cap and SELL, Boss Shards;
-  - shop spending, every egg's own table (10 tiers by odds band, Boundless) and guarantees, stars 0-5, automatic XP and levels, the team-hit cap;
+  - shop spending, every egg's own table (10 tiers by odds band, Boundless) and guarantees, stars (★0-★2 at the Fusion Altar, ★3-★5 from the Star Forge in zone 5), automatic XP and levels, the team-hit curve (+10% of Power per doubling of Strength);
   - rank quests by difficulty tier, boss HP and the beam clash;
-  - the effect of the 2× Boost ladder and the passes (VIP, 2× Coins, 2× Secret Luck, 2× Hatch Speed, Hatch ×3 / ×8, slot packs).
+  - the effect of the 2× Boost ladder and the passes (VIP, 2× Coins, 2× Secret Luck, 2× Hatch Speed, Hatch ×3 / ×8, Huge Storm, Auto-Sell, Mutation Magnet, slot packs);
+  - the raid reward-share rule (as a unit rule, not a simulated raid).
 - **It doesn't cover:**
   - monsters hitting the player (only time lost, assumed small);
   - other players sharing monsters (personal loot means crowded servers pay faster than the model);
   - walking between areas (beyond a per-kill overhead);
-  - coin packs, potions, Exclusive Eggs, the Aura Pass;
-  - saving and purchases (tests P1-P24 are for the real game).
+  - the machines (enchants, pet mutations, the Nursery, relics, the Codex, Ascension), Exclusive and reward-track pets, coin packs, potions, the Aura Pass, Offline+ (the model plays in one sitting), raid co-op;
+  - **so the progression times are partial-model estimates, not validated pacing.** Most unmodeled systems speed players up. Each machine is added to the model before it ships, and playtests measure the real times;
+  - saving and purchases (tests P1-P26 are for the real game).
 - **Decisions** (like when to meditate) follow a simple "average player" policy. **The playtest is the real test.**

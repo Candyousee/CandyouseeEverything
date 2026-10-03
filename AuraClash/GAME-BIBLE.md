@@ -13,7 +13,14 @@ Change a number = change the model and re-run `python make_bible.py`.
 - `STYLE-SHEET.md`: the look.
 - `GAME-PLAN.md`: market and build order.
 
-**v9 owner changes:** bosses are **server raids** (every 15 min, plus a solo Trial any time). Raid rewards need **8% of the damage** (or half an equal share in crowded raids). The endgame is the **Nexus Titan** (an always-respawning raid boss with huge coins), a **Weekly Limited Egg**, and **XP Shards** (food) with **Awakening** to level 50.
+**v9 owner changes:** bosses are **server raids** (every 15 min, plus a solo Trial any time). Raid rewards need **8% of the damage, or a quarter of what the median fighter dealt** (so one huge player can't push everyone out). The endgame is the **Nexus Titan** (an always-respawning raid boss with huge coins), a **Weekly Limited Egg**, and **XP Shards** (food) with **Awakening** to level 50.
+
+**v9 review fixes:**
+- **Raid share:** 8% of the damage **or a quarter of the median fighter's damage** (a 100× player no longer pushes 19 real fighters out).
+- **Pet hits:** +10% of Power per doubling of team Strength, **no hard cap** (the old cap was reached at Strength 25, so upgrades stopped adding hit by zone 2). Pets stay at about 46% of damage.
+- **Fusion:** the Fusion Altar stops at ★2 until the Star Forge (zone 5), in the model too.
+- **Times are partial-model estimates** (section 27 lists what is and isn't modeled); Huge Storm, Auto-Sell and Mutation Magnet are now modeled for the whale.
+- **Serials and Limited sales** got an explicit ledger and recovery protocol (CORE-GAME 2.2).
 
 **v8 owner changes (3 October 2026):**
 - **Zones renamed** with one theme, a made-up "-ora" word plus a place: Lumora Grove, Pyrora Dojo, Glacora Peaks, Voltora Cliffs, Blossora Gardens, Nyxora Rift, Astora Throne, Seraphora Gate, Drakora Sanctum, Aurora Nexus. **Every zone now has a detailed art design** (Part B).
@@ -21,7 +28,7 @@ Change a number = change the model and re-run `python make_bible.py`.
 - **New machines unlock zone by zone** (section 13): Spirit Codex, Enchant Forge, Spirit Nursery (daycare), Star Forge, Mutation Reactor, Aura Forge, Relic Shrine, Infinity Tower, Ascension Gate.
 - **Hatch ×3 is free again after boss 1.**
 - **Secret and rarer pets scale with you:** Secret = your best pet, Divine ×10, Impossible ×100, Boundless ×1,000.
-- **Bosses are server raids** (owner picked option B; section 9), with an 8% damage rule for rewards, plus the endgame **Nexus Titan**, the **Weekly Limited Egg** and **XP Shards** with Awakening (section 13.12).
+- **Bosses are server raids** (owner picked option B; section 9), with a damage rule for rewards (8%, or a quarter of the median fighter), plus the endgame **Nexus Titan**, the **Weekly Limited Egg** and **XP Shards** with Awakening (section 13.12).
 
 **v7 owner changes:**
 - **10 zones** (zones 9 and 10 added; now Drakora Sanctum and Aurora Nexus):
@@ -206,7 +213,7 @@ Every egg has its own pets and its own odds (see each zone). **A pet's tier come
 
 | Job | Rule |
 |---|---|
-| **Fight** | each equipped pet hits your target every 1.5 s for **Strength × 4% of your Power**, with its own move. On your PERFECT they all strike at once. **The whole team's hit is capped at 100% of your Power**, so your blasts always matter |
+| **Fight** | the team hits your target every 1.5 s (each pet with its own move; on your PERFECT they all strike at once) for **10% of your Power per doubling of the team's Strength**: Strength 1 → 10%, 3 → 20%, 7 → 30%, 63 → 60%, ~1,000 → 100%, ~1M → 200%. **No hard cap**, so a better pet always hits harder, but each doubling adds the same +10%, so pets stay below your blasts (model: 46% of damage). **The pet card shows both payoffs of an upgrade:** "+X% team hit" and "+Y% meditation" |
 | **Tank** | monsters attack whatever is closest; a hit pet is **dazed for 2 s**. **Pets never die** |
 | **Meditate** | **+10% meditation per point of equipped Strength.** No cap |
 
@@ -309,8 +316,11 @@ Every egg has its own pets and its own odds (see each zone). **A pet's tier come
 - **HP:** scales with the number of fighters (about ×1 per player), so a full server and a small group both get a 60-90 s fight.
 
 **Reward sharing (owner): you must do real damage.**
-- **The rule:** to share a raid's rewards you need **at least 8% of the total damage**.
-- **Crowded raids:** when a raid is crowded, the bar drops to **half of an equal share** (20 players → 2.5%), because otherwise most of a full server could never qualify.
+- **The rule:** you share a raid's rewards if you dealt **at least 8% of the total damage, OR at least a quarter of what the median fighter dealt**.
+  - **One tap with weak pets never qualifies** (it's far below both bars).
+  - **A huge player can't push everyone out:** the median ignores how big the top hitter is. With 20 fighters and one dealing 100× each of the others, all 20 qualify.
+  - **Crowded raids still pay everyone who really fought:** 20 equal fighters (5% each) all qualify; with strengths spread from 1× to 100×, everyone within 4× of the typical fighter is paid (model test).
+  - The HUD shows a **"Reward share ✔"** tick as soon as you qualify, so nobody is surprised.
 - **So:** one tap with weak pets never qualifies, and everyone who really fights does. A bar on the HUD shows your share live.
 - **Normal monsters are different:** any hit that lands still gives you the drop (section 4.1).
 
@@ -396,14 +406,14 @@ New systems **unlock when you enter each new zone** (the Pet Simulator "new mach
 | 1 Lumora Grove | the Shrine, shop, eggs, Fusion Altar (★1-★2), the hub | Lumora Plaza | 0:00 |
 | 2 Pyrora Dojo | **Hatch ×3** (after boss 1), **Spirit Codex** | the Scroll Hall | ~5 min |
 | 3 Glacora Peaks | **Enchant Forge**; **trading** in the hub | the Ice Forge | ~23 min |
-| 4 Voltora Cliffs | **Spirit Nursery** (daycare) | the Sky Nest | ~43 min |
+| 4 Voltora Cliffs | **Spirit Nursery** (daycare) | the Sky Nest | ~44 min |
 | 5 Blossora Gardens | **Star Forge** (★3-★5) | the Lantern Shrine | ~1 h 15 |
-| 6 Nyxora Rift | **Mutation Reactor** | the Rift Reactor | ~1 h 53 |
-| 7 Astora Throne | **Aura Forge** | the Star Anvil | ~2 h 39 |
+| 6 Nyxora Rift | **Mutation Reactor** | the Rift Reactor | ~1 h 58 |
+| 7 Astora Throne | **Aura Forge** | the Star Anvil | ~2 h 41 |
 | 8 Seraphora Gate | **Relic Shrine** | the Halo Vault | ~3 h 57 |
-| 9 Drakora Sanctum | **Infinity Tower** | the Dragon Spire | ~5 h 31 |
-| 10 Aurora Nexus | **Ascension Gate**, Boundless Hall | the Nexus Core | ~7 h 40 |
-| After beating zone 10 | **the Nexus Titan** (an always-respawning raid boss), the **Weekly Limited Egg**, **XP Shards** and **Awakening** | the Heart of Aura | ~10 h 35 |
+| 9 Drakora Sanctum | **Infinity Tower** | the Dragon Spire | ~5 h 28 |
+| 10 Aurora Nexus | **Ascension Gate**, Boundless Hall | the Nexus Core | ~7 h 36 |
+| After beating zone 10 | **the Nexus Titan** (an always-respawning raid boss), the **Weekly Limited Egg**, **XP Shards** and **Awakening** | the Heart of Aura | ~10 h 30 |
 
 Every machine also gets a pad on the hub's teleporter ring once unlocked.
 
@@ -517,7 +527,7 @@ This is what players do while they wait for the weekly update.
 
 **The Nexus Titan: an always-respawning raid boss.**
 - **When:** after the Ascendant falls, the **Nexus Titan** (a colossal crystal giant made of every element) takes over the Heart of Aura. It **respawns 60 s after each death**, around the clock.
-- **The fight:** a raid like any boss (section 9), with the same 8% reward-share rule. Its HP and power grow each week with the update.
+- **The fight:** a raid like any boss (section 9), with the same reward-share rule. Its HP and power grow each week with the update.
 - **Rewards for every qualifying player:**
   - **huge Boss Shards:** about 3 eggs' worth of Aurora Nexus coins per kill, so a full storm of coins every few minutes;
   - **XP Shards** (below);
@@ -632,7 +642,7 @@ This is what players do while they wait for the weekly update.
 
 | Time | Power | Slots | Best pet | Best stars | Best level | Bag |
 |---|---|---|---|---|---|---|
-| **~5 min** | 315 | 5 | Rare | ★★ | 2 | 200 |
+| **~5 min** | 314 | 5 | Rare | ★★ | 2 | 200 |
 
 ## 15. ZONE 2: PYRORA DOJO (Fire) · quests: very easy
 
@@ -694,7 +704,7 @@ This is what players do while they wait for the weekly update.
 
 | Time | Power | Slots | Best pet | Best stars | Best level | Bag |
 |---|---|---|---|---|---|---|
-| **~23 min** | 10.3K | 7 | Epic | ★★ | 18 | 250 |
+| **~23 min** | 10.3K | 7 | Epic | ★★ | 22 | 250 |
 
 ## 16. ZONE 3: GLACORA PEAKS (Ice) · quests: very easy
 
@@ -756,7 +766,7 @@ This is what players do while they wait for the weekly update.
 
 | Time | Power | Slots | Best pet | Best stars | Best level | Bag |
 |---|---|---|---|---|---|---|
-| **~43 min** | 203K | 8 | Epic | ★★ | 28 | 300 |
+| **~44 min** | 203K | 8 | Epic | ★★ | 27 | 300 |
 
 ## 17. ZONE 4: VOLTORA CLIFFS (Lightning) · quests: easy
 
@@ -819,7 +829,7 @@ This is what players do while they wait for the weekly update.
 
 | Time | Power | Slots | Best pet | Best stars | Best level | Bag |
 |---|---|---|---|---|---|---|
-| **~1 h 15** | 4.03M | 9 | Epic | ★★★ | 30 | 400 |
+| **~1 h 15** | 4.03M | 9 | Epic | ★★ | 30 | 400 |
 
 ## 18. ZONE 5: BLOSSORA GARDENS (Nature) · quests: easy
 
@@ -882,7 +892,7 @@ This is what players do while they wait for the weekly update.
 
 | Time | Power | Slots | Best pet | Best stars | Best level | Bag |
 |---|---|---|---|---|---|---|
-| **~1 h 53** | 60.4M | 10 | Epic | ★★★ | 30 | 500 |
+| **~1 h 58** | 60.4M | 10 | Epic | ★★★ | 30 | 500 |
 
 ## 19. ZONE 6: NYXORA RIFT (Void) · quests: easy
 
@@ -945,7 +955,7 @@ This is what players do while they wait for the weekly update.
 
 | Time | Power | Slots | Best pet | Best stars | Best level | Bag |
 |---|---|---|---|---|---|---|
-| **~2 h 39** | 1B | 10 | Epic | ★★★ | 30 | 500 |
+| **~2 h 41** | 1.01B | 10 | Epic | ★★★ | 30 | 500 |
 
 ## 20. ZONE 7: ASTORA THRONE (Cosmic) · quests: medium
 
@@ -1073,7 +1083,7 @@ This is what players do while they wait for the weekly update.
 
 | Time | Power | Slots | Best pet | Best stars | Best level | Bag |
 |---|---|---|---|---|---|---|
-| **~5 h 31** | 201B | 10 | Legendary | ★★★ | 30 | 500 |
+| **~5 h 28** | 201B | 10 | Epic | ★★★ | 30 | 500 |
 
 ## 22. ZONE 9: DRAKORA SANCTUM (Dragon) · quests: hard
 
@@ -1138,7 +1148,7 @@ This is what players do while they wait for the weekly update.
 
 | Time | Power | Slots | Best pet | Best stars | Best level | Bag |
 |---|---|---|---|---|---|---|
-| **~7 h 40** | 2.51T | 10 | Epic | ★★★ | 30 | 500 |
+| **~7 h 36** | 2.51T | 10 | Rare | ★★★ | 30 | 500 |
 
 ## 23. ZONE 10: AURORA NEXUS (Every aura) · quests: hard
 
@@ -1203,22 +1213,22 @@ This is what players do while they wait for the weekly update.
 
 | Time | Power | Slots | Best pet | Best stars | Best level | Bag |
 |---|---|---|---|---|---|---|
-| **~10 h 34** | 30.1T | 10 | Epic | ★★ | 30 | 500 |
+| **~10 h 28** | 30.1T | 10 | Epic | ★★ | 30 | 500 |
 
 ## 24. Progression at a glance (average free player, solo, model medians)
 
 | Zone | Name | Quests | Shrine /s | Egg | Boss (recommended Power) | Finished at | Power then |
 |---|---|---|---|---|---|---|---|
-| 1 | Lumora Grove | very easy | 0.5 | 60 | Stone Golem (300) | ~5 min | 315 |
+| 1 | Lumora Grove | very easy | 0.5 | 60 | Stone Golem (300) | ~5 min | 314 |
 | 2 | Pyrora Dojo | very easy | 2 | 1,500 | Magma Oni (10K) | ~23 min | 10.3K |
-| 3 | Glacora Peaks | very easy | 8 | 25K | Frost Wyrm (200K) | ~43 min | 203K |
+| 3 | Glacora Peaks | very easy | 8 | 25K | Frost Wyrm (200K) | ~44 min | 203K |
 | 4 | Voltora Cliffs | easy | 32 | 400K | Thunder Roc (4M) | ~1 h 15 | 4.03M |
-| 5 | Blossora Gardens | easy | 160 | 6M | Blossom Ronin (60M) | ~1 h 53 | 60.4M |
-| 6 | Nyxora Rift | easy | 800 | 100M | Void Leviathan (1B) | ~2 h 39 | 1B |
+| 5 | Blossora Gardens | easy | 160 | 6M | Blossom Ronin (60M) | ~1 h 58 | 60.4M |
+| 6 | Nyxora Rift | easy | 800 | 100M | Void Leviathan (1B) | ~2 h 41 | 1.01B |
 | 7 | Astora Throne | medium | 4,000 | 1.5B | Star Emperor (15B) | ~3 h 57 | 15.1B |
-| 8 | Seraphora Gate | medium | 20K | 25B | Archangel Sentinel (200B) | ~5 h 31 | 201B |
-| 9 | Drakora Sanctum | hard | 100K | 250B | Elder Dragon Emperor (2.5T) | ~7 h 40 | 2.51T |
-| 10 | Aurora Nexus | hard | 500K | 3.5T | The Ascendant (30T) | ~10 h 34 | 30.1T |
+| 8 | Seraphora Gate | medium | 20K | 25B | Archangel Sentinel (200B) | ~5 h 28 | 201B |
+| 9 | Drakora Sanctum | hard | 100K | 250B | Elder Dragon Emperor (2.5T) | ~7 h 36 | 2.51T |
+| 10 | Aurora Nexus | hard | 500K | 3.5T | The Ascendant (30T) | ~10 h 28 | 30.1T |
 
 <!-- ZONES:END -->
 
@@ -1286,10 +1296,12 @@ This is what players do while they wait for the weekly update.
 
 | Spend | All 10 zones |
 |---|---|
-| free | ~10 h 35 |
-| starter (31 R$) | 6 h 25 |
-| VIP set (986 R$) | 3 h 22 |
-| whale (7,164 R$) | 3 h 14 |
+| free | ~10 h 15 |
+| starter (31 R$) | 6 h 22 |
+| VIP set (986 R$) | 3 h 23 |
+| whale (7,164 R$) | 3 h 07 |
+
+**What these times are (and aren't):** they come from `econ/model.py`, which simulates the **core loop**: blasts, Overdrive, mutations and storms, meditation, eggs and luck, pets (Strength, stars, levels, the Star Forge in zone 5), quests, bosses, the 2× Boost ladder, VIP, 2× Coins / Secret Luck / Hatch Speed, Hatch ×8, Huge Storm, Auto-Sell, Mutation Magnet and slot packs. **Not modeled yet:** enchants, pet mutations, the Nursery, relics, the Codex, Ascension, Exclusive and reward-track pets, potions, the Aura Pass, coin packs, Offline+ (the model plays in one sitting) and raid co-op. Almost all of those only speed a player up, so the real times are probably **shorter**, by an unknown amount. **These are partial-model estimates, not validated pacing**: playtest #1 and the soft launch measure the real times, and each machine is added to the model before it ships (GAME-PLAN 5b).
 
 ## 28. Fairness, safety and saving (details in CORE-GAME.md)
 
