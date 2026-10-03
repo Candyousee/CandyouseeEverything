@@ -53,8 +53,8 @@ def shard_val(z):
 
 
 SHRINE = [0.5 * 4 ** min(z, 3) * 5 ** max(0, z - 3) for z in range(ZONES)]   # Power / s, AFK: x4 per zone, x5 from zone 5
-EGG_PRICE = [60, 1_500, 25_000, 400_000, 6_000_000, 100_000_000, 1_500_000_000, 25_000_000_000,
-             250_000_000_000, 3_500_000_000_000]
+EGG_PRICE = [60, 1_700, 29_000, 460_000, 7_000_000, 115_000_000, 1_700_000_000, 29_000_000_000,
+             290_000_000_000, 4_000_000_000_000]   # +15% from zone 2 on (v9): pays for the friction sub-goal eggs
 BOSS = [dict(name="Stone Golem", rec=300, form="BLAZE"),
         dict(name="Magma Oni", rec=10_000, form="INFERNO"),
         dict(name="Frost Wyrm", rec=200_000, form="GLACIER"),
@@ -203,6 +203,8 @@ TIER_QUESTS = {
                             ("mutated", 3, 1), ("stars", 3), ("level", 25)],
 }
 QUESTS = [TIER_QUESTS[TIER[z]](z) + [("power", BOSS[z]["rec"])] for z in range(ZONES)]
+SUBGOAL_HATCHES = 5      # friction: a long "hatch N" step is split into sub-goals of 5 hatches; each gives a free zone egg
+PACE_CAP = 180           # friction: meditate in short sittings along the way, so the final Power gate is not a long wait
 SLOT_QUESTS = {(0, 0), (0, 3), (1, 0), (1, 3), (2, 0), (3, 0), (4, 0)}   # 3 + 7 = 10 slots max
 # every other quest (except the last, which opens the boss gate) gives a free egg of that zone
 
@@ -309,6 +311,7 @@ class Player:
         self.bag, self.bag_val = 0, 0
         self.bag_lv = self.mat_lv = self.surge_lv = 0
         self.pets, self.slots, self.hatches, self.zone_hatches = [], BASE_SLOTS + self.paid["slots"], 0, {}
+        self.reward_times, self.step_hatches = [], 0
         self.zone, self.quest, self.kills, self.mut_kills = 0, 0, {}, {}
         self.combo, self.streak = 0, 0
         self.od_until, self.od_active = -1.0, False   # Overdrive ends at a TIMESTAMP: real time keeps running
@@ -472,6 +475,7 @@ class Player:
         self.give_xp(KILL_XP[mi] * XP_STEP ** z)        # XP goes straight to every equipped pet
         self.kills[(z, mi)] = self.kills.get((z, mi), 0) + 1
         if mut:
+            self.reward_times.append(self.t)
             rank = MUTATIONS.index(mut)
             self.mut_kills[(z, rank)] = self.mut_kills.get((z, rank), 0) + 1
         self.kill_log.append((self.t, name, cause, in_od))
@@ -601,6 +605,12 @@ class Player:
             sp = roll_species(self.rng, z, self.paid["luck"], self.paid["secret_x"])
         self.pets.append(Pet(z, EGGS[z][sp][1], sp))
         self.note("first_hatch", "first hatch")
+        self.reward_times.append(self.t)
+        if not free and self.quest < len(QUESTS[z]) and QUESTS[z][self.quest][0] == "hatch":
+            self.step_hatches += 1
+            if self.step_hatches % SUBGOAL_HATCHES == 0 and self.step_hatches < QUESTS[z][self.quest][1]:
+                self.note(f"subgoal_z{z}_{self.step_hatches}")
+                self.hatch(free=True)                        # sub-goal reward: a free egg of this zone
         self.dirty()
         self.auto_fuse()
         if len(self.pets) > INVENTORY:                       # auto-delete the weakest unequipped pets
@@ -631,6 +641,7 @@ class Player:
                     self.pets.append(new)
                     self.dirty()
                     self.note("first_star", "first star fusion")
+                    self.reward_times.append(self.t)
                     changed = True
                     break
 
@@ -665,6 +676,7 @@ class Player:
                         return True
                     continue
                 self.note("first_star", "first star fusion")
+                self.reward_times.append(self.t)
                 did = changed = True
                 break
         return did
@@ -707,6 +719,8 @@ class Player:
 
     def quest_reward(self, z, i):
         self.note(f"quest_z{z}_{i}")
+        self.reward_times.append(self.t)
+        self.step_hatches = 0
         if (z, i) in SLOT_QUESTS:
             self.slots += 1
             self.dirty()
@@ -749,6 +763,7 @@ class Player:
                 win, dur = self.boss_fight()
                 if win:
                     self.note(f"boss{z + 1}", f"beats {BOSS[z]['name']}")
+                    self.reward_times.append(self.t)
                     self.boss_coins += boss_shard_value(z)
                     self.sell(extra=boss_shard_value(z))     # Boss Shards, sold at this zone's altar
                     self.record_zone(z)
@@ -762,6 +777,13 @@ class Player:
             if q and q[0] == "power" and self.quest == len(QUESTS[z]) - 1:
                 self.meditate_until(q[1])
                 continue
+            if q and QUESTS[z][-1][0] == "power" and self.sells_since_med >= 1:
+                hi = next(i for i, qq in enumerate(QUESTS[z]) if qq[0] == "hatch")   # the hatch step = the zone's economy
+                done = 0.0 if self.quest < hi else 1.0 if self.quest > hi else min(1.0, self.step_hatches / q[1])
+                pace = QUESTS[z][-1][1] * done                   # keep Power on pace with the zone's progress
+                if self.power < 0.9 * pace:
+                    self.meditate_until(pace, cap=PACE_CAP)
+                    continue
             mi = self.pick_monster()
             nxt = mi + 1
             if self.sells_since_med >= 2 and nxt < 3 and not self.green(z, nxt):
@@ -878,6 +900,22 @@ def quest_step_minutes(players):
     return out
 
 
+def reward_gaps(players):
+    """Median (over players) of the longest stretch in each zone with no reward event."""
+    rows = list(players)
+    out = []
+    for z in range(ZONES):
+        g = []
+        for x in rows:
+            a, b = (x.milestones.get(f"boss{z}", 0) if z else 0), x.milestones.get(f"boss{z + 1}")
+            if b is None:
+                continue
+            ts = sorted([t for t in x.reward_times if a <= t <= b] + [a, b])
+            g.append(max(q - p for p, q in zip(ts, ts[1:])) / 60)
+        out.append(st.median(g) if g else float("nan"))
+    return out
+
+
 def report(n_full=40, n_two=200):
     out = []
     P = out.append
@@ -959,9 +997,13 @@ def report(n_full=40, n_two=200):
     P("   (rank quests need kills and hatches, which need coins, which only hunting gives).")
     P("")
     P("9. Friction check (GAME-BIBLE 1.1): median minutes per quest step, average free player (steps over 8 min flagged *)")
-    for z, ms in enumerate(quest_step_minutes(Player("average", 3000 + r).run() for r in range(20))):
+    fr = [Player("average", 3000 + r).run() for r in range(20)]
+    gaps = reward_gaps(fr)
+    for z, ms in enumerate(quest_step_minutes(fr)):
         P(f"   {z + 1:2d} " + "  ".join(f"{QUESTS[z][i][0]} {m:.1f}{'*' if m > STEP_MAX_MIN else ''}"
-                                         for i, m in enumerate(ms)))
+                                         for i, m in enumerate(ms)) + f"   | longest stretch with no reward {gaps[z]:.1f}")
+    P("   (rewards = a hatch, a quest step or sub-goal, a star, a mutated kill, a boss win. A 'hatch N' step is split into")
+    P(f"    sub-goals of {SUBGOAL_HATCHES} hatches, each giving a free zone egg; every hatch is itself a reward.)")
     return "\n".join(out)
 
 

@@ -20,7 +20,7 @@ Change a number = change the model and re-run `python make_bible.py`.
 - **Saving:** Robux receipts have a **permanent** ledger (`delivered` only; never cancelled, never pruned); hatch operations count as done only when stored `committed`, never just because the id exists.
 - **Limited promise:** "Numbered. On sale for 7 days or until 1,000 sold. Every buyer gets a numbered copy." No substitute items.
 - **Regional rules** now cover stored paid coins (two balances), paid-tagged eggs, gifts and eligibility changes (MONETIZATION 17.1).
-- **Friction and longevity** (owner): binding friction rules (1.1, with the model's honest result) and the after-clear plan (25).
+- **Friction and longevity** (owner): friction rules (1.1) that **don't change** the controls, meditation or quest lists. Sub-goal eggs and paced meditation are simulated; times re-computed (free ~10 h 06, whale ~2 h 59; late eggs +15%). The after-clear plan is in section 25.
 - **Pet hits:** +10% of Power per doubling of team Strength, **no hard cap** (the old cap was reached at Strength 25, so upgrades stopped adding hit by zone 2). Pets stay at about 46% of damage.
 - **Fusion:** the Fusion Altar stops at ★2 until the Star Forge (zone 5), in the model too.
 - **Times are partial-model estimates** (section 27 lists what is and isn't modeled); Huge Storm, Auto-Sell and Mutation Magnet are now modeled for the whale.
@@ -92,26 +92,24 @@ Change a number = change the model and re-run `python make_bible.py`.
 
 ### 1.1 Friction rules (owner's biggest concern: the loop must never feel like chores)
 
-Familiar loops work when **every action feels good on its own** and **every upgrade changes the next few minutes**. Gorgeous effects can't rescue chores. These rules are binding for the build and checked in playtest #1 (CORE-GAME 3, #12-#15):
+Familiar loops work when **every action feels good on its own** and **every upgrade visibly does its own job**. Gorgeous effects can't rescue chores. **These rules don't change the controls (section 2), meditation (section 3) or the quest lists (section 8 and Part B). They only add the items below.** If anything here seems to disagree with those sections, those sections win.
 
-| Risk | Rule |
+| Risk | Rule (consistent with sections 2, 3 and 8) |
 |---|---|
-| **Meditation feels like waiting** | Meditation is **never required to stand still**. It runs on its own whenever you're idle 10 s anywhere near a mat, and offline. Focus taps are an **optional bonus**, never needed. The aura **visibly grows** (a size pulse + "+POWER" pop every ~20 s), and the next Power gate is shown as a bar with "about 2 min". **No quest asks for more than ~60 s of meditation.** |
-| **Repeated timed blasts feel like busywork** | Skill is spent **only where it matters**. **Sweep:** monsters that die to one ordinary blast (grey "one-hit" bar) are cleared by **holding** the button while you walk, with no timing needed. PERFECT timing is for green / Big / mutated monsters and bosses. Every PERFECT has a distinct hit-stop, sound and shard burst; combos and Overdrive change the feel, not just the numbers. |
-| **Quests feel like checklists** | Quests count **everything you're already doing** (kills by any means, hatches, stars). The quest bar shows the **estimated minutes left**. **Target: no quest step over ~8 min** for an average player. A quest step never asks you to go back to an old zone. **Today the model fails this from zone 2 on** (below). |
-| **Upgrades don't feel noticeable** | **Every upgrade shows its effect right away:** a 3-second before/after card ("Hunting +34% · Meditation +20%"), HP bars turning green, and the time-to-kill readout on the next monster. The shop and egg card show the **predicted** gain before you buy. |
-| **Dead stretches between rewards** | **Something rewarding at least every ~3 minutes** early on (a sell, hatch, star, quest step, mutation or Power gate). The session log flags any gap over 3 min. |
-| **Walking** | SELL is a teleport; the Shrine, egg and altar sit together; machines have hub teleport pads. |
+| **Meditation feels like waiting** | **Meditation happens only on a mat** (section 3). To make that easy: a **Meditate button** on the HUD puts you on the **nearest free mat** of your zone (a 1-second teleport, like SELL). **AFK on a mat is full rate,** so Focus taps are an optional bonus. The aura **visibly grows** (a size pulse + "+POWER" pop every ~20 s). The quest bar shows a **Power pace marker**; when your Power falls behind the zone's pace, it suggests "Meditate ~2 min". |
+| **Repeated timed blasts feel like busywork** | **The controls are unchanged:** hold to charge, release to fire; a quick tap under 0.5 s does nothing (section 2). What removes busywork: monsters with a **grey "one-hit" bar** (HP at most 0.5 × your Power) **die to any release**, even a too-late one, so they need no timing. Auto-aim moves to the next monster after a kill. Pets clear one-hit monsters too. **PERFECT timing is for green / Big / mutated monsters and bosses.** Every PERFECT has a distinct hit-stop, sound and shard burst. |
+| **Quests feel like checklists** | **The quest lists are unchanged** (Focus steps stay 20 s in zone 1 up to 3 min in hard zones, shown with a timer; Focus is an active mini-game, not waiting). Quests count **everything you're already doing**, and the bar shows **estimated minutes left**. **New: a "hatch N" step is split into sub-goals of 5 hatches, and each sub-goal gives a free egg of that zone** (modeled; it's why late egg prices rose 15%). A step never asks you to go back to an old zone. |
+| **Upgrades don't feel noticeable** | **Every upgrade shows its own intended benefit** on a 3-second before/after card, and the shop shows the predicted change before you buy. It never pretends an upgrade does something it doesn't. Examples: a pet "Hunting +34% · Meditation +20%"; a bag "100 → 150 shards: 33% fewer trips to SELL"; a mat "Power +25%/s"; a Surge "Overdrive 8 → 10 s". The playtest measures each one against its own job (CORE-GAME 3, #13). |
+| **Dead stretches between rewards** | **Target: no stretch longer than ~5 min without a reward** (a hatch, a quest step or sub-goal, a star, a mutated kill, a boss win). The model measures it (`econ/RESULTS.txt` section 9), and so does the session log. |
+| **Walking** | SELL and Meditate are teleports; the Shrine, egg and altar sit together; machines have hub teleport pads. |
 
-**What the model says today (`econ/RESULTS.txt` section 9; median minutes per quest step, average free player):**
-- **Zones 1-2 pass** (the playtest build): every step is under ~3 min, except "hatch 8" in zone 2 at ~8 min.
-- **Zones 3-10 fail** in two places:
-  - **"Hatch N eggs" is the whole zone's economy in one step:** 14 min (zone 3) → 52 min (zone 7) → **~2 h (zone 10)**;
-  - **the final Power gate** takes 10-26 min of mostly meditation in zones 4-10, which risks feeling like waiting.
-- **The fix, required before zones 3-10 ship** (re-checked in the model each time):
-  1. Split every long step into **sub-goals of ~5 min, each with a small reward** (hatch 4 → a Daily Exclusive Egg; hatch 8 → Enchant Crystals …), so a reward lands every few minutes. The total time is the same, but the friction is not.
-  2. Shorten the Power-gate wait. Either the gate **fills while you hunt** (a share of Power from kills in that zone), or the gate is lower and egg prices carry the pacing. Pick one in the model, keeping the 10-12 h free target.
-  3. Then the target becomes a model test (no step over 8 min, Power gate under 5 min).
+**What the model says now** (RESULTS section 9, average free player; sub-goal eggs, paced meditation and the +15% egg prices included; all times re-computed):
+- **Zones 1-3 pass:** the longest stretch with no reward is about 3-4 min, and the final Power wait is 2-3 min. **This is a model test** (`tests.py`), so the playtest build is covered.
+- **Zones 4-10 don't pass yet.** Every hatch is a reward, and hatches land every few minutes even in zone 10. But the **final Power gate is still a 9-19 min wait**, and that's the longest rewardless stretch. The model's player already meditates in ≤ 3-min sittings to stay on pace; the rest comes from the gate itself.
+- **Open decision before zones 4-10 ship** (re-tuned in the model, with times re-computed):
+  - (a) Set the gate to **0.75× the recommended Power**. The model's average player still wins the clash 98% of the time there (RESULTS section 6). Late egg prices then rise to keep the 10-12 h free target.
+  - (b) Or let a share of Power come from kills in that zone. This breaks the "Power only from meditation" rule, so (a) is preferred.
+- **Current model times:** free ~10 h 06; whale ~2 h 59 (section 27).
 
 ## 2. Controls: the blast (the only attack)
 
@@ -439,15 +437,15 @@ New systems **unlock when you enter each new zone** (the Pet Simulator "new mach
 |---|---|---|---|
 | 1 Lumora Grove | the Shrine, shop, eggs, Fusion Altar (★1-★2), the hub | Lumora Plaza | 0:00 |
 | 2 Pyrora Dojo | **Hatch ×3** (after boss 1), **Spirit Codex** | the Scroll Hall | ~5 min |
-| 3 Glacora Peaks | **Enchant Forge**; **trading** in the hub | the Ice Forge | ~23 min |
-| 4 Voltora Cliffs | **Spirit Nursery** (daycare) | the Sky Nest | ~44 min |
-| 5 Blossora Gardens | **Star Forge** (★3-★5) | the Lantern Shrine | ~1 h 15 |
-| 6 Nyxora Rift | **Mutation Reactor** | the Rift Reactor | ~1 h 58 |
-| 7 Astora Throne | **Aura Forge** | the Star Anvil | ~2 h 41 |
-| 8 Seraphora Gate | **Relic Shrine** | the Halo Vault | ~3 h 57 |
-| 9 Drakora Sanctum | **Infinity Tower** | the Dragon Spire | ~5 h 28 |
-| 10 Aurora Nexus | **Ascension Gate**, Boundless Hall | the Nexus Core | ~7 h 36 |
-| After beating zone 10 | **the Nexus Titan** (an always-respawning raid boss), the **Weekly Limited Egg**, **XP Shards** and **Awakening** | the Heart of Aura | ~10 h 30 |
+| 3 Glacora Peaks | **Enchant Forge**; **trading** in the hub | the Ice Forge | ~21 min |
+| 4 Voltora Cliffs | **Spirit Nursery** (daycare) | the Sky Nest | ~41 min |
+| 5 Blossora Gardens | **Star Forge** (★3-★5) | the Lantern Shrine | ~1 h 10 |
+| 6 Nyxora Rift | **Mutation Reactor** | the Rift Reactor | ~1 h 50 |
+| 7 Astora Throne | **Aura Forge** | the Star Anvil | ~2 h 34 |
+| 8 Seraphora Gate | **Relic Shrine** | the Halo Vault | ~3 h 50 |
+| 9 Drakora Sanctum | **Infinity Tower** | the Dragon Spire | ~5 h 17 |
+| 10 Aurora Nexus | **Ascension Gate**, Boundless Hall | the Nexus Core | ~7 h 25 |
+| After beating zone 10 | **the Nexus Titan** (an always-respawning raid boss), the **Weekly Limited Egg**, **XP Shards** and **Awakening** | the Heart of Aura | ~10 h 07 |
 
 Every machine also gets a pad on the hub's teleporter ring once unlocked.
 
@@ -651,7 +649,7 @@ This is what players do while they wait for the weekly update.
 **Boss: STONE GOLEM** (recommended Power 300): a 3-storey rock giant with glowing cyan cracks and crystal plates on its chest and shoulders (the weak points). **Arena:** the Sunstone Ring, a hilltop stone circle at sunrise.
 - **HP:** plates 6 × 990; body 6,000.
 - **Rage:** rolls boulders down red lanes (0.8 s warning): dodge sideways, or **PERFECT a boulder to blast it back** for big damage.
-- **Reward:** form **BLAZE** (orange anime flames); **Boss Shards worth 4,500 coins** (about 3 Pyrora Dojo eggs).
+- **Reward:** form **BLAZE** (orange anime flames); **Boss Shards worth 5,100 coins** (about 3 Pyrora Dojo eggs).
 
 **The first 8 minutes** (one model run close to the median, `econ` seed 15):
 
@@ -670,8 +668,8 @@ This is what players do while they wait for the weekly update.
 | 3:10-4:50 | Quest 5: **sit and Focus meditate about 1.5 min** | ~315 |
 | 4:50-5:30 | **Stone Golem** | |
 | ~5:30 | **BLAZE.** Boss Shards sell for 4,500 → Bag Lv3, Mat Lv2, Surge Lv1. **Hatch ×3 unlocks.** Pyrora Dojo opens | ~315 |
-| 5:35-7:05 | Zone 2 quest 1: Focus 60 s at the ×4 Shrine | ~1,500 |
-| 7:05+ | Ember Slimes; Fire eggs (1,500) | |
+| 5:35-7:05 | Zone 2 quest 1: Focus 60 s at the ×4 Shrine | ~1,700 |
+| 7:05+ | Ember Slimes; Fire eggs (1,700) | |
 
 **At the boss** (average free player, median):
 
@@ -694,7 +692,7 @@ This is what players do while they wait for the weekly update.
 | Mutation Storm here | **Eruption:** the volcano erupts, harmless lava bombs arc across the sky |
 | **New in this zone** | **Hatch ×3 (free)** and the **Spirit Codex** (the pet index; in the dojo's Scroll Hall) |
 
-**Numbers:** Shrine 2 Power/s · Egg 1,500 coins.
+**Numbers:** Shrine 2 Power/s · Egg 1,700 coins.
 
 | Monster | Look | HP | Behaviour | Drops (coins) | XP per kill |
 |---|---|---|---|---|---|
@@ -733,13 +731,13 @@ This is what players do while they wait for the weekly update.
 **Boss: MAGMA ONI** (recommended Power 10K): a huge red oni with lava-crack skin, obsidian horns and a flaming club. **Arena:** the Caldera Ring over the lava lake.
 - **HP:** plates 6 × 82.5K; body 500K.
 - **Rage:** throws lava waves in a fan: step into the gap; a PERFECT on its glowing fist staggers it.
-- **Reward:** form **INFERNO** (red-black flames, heat haze); **Boss Shards worth 75K coins** (about 3 Glacora Peaks eggs).
+- **Reward:** form **INFERNO** (red-black flames, heat haze); **Boss Shards worth 87K coins** (about 3 Glacora Peaks eggs).
 
 **At the boss** (average free player, median):
 
 | Time | Power | Slots | Best pet | Best stars | Best level | Bag |
 |---|---|---|---|---|---|---|
-| **~23 min** | 10.3K | 7 | Epic | ★★ | 22 | 250 |
+| **~21 min** | 10.3K | 7 | Epic | ★★ | 19 | 250 |
 
 ## 16. ZONE 3: GLACORA PEAKS (Ice) · quests: very easy
 
@@ -756,7 +754,7 @@ This is what players do while they wait for the weekly update.
 | Mutation Storm here | **Blizzard:** a whiteout swirl, the aurora flares bright |
 | **New in this zone** | the **Enchant Forge** (section 13.3); **trading booths** open in the hub (after boss 2) |
 
-**Numbers:** Shrine 8 Power/s · Egg 25K coins.
+**Numbers:** Shrine 8 Power/s · Egg 29K coins.
 
 | Monster | Look | HP | Behaviour | Drops (coins) | XP per kill |
 |---|---|---|---|---|---|
@@ -795,13 +793,13 @@ This is what players do while they wait for the weekly update.
 **Boss: FROST WYRM** (recommended Power 200K): a long serpent ice-dragon coiled around the summit, translucent wings, glowing blue core. **Arena:** the Frozen Crown summit.
 - **HP:** plates 6 × 1.65M; body 10M.
 - **Rage:** ice breath sweeps a cone (step out) and ice pillars crash on red circles: **PERFECT a pillar** to shatter it into the Wyrm.
-- **Reward:** form **GLACIER** (icy crystal aura); **Boss Shards worth 1.2M coins** (about 3 Voltora Cliffs eggs).
+- **Reward:** form **GLACIER** (icy crystal aura); **Boss Shards worth 1.38M coins** (about 3 Voltora Cliffs eggs).
 
 **At the boss** (average free player, median):
 
 | Time | Power | Slots | Best pet | Best stars | Best level | Bag |
 |---|---|---|---|---|---|---|
-| **~44 min** | 203K | 8 | Epic | ★★ | 27 | 300 |
+| **~41 min** | 203K | 8 | Epic | ★★ | 26 | 300 |
 
 ## 17. ZONE 4: VOLTORA CLIFFS (Lightning) · quests: easy
 
@@ -818,7 +816,7 @@ This is what players do while they wait for the weekly update.
 | Mutation Storm here | **Thunderstorm:** lightning everywhere, energy bridges overcharge and glow |
 | **New in this zone** | the **Spirit Nursery** (pet daycare, section 13.4) in the **Sky Nest** |
 
-**Numbers:** Shrine 32 Power/s · Egg 400K coins.
+**Numbers:** Shrine 32 Power/s · Egg 460K coins.
 
 | Monster | Look | HP | Behaviour | Drops (coins) | XP per kill |
 |---|---|---|---|---|---|
@@ -858,13 +856,13 @@ This is what players do while they wait for the weekly update.
 **Boss: THUNDER ROC** (recommended Power 4M): a giant thunderbird whose wings crackle with lightning and whose eyes glow white. **Arena:** the Storm Eye.
 - **HP:** plates 6 × 33M; body 200M.
 - **Rage:** lightning markers chase you (keep moving) while 4 rods charge it: **blast the rods** to stun it.
-- **Reward:** form **TEMPEST** (crackling lightning aura); **Boss Shards worth 18M coins** (about 3 Blossora Gardens eggs).
+- **Reward:** form **TEMPEST** (crackling lightning aura); **Boss Shards worth 21M coins** (about 3 Blossora Gardens eggs).
 
 **At the boss** (average free player, median):
 
 | Time | Power | Slots | Best pet | Best stars | Best level | Bag |
 |---|---|---|---|---|---|---|
-| **~1 h 15** | 4.03M | 9 | Epic | ★★ | 30 | 400 |
+| **~1 h 10** | 4.03M | 9 | Epic | ★★ | 30 | 400 |
 
 ## 18. ZONE 5: BLOSSORA GARDENS (Nature) · quests: easy
 
@@ -881,7 +879,7 @@ This is what players do while they wait for the weekly update.
 | Mutation Storm here | **Petal Storm:** a whirlwind of petals, the koi leap |
 | **New in this zone** | the **Star Forge** (fusion to ★3-★5) |
 
-**Numbers:** Shrine 160 Power/s · Egg 6M coins.
+**Numbers:** Shrine 160 Power/s · Egg 7M coins.
 
 | Monster | Look | HP | Behaviour | Drops (coins) | XP per kill |
 |---|---|---|---|---|---|
@@ -921,13 +919,13 @@ This is what players do while they wait for the weekly update.
 **Boss: BLOSSOM RONIN** (recommended Power 60M): a masked ronin made of blossom wood, with a glowing katana. **Arena:** the Moonlit Bridge.
 - **HP:** plates 6 × 495M; body 3B.
 - **Rage:** dash-slashes along red lines, then splits into petal clones: **only the real one has a shadow**.
-- **Reward:** form **BLOOM** (swirling blossom aura); **Boss Shards worth 300M coins** (about 3 Nyxora Rift eggs).
+- **Reward:** form **BLOOM** (swirling blossom aura); **Boss Shards worth 345M coins** (about 3 Nyxora Rift eggs).
 
 **At the boss** (average free player, median):
 
 | Time | Power | Slots | Best pet | Best stars | Best level | Bag |
 |---|---|---|---|---|---|---|
-| **~1 h 58** | 60.4M | 10 | Epic | ★★★ | 30 | 500 |
+| **~1 h 50** | 60.3M | 10 | Epic | ★★ | 30 | 500 |
 
 ## 19. ZONE 6: NYXORA RIFT (Void) · quests: easy
 
@@ -944,7 +942,7 @@ This is what players do while they wait for the weekly update.
 | Mutation Storm here | **Eclipse:** the moon covers the sun, runes blaze |
 | **New in this zone** | the **Mutation Reactor** (section 13.6) |
 
-**Numbers:** Shrine 800 Power/s · Egg 100M coins.
+**Numbers:** Shrine 800 Power/s · Egg 115M coins.
 
 | Monster | Look | HP | Behaviour | Drops (coins) | XP per kill |
 |---|---|---|---|---|---|
@@ -984,13 +982,13 @@ This is what players do while they wait for the weekly update.
 **Boss: VOID LEVIATHAN** (recommended Power 1B): a colossal void serpent-leviathan swimming through space around the arena. **Arena:** the Event Horizon.
 - **HP:** plates 6 × 8.25B; body 50B.
 - **Rage:** a black hole pulls you in (walk against it) and portals spit tentacles: **blast a portal** to send the tentacle back.
-- **Reward:** form **ECLIPSE** (dark ring with violet fire); **Boss Shards worth 4.5B coins** (about 3 Astora Throne eggs).
+- **Reward:** form **ECLIPSE** (dark ring with violet fire); **Boss Shards worth 5.1B coins** (about 3 Astora Throne eggs).
 
 **At the boss** (average free player, median):
 
 | Time | Power | Slots | Best pet | Best stars | Best level | Bag |
 |---|---|---|---|---|---|---|
-| **~2 h 41** | 1.01B | 10 | Epic | ★★★ | 30 | 500 |
+| **~2 h 34** | 1.01B | 10 | Epic | ★★ | 30 | 500 |
 
 ## 20. ZONE 7: ASTORA THRONE (Cosmic) · quests: medium
 
@@ -1007,7 +1005,7 @@ This is what players do while they wait for the weekly update.
 | Mutation Storm here | **Meteor Shower:** the sky fills with falling stars |
 | **New in this zone** | the **Aura Forge** (customize your aura; section 13.7) |
 
-**Numbers:** Shrine 4,000 Power/s · Egg 1.5B coins.
+**Numbers:** Shrine 4,000 Power/s · Egg 1.7B coins.
 
 | Monster | Look | HP | Behaviour | Drops (coins) | XP per kill |
 |---|---|---|---|---|---|
@@ -1048,13 +1046,13 @@ This is what players do while they wait for the weekly update.
 **Boss: STAR EMPEROR** (recommended Power 15B): a star-crowned emperor on a floating throne, cape made of galaxies. **Arena:** the Throne of Stars.
 - **HP:** plates 6 × 124B; body 750B.
 - **Rage:** meteor showers (many red circles) and constellation nodes: **blast the nodes in the shown order** to drop a meteor on him.
-- **Reward:** form **COSMIC** (starfield aura with orbiting planets); **Boss Shards worth 75B coins** (about 3 Seraphora Gate eggs).
+- **Reward:** form **COSMIC** (starfield aura with orbiting planets); **Boss Shards worth 87B coins** (about 3 Seraphora Gate eggs).
 
 **At the boss** (average free player, median):
 
 | Time | Power | Slots | Best pet | Best stars | Best level | Bag |
 |---|---|---|---|---|---|---|
-| **~3 h 57** | 15.1B | 10 | Epic | ★★★ | 30 | 500 |
+| **~3 h 50** | 15B | 10 | Epic | ★★★ | 30 | 500 |
 
 ## 21. ZONE 8: SERAPHORA GATE (Holy light) · quests: medium
 
@@ -1071,7 +1069,7 @@ This is what players do while they wait for the weekly update.
 | Mutation Storm here | **Holy Rain:** golden rain and feathers |
 | **New in this zone** | the **Relic Shrine** (section 13.8) |
 
-**Numbers:** Shrine 20K Power/s · Egg 25B coins.
+**Numbers:** Shrine 20K Power/s · Egg 29B coins.
 
 | Monster | Look | HP | Behaviour | Drops (coins) | XP per kill |
 |---|---|---|---|---|---|
@@ -1112,13 +1110,13 @@ This is what players do while they wait for the weekly update.
 **Boss: ARCHANGEL SENTINEL** (recommended Power 200B): a six-winged archangel in gold armour with a giant spear. **Arena:** the Gate of Light.
 - **HP:** plates 6 × 1.65T; body 10T.
 - **Rage:** sweeping walls of light with one gap, and judgement circles that follow you: **PERFECT its raised spear** to break the wall.
-- **Reward:** form **RADIANT** (white-gold aura with light wings); **Boss Shards worth 750B coins** (about 3 Drakora Sanctum eggs).
+- **Reward:** form **RADIANT** (white-gold aura with light wings); **Boss Shards worth 870B coins** (about 3 Drakora Sanctum eggs).
 
 **At the boss** (average free player, median):
 
 | Time | Power | Slots | Best pet | Best stars | Best level | Bag |
 |---|---|---|---|---|---|---|
-| **~5 h 28** | 201B | 10 | Epic | ★★★ | 30 | 500 |
+| **~5 h 17** | 201B | 10 | Epic | ★★★ | 30 | 500 |
 
 ## 22. ZONE 9: DRAKORA SANCTUM (Dragon) · quests: hard
 
@@ -1135,7 +1133,7 @@ This is what players do while they wait for the weekly update.
 | Mutation Storm here | **Dragonfire:** dragons fly overhead breathing harmless fire |
 | **New in this zone** | the **Infinity Tower** entrance (endless boss floors; section 13.9) |
 
-**Numbers:** Shrine 100K Power/s · Egg 250B coins.
+**Numbers:** Shrine 100K Power/s · Egg 290B coins.
 
 | Monster | Look | HP | Behaviour | Drops (coins) | XP per kill |
 |---|---|---|---|---|---|
@@ -1177,13 +1175,13 @@ This is what players do while they wait for the weekly update.
 **Boss: ELDER DRAGON EMPEROR** (recommended Power 2.5T): an ancient emperor dragon in gold armour. **Arena:** the Dragon's Crown.
 - **HP:** plates 6 × 20.6T; body 125T.
 - **Rage:** takes flight and rains fireballs on red circles, then breathes a sweeping cone: **PERFECT the fireballs** to bounce them back.
-- **Reward:** form **DRAGONSOUL** (jade-gold aura with a dragon spirit); **Boss Shards worth 10.5T coins** (about 3 Aurora Nexus eggs).
+- **Reward:** form **DRAGONSOUL** (jade-gold aura with a dragon spirit); **Boss Shards worth 12T coins** (about 3 Aurora Nexus eggs).
 
 **At the boss** (average free player, median):
 
 | Time | Power | Slots | Best pet | Best stars | Best level | Bag |
 |---|---|---|---|---|---|---|
-| **~7 h 36** | 2.51T | 10 | Rare | ★★★ | 30 | 500 |
+| **~7 h 25** | 2.51T | 10 | Epic | ★★★ | 30 | 500 |
 
 ## 23. ZONE 10: AURORA NEXUS (Every aura) · quests: hard
 
@@ -1200,7 +1198,7 @@ This is what players do while they wait for the weekly update.
 | Mutation Storm here | **Aurora Surge:** every zone's storm at once |
 | **New in this zone** | the **Ascension Gate** (rebirth; section 13.10) and the **Boundless Hall** (statues of every Boundless owner). After the Ascendant: the **Nexus Titan** (an always-respawning raid boss), the **Weekly Limited Egg** and **XP Shards** with Awakening (section 13.12) |
 
-**Numbers:** Shrine 500K Power/s · Egg 3.5T coins.
+**Numbers:** Shrine 500K Power/s · Egg 4T coins.
 
 | Monster | Look | HP | Behaviour | Drops (coins) | XP per kill |
 |---|---|---|---|---|---|
@@ -1242,28 +1240,28 @@ This is what players do while they wait for the weekly update.
 **Boss: THE ASCENDANT** (recommended Power 30T): a figure of pure aura with wings of every element. **Arena:** the Heart of Aura.
 - **HP:** plates 6 × 248T; body 1.5Qa.
 - **Rage:** **every earlier boss's move in turn:** boulders, lava fans, ice pillars, lightning markers, light walls, petal clones, a black hole, meteors, fireballs. The beam clash is golden, against the whole sky.
-- **Reward:** form **ASCENDED** (rainbow-white aura, wings of light, a halo); **Boss Shards worth 10.5T coins** (about 3 Aurora Nexus eggs).
+- **Reward:** form **ASCENDED** (rainbow-white aura, wings of light, a halo); **Boss Shards worth 12T coins** (about 3 Aurora Nexus eggs).
 
 **At the boss** (average free player, median):
 
 | Time | Power | Slots | Best pet | Best stars | Best level | Bag |
 |---|---|---|---|---|---|---|
-| **~10 h 28** | 30.1T | 10 | Epic | ★★ | 30 | 500 |
+| **~10 h 07** | 30.1T | 10 | Epic | ★★ | 30 | 500 |
 
 ## 24. Progression at a glance (average free player, solo, model medians)
 
 | Zone | Name | Quests | Shrine /s | Egg | Boss (recommended Power) | Finished at | Power then |
 |---|---|---|---|---|---|---|---|
 | 1 | Lumora Grove | very easy | 0.5 | 60 | Stone Golem (300) | ~5 min | 314 |
-| 2 | Pyrora Dojo | very easy | 2 | 1,500 | Magma Oni (10K) | ~23 min | 10.3K |
-| 3 | Glacora Peaks | very easy | 8 | 25K | Frost Wyrm (200K) | ~44 min | 203K |
-| 4 | Voltora Cliffs | easy | 32 | 400K | Thunder Roc (4M) | ~1 h 15 | 4.03M |
-| 5 | Blossora Gardens | easy | 160 | 6M | Blossom Ronin (60M) | ~1 h 58 | 60.4M |
-| 6 | Nyxora Rift | easy | 800 | 100M | Void Leviathan (1B) | ~2 h 41 | 1.01B |
-| 7 | Astora Throne | medium | 4,000 | 1.5B | Star Emperor (15B) | ~3 h 57 | 15.1B |
-| 8 | Seraphora Gate | medium | 20K | 25B | Archangel Sentinel (200B) | ~5 h 28 | 201B |
-| 9 | Drakora Sanctum | hard | 100K | 250B | Elder Dragon Emperor (2.5T) | ~7 h 36 | 2.51T |
-| 10 | Aurora Nexus | hard | 500K | 3.5T | The Ascendant (30T) | ~10 h 28 | 30.1T |
+| 2 | Pyrora Dojo | very easy | 2 | 1,700 | Magma Oni (10K) | ~21 min | 10.3K |
+| 3 | Glacora Peaks | very easy | 8 | 29K | Frost Wyrm (200K) | ~41 min | 203K |
+| 4 | Voltora Cliffs | easy | 32 | 460K | Thunder Roc (4M) | ~1 h 10 | 4.03M |
+| 5 | Blossora Gardens | easy | 160 | 7M | Blossom Ronin (60M) | ~1 h 50 | 60.3M |
+| 6 | Nyxora Rift | easy | 800 | 115M | Void Leviathan (1B) | ~2 h 34 | 1.01B |
+| 7 | Astora Throne | medium | 4,000 | 1.7B | Star Emperor (15B) | ~3 h 50 | 15B |
+| 8 | Seraphora Gate | medium | 20K | 29B | Archangel Sentinel (200B) | ~5 h 17 | 201B |
+| 9 | Drakora Sanctum | hard | 100K | 290B | Elder Dragon Emperor (2.5T) | ~7 h 25 | 2.51T |
+| 10 | Aurora Nexus | hard | 500K | 4T | The Ascendant (30T) | ~10 h 07 | 30.1T |
 
 <!-- ZONES:END -->
 
@@ -1273,7 +1271,7 @@ This is what players do while they wait for the weekly update.
 
 ## 25. After zone 10: why players stay (owner's longevity concern)
 
-A heavily upgraded player can clear the ten bosses in about **3 hours** (model), and a free player in about **10**. That's fine **only if collecting, improving and showing off the team stays appealing afterwards.** This is the plan for every hour after the first clear.
+A heavily upgraded player can clear the ten bosses in about **3 hours** (model: 2 h 59), and a free player in about **10** (10 h 06). That's fine **only if collecting, improving and showing off the team stays appealing afterwards.** This is the plan for every hour after the first clear.
 
 **1. Improve the team (vertical, never "done"):**
 - **★5 pets** (243 copies each), **Shiny** (Nursery), **pet mutations** (Reactor, up to ×5), **enchants** (I-V), **Awakening** to level 50 (XP Shards from the Titan), relics.
@@ -1350,10 +1348,10 @@ A heavily upgraded player can clear the ten bosses in about **3 hours** (model),
 
 | Spend | All 10 zones |
 |---|---|
-| free | ~10 h 15 |
-| starter (31 R$) | 6 h 22 |
-| VIP set (986 R$) | 3 h 23 |
-| whale (7,164 R$) | 3 h 07 |
+| free | ~10 h 06 |
+| starter (31 R$) | 6 h 18 |
+| VIP set (986 R$) | 3 h 13 |
+| whale (7,164 R$) | 2 h 59 |
 
 **What these times are (and aren't):** they come from `econ/model.py`, which simulates the **core loop**: blasts, Overdrive, mutations and storms, meditation, eggs and luck, pets (Strength, stars, levels, the Star Forge in zone 5), quests, bosses, the 2× Boost ladder, VIP, 2× Coins / Secret Luck / Hatch Speed, Hatch ×8, Huge Storm, Auto-Sell, Mutation Magnet and slot packs. **Not modeled yet:** enchants, pet mutations, the Nursery, relics, the Codex, Ascension, Exclusive and reward-track pets, potions, the Aura Pass, coin packs, Offline+ (the model plays in one sitting) and raid co-op. Almost all of those only speed a player up, so the real times are probably **shorter**, by an unknown amount. **These are partial-model estimates, not validated pacing**: playtest #1 and the soft launch measure the real times, and each machine is added to the model before it ships (GAME-PLAN 5b).
 

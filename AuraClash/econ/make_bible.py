@@ -269,8 +269,8 @@ FIRST_MINUTES = """**The first 8 minutes** (one model run close to the median, `
 | 3:10-4:50 | Quest 5: **sit and Focus meditate about 1.5 min** | ~315 |
 | 4:50-5:30 | **Stone Golem** | |
 | ~5:30 | **BLAZE.** Boss Shards sell for 4,500 → Bag Lv3, Mat Lv2, Surge Lv1. **Hatch ×3 unlocks.** Pyrora Dojo opens | ~315 |
-| 5:35-7:05 | Zone 2 quest 1: Focus 60 s at the ×4 Shrine | ~1,500 |
-| 7:05+ | Ember Slimes; Fire eggs (1,500) | |
+| 5:35-7:05 | Zone 2 quest 1: Focus 60 s at the ×4 Shrine | ~1,700 |
+| 7:05+ | Ember Slimes; Fire eggs (1,700) | |
 """
 
 

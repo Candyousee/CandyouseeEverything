@@ -404,6 +404,13 @@ def test_pacing_targets():                                  # GAME-PLAN design t
     assert 0.15 <= med <= 0.50 and 0.30 <= pet <= 0.50, (med, pet)   # pets never out-damage your blasts
 
 
+def test_friction_early_zones():                           # GAME-BIBLE 1.1 (zones 1-3 must pass; 4-10 are open)
+    rows = [M.Player("average", 1000 + r).run(until_zone=3) for r in range(20)]
+    assert all(g <= 5 for g in M.reward_gaps(rows)[:3]), M.reward_gaps(rows)[:3]
+    steps = M.quest_step_minutes(rows)
+    assert all(steps[z][-1] <= 5 for z in range(3))          # the Power-gate wait in zones 1-3
+
+
 def test_reproducible():
     assert M.Player("average", 11).run(until_zone=3).milestones == M.Player("average", 11).run(until_zone=3).milestones
 

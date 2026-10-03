@@ -4,7 +4,7 @@
 
 **Status:**
 - the design is v9 (meditation + crystal-monster hunting + pets; 10 zones designed in detail, with machines unlocking zone by zone; server raid bosses; the Nexus Titan endgame);
-- the numbers come from `econ/model.py`, and `python tests.py` passes 32/32;
+- the numbers come from `econ/model.py`, and `python tests.py` passes 33/33;
 - the art style is chosen (STYLE-SHEET).
 
 **Don't rewrite the concept.** The next evidence must come from the real game.
@@ -47,12 +47,11 @@
 
 ## The other bar: no chores (owner)
 
-**Friction, not originality, is the biggest risk.** Build to GAME-BIBLE 1.1:
-- meditation never asks you to stand still;
-- one-hit monsters are swept by holding the button, and timing is saved for monsters that matter;
-- quest steps take at most ~8 min and show minutes left;
-- every upgrade shows a before/after card and makes the next few minutes faster;
-- something rewarding happens at least every ~3 min.
+**Friction, not originality, is the biggest risk.** GAME-BIBLE 1.1 adds to the controls, meditation and quests **without changing them**:
+- a **Meditate button** (a teleport to the nearest free mat; meditation is still mats only) and a Power pace marker;
+- **grey "one-hit" monsters die to any release** (the controls are unchanged: hold, release; a quick tap does nothing);
+- **"hatch N" steps are split into 5-hatch sub-goals,** each giving a free zone egg (in the model);
+- **every upgrade shows its own benefit** (bag = fewer SELL trips, mat = Power/s, pet = hunting + meditation).
 
 The greybox fun gate checks these (CORE-GAME 3, #12-#15) **before** any art.
 
@@ -82,7 +81,7 @@ The greybox fun gate checks these (CORE-GAME 3, #12-#15) **before** any art.
   - **Bosses are server raids** every 15 min, plus a solo Trial any time. Raid rewards need you to be **active** (your own blasts land in half the raid's 10-second windows, at least 3) **and** 8% of the damage, a quarter of the median active fighter's, **or half of their own build's expected output** (server-side logs and stats; active friends of any strength always share). The first win gives the form, the Boss Shards and the next zone.
   - **The boss gate** = all of that zone's quests done (the last one is the Power target). Quest difficulty: zones 1-3 very easy, 4-6 easy, 7 medium, 8 hard.
   - **Offline:** server time, 25% of AFK, 8 h cap, claimed once (confirmed save).
-- **Receipts:** a permanent `delivered` ledger, never pruned, never cancelled; acknowledge only on confirmed `delivered`. Hatch ids count only when stored `committed`.
+- **Receipts:** a permanent `delivered` ledger, never pruned, never cancelled; acknowledge only when the **returned** record shows `delivered`. Hatch ids count only when the returned record shows `committed`. `UpdateAsync` callbacks are pure (they can run several times; `nil` cancels).
 - **Saving has three outcomes:** confirmed saved (show it), confirmed not committed (a later successful write finds no id and marks it cancelled, then undo), or **unknown** (hold the cost, block conflicts, keep reconciling, never show the result). A committed but unrevealed operation plays on the next join (CORE-GAME 2.2).
 
 ## You have full access

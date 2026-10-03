@@ -54,7 +54,7 @@ Old versions are in `archive/`, for history only. **Nothing in `archive/` is a r
 
   | State | How the server knows | What happens |
   |---|---|---|
-  | **1. CONFIRMED SAVED** | the `UpdateAsync` call returned success, **or** a later successful `UpdateAsync` finds the operation id stored **with status `committed`** (an id stored as `cancelled` is state 2, never state 1) | show the result (play the cutscene / the fused pet / the offline gain); never apply it again |
+  | **1. CONFIRMED SAVED** | **the stored record proves it:** the value **returned by** `UpdateAsync` (the version actually saved) contains the operation id **with status `committed`**, or a later successful `UpdateAsync` returns a value that does. **"The call returned without an error" is not proof on its own** (the callback may have run several times or returned `nil`, which cancels the write). An id stored as `cancelled` is state 2, never state 1 | show the result (play the cutscene / the fused pet / the offline gain); never apply it again |
   | **2. CONFIRMED NOT COMMITTED** | a later **successful** `UpdateAsync` finds the id absent, and in that same write stores the id as **cancelled** (so a delayed original write can never apply afterwards: its version is stale and the id is now taken) | undo it in memory (the coins are released, the pets stay unfused) and say "Not saved, nothing was spent. Try again." |
   | **3. UNKNOWN** | the write errored or timed out, and no later `UpdateAsync` has succeeded yet | **don't show the result, don't refund, don't say "cancelled".** Hold the operation as **pending** (below) and keep reconciling |
 
@@ -68,6 +68,12 @@ Old versions are in `archive/`, for history only. **Nothing in `archive/` is a r
   **If the server crashes while an operation is UNKNOWN:** the pending memory is gone, but storage holds exactly one truth:
   - **committed:** the profile already contains the cost, the result and the id, with `revealed = false`. On the next join (any server), the game finds the unrevealed operation and **plays it then** ("Your Mythic hatch finished saving!"), then marks it revealed;
   - **not committed:** the profile has neither the cost nor the result, so nothing was spent and nothing was gained. The first save of the next session writes the id as cancelled.
+
+  **Rules for every `UpdateAsync` callback** (Roblox's GlobalDataStore docs: the callback can be **called several times** when another server wrote in between, and **returning `nil` cancels the write**):
+  - **pure:** it only builds the new value from the value it was given. No coins, pets, UI or memory are changed inside it, and nothing in it may yield;
+  - **decides from the stored value each time:** if the id is already `committed` (or the receipt `delivered`), it returns the value unchanged; if the id is `cancelled`, it never re-applies it;
+  - **the server only acts on what comes back:** after the call, it reads the **returned** value. The id `committed` (or `delivered`) there → state 1. A `nil` return, an error, or a returned value without the id → **not** state 1 (state 3, keep reconciling);
+  - the same applies to ledger keys (serials) and the receipt ledger: **status in the returned record, never "the call succeeded"**.
 
   **Each critical operation is ONE write that contains everything:** the cost, the result, the operation id and `revealed = false`. The result is never shown before state 1, so a player can't see a bad roll and force a crash to re-roll it.
 
@@ -93,7 +99,7 @@ Old versions are in `archive/`, for history only. **Nothing in `archive/` is a r
 
   So:
   - **The permanent receipt ledger** (in the profile, never pruned, separate from the 30-day operation list) maps each `PurchaseId` → **`delivered`**. A receipt has only two states: **absent** or **`delivered`**. It is **never `cancelled`**: a receipt is a real payment, so "not committed" only means "grant it now".
-  - **Processing a receipt:** in **one** `UpdateAsync`: if the ledger has the `PurchaseId` as `delivered`, change nothing; otherwise grant the item **and** write `delivered`. Return `PurchaseGranted` **only** when that write is **confirmed** and the stored ledger shows `delivered`.
+  - **Processing a receipt:** in **one** `UpdateAsync`: if the ledger has the `PurchaseId` as `delivered`, change nothing; otherwise grant the item **and** write `delivered`. Return `PurchaseGranted` **only** when the value **returned by** `UpdateAsync` shows the `PurchaseId` as `delivered` (state 1 as defined above).
   - **On state 3 (unknown):** return `NotProcessedYet`. The next call (rejoin or next purchase) runs the same write, which sees `delivered` or grants. **Never acknowledged on a guess, never on an id that merely exists.**
   - **Two servers at once:** the session lock + `UpdateAsync` mean only one write can add `delivered`; the other sees it and returns `PurchaseGranted` without granting.
   - **Re-sent after a lost acknowledgement:** the ledger says `delivered`, so it returns `PurchaseGranted` again with no second grant, whenever it arrives.
@@ -185,10 +191,21 @@ Old versions are in `archive/`, for history only. **Nothing in `archive/` is a r
 | 9 | Logs off on a mat (or asks about offline) | yes, or explained in one line |
 | 10 | **Day 2:** sees the offline gain and keeps playing after it | 10+ min |
 | 11 | Timing behaviour at 15+ min: still aiming for PERFECTs, using Overdrive | not abandoning timing |
-| 12 | **No chores (friction, GAME-BIBLE 1.1):** gaps in the session log with no reward event (sell, hatch, star, quest step, mutation, Power gate) | no gap over 3 min in zones 1-2 |
-| 13 | **Upgrades are felt:** time-to-kill on the same monster type in the minute after buying an egg / pet / shop upgrade, vs the minute before | drops ≥ 20% on average, and the player reacts to it (comments, or moves to a harder monster) |
-| 14 | **Meditation isn't waiting:** player stands idle on a mat with nothing else to do | under 60 s at a time, unless they chose to AFK |
+| 12 | **No chores (friction, GAME-BIBLE 1.1):** the longest stretch in the session log with no reward event (a hatch, a quest step or sub-goal, a star, a mutated kill, a boss win) | under ~5 min in zones 1-2 (the model predicts ~3-4 min) |
+| 13 | **Each upgrade does its own job, and the player notices** (measured against its **intended** benefit, never forced onto combat): see the table below | each metric moves by at least ~70% of the model's predicted change, and the before/after card matches what happened |
+| 14 | **Meditation isn't dead time:** total time on a mat with no Focus taps **and** no chosen AFK (the player is sitting but looks at the screen, e.g. the camera moves) | under ~2 min in a row; the Meditate button is used without a prompt by the end of day 1 |
 | 15 | **"Which part felt like a chore?"** (asked last) | no single part named by most testers; anything named gets a fix before art |
+
+**#13: each upgrade's own metric** (from the session log, the 3 minutes before vs after):
+
+| Upgrade | Its intended benefit | Metric |
+|---|---|---|
+| New pet / egg / star / level | hunting **and** meditation | time-to-kill on the same monster type; Power per second on a mat |
+| Bag | fewer SELL trips | shards per SELL trip; SELL trips per 10 min |
+| Mat | faster training | Power per second on a mat |
+| Surge | longer Overdrive | Overdrive seconds per activation |
+| Hatch ×3 / ×8 / Hatch Speed | faster hatching | seconds per egg opened |
+| Slot (+1 / +2) | a bigger team | team Strength, then time-to-kill and Power/s |
 
 **What they say counts less than what they do:**
 - secondary: fun 1-10, the best and the most boring moment;
@@ -221,6 +238,7 @@ Old versions are in `archive/`, for history only. **Nothing in `archive/` is a r
   - rank quests by difficulty tier, boss HP and the beam clash;
   - the effect of the 2× Boost ladder and the passes (VIP, 2× Coins, 2× Secret Luck, 2× Hatch Speed, Hatch ×3 / ×8, Huge Storm, Auto-Sell, Mutation Magnet, slot packs);
   - the raid reward-share rule (as a unit rule, not a simulated raid).
+  - the friction changes: 5-hatch sub-goals with a free zone egg, meditation paced in ≤ 3-min sittings, the longest stretch with no reward, and minutes per quest step (RESULTS section 9).
 - **It doesn't cover:**
   - monsters hitting the player (only time lost, assumed small);
   - other players sharing monsters (personal loot means crowded servers pay faster than the model);
