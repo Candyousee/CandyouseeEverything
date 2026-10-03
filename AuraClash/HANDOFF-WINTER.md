@@ -1,10 +1,10 @@
-# HANDOFF → Winter: build the Aura Clash two-zone playable test (v8)
+# HANDOFF → Winter: build the Aura Clash two-zone playable test (v9)
 
 > **GO (owner):** the gameplay direction is approved. Build the two-zone test, **starting with the steps 1-5 greybox** and its fun gate. The saving contract (CORE-GAME 2) is a hard requirement for step 10. **No monetization in this build** (it comes straight after playtest #1).
 
 **Status:**
 - the design is v8 (meditation + crystal-monster hunting + pets; 10 zones designed in detail, with machines unlocking zone by zone);
-- the numbers come from `econ/model.py`, and `python tests.py` passes 30/30;
+- the numbers come from `econ/model.py`, and `python tests.py` passes 31/31;
 - the art style is chosen (STYLE-SHEET).
 
 **Don't rewrite the concept.** The next evidence must come from the real game.
@@ -67,6 +67,7 @@
   - **Shared monsters, personal loot:** everyone whose hit landed gets their own full drop and quest credit. (The protected beginner pack is **removed**, owner decision.)
 - **Secret+ Strength is live:** Secret = your best normal pet, Divine ×10, Impossible ×100, Boundless ×1,000, recomputed when your best pet changes.
 - **Progress:**
+  - **Bosses are server raids** every 15 min, plus a solo Trial any time. Raid rewards need 8% of the damage (or half an equal share when crowded). The first win gives the form, the Boss Shards and the next zone.
   - **The boss gate** = all of that zone's quests done (the last one is the Power target). Quest difficulty: zones 1-3 very easy, 4-6 easy, 7 medium, 8 hard.
   - **Offline:** server time, 25% of AFK, 8 h cap, claimed once (confirmed save).
 - **Saving has three outcomes:** confirmed saved (show it), confirmed not committed (a later successful write finds no id and marks it cancelled, then undo), or **unknown** (hold the cost, block conflicts, keep reconciling, never show the result). A committed but unrevealed operation plays on the next join (CORE-GAME 2.2).

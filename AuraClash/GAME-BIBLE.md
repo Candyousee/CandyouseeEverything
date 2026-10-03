@@ -1,4 +1,4 @@
-# AURA CLASH: GAME BIBLE v8 (everything in the game, zone by zone)
+# AURA CLASH: GAME BIBLE v9 (everything in the game, zone by zone)
 
 **Authority:** this is the master document for every rule and number in the game.
 - **Where the numbers come from:** every number comes from `econ/model.py`.
@@ -13,13 +13,15 @@ Change a number = change the model and re-run `python make_bible.py`.
 - `STYLE-SHEET.md`: the look.
 - `GAME-PLAN.md`: market and build order.
 
+**v9 owner changes:** bosses are **server raids** (every 15 min, plus a solo Trial any time). Raid rewards need **8% of the damage** (or half an equal share in crowded raids). The endgame is the **Nexus Titan** (an always-respawning raid boss with huge coins), a **Weekly Limited Egg**, and **XP Shards** (food) with **Awakening** to level 50.
+
 **v8 owner changes (3 October 2026):**
 - **Zones renamed** with one theme, a made-up "-ora" word plus a place: Lumora Grove, Pyrora Dojo, Glacora Peaks, Voltora Cliffs, Blossora Gardens, Nyxora Rift, Astora Throne, Seraphora Gate, Drakora Sanctum, Aurora Nexus. **Every zone now has a detailed art design** (Part B).
 - **The hub** (Lumora Plaza) holds the leaderboards, the store and the rewards (section 12).
 - **New machines unlock zone by zone** (section 13): Spirit Codex, Enchant Forge, Spirit Nursery (daycare), Star Forge, Mutation Reactor, Aura Forge, Relic Shrine, Infinity Tower, Ascension Gate.
 - **Hatch ×3 is free again after boss 1.**
 - **Secret and rarer pets scale with you:** Secret = your best pet, Divine ×10, Impossible ×100, Boundless ×1,000.
-- **Boss fights are under review** (section 9 lists the options).
+- **Bosses are server raids** (owner picked option B; section 9), with an 8% damage rule for rewards, plus the endgame **Nexus Titan**, the **Weekly Limited Egg** and **XP Shards** with Awakening (section 13.12).
 
 **v7 owner changes:**
 - **10 zones** (zones 9 and 10 added; now Drakora Sanctum and Aurora Nexus):
@@ -298,27 +300,32 @@ Every egg has its own pets and its own odds (see each zone). **A pet's tier come
 
   (You wrote "very easy for the first 4, easy for 4-6", so zone 4 is easy. With 10 zones, medium now covers 7-8 and hard covers 9-10.)
 
-## 9. Bosses (general rules: under review)
+## 9. Bosses: server raids (owner chose option B)
 
-> **Under review (owner isn't 100% sold on the fight).** Below is the current design, which the model uses. Options to pick from, all keeping "beat the boss → form + Boss Shards → next zone":
-> - **A. Keep it:** a solo 3-phase fight with the beam clash.
-> - **B. Server raid:** everyone in the zone fights the boss together, every 15 min. It's huge on spectacle (dozens of auras and pets at once), you get rewards for taking part, and first clears are per player.
-> - **C. Big-monster hunt:** no beam clash; the boss is a giant crystal monster you fight with normal blasting, dodging its telegraphs.
-> - **D. Beam clash only:** a short, cinematic timing duel, as the finisher of the zone.
->
-> **My pick: B for the final fight of each zone, with a short solo version for players who can't find a group.** Decide after the greybox playtest.
+**Every zone boss is a server raid.**
+- **When:** the boss spawns in the zone's arena **every 15 minutes** (a countdown shows on the HUD and over the arena). Everyone in the zone fights it together: dozens of auras, beams and pets at once, the biggest VFX moment in the game.
+- **No group?** A **solo Trial** of the same boss (scaled to one player) can be started any time at the arena gate, so nobody is ever stuck waiting.
+- **Your first win** of a zone's boss (raid or Trial) gives the **form**, the **Boss Shards** and **the next zone**. Later raids give Relic Shards, Enchant Crystals and a smaller Boss Shard drop.
+- **HP:** scales with the number of fighters (about ×1 per player), so a full server and a small group both get a 60-90 s fight.
 
-- **Your own instance,** about 40-90 s. Pets fight too. No SELL during the fight.
-- **HP:** 6 plates of 3.3 × R and a body of 20 × R (R = recommended Power); every boss after the Golem has ×2.5 HP.
+**Reward sharing (owner): you must do real damage.**
+- **The rule:** to share a raid's rewards you need **at least 8% of the total damage**.
+- **Crowded raids:** when a raid is crowded, the bar drops to **half of an equal share** (20 players → 2.5%), because otherwise most of a full server could never qualify.
+- **So:** one tap with weak pets never qualifies, and everyone who really fights does. A bar on the HUD shows your share live.
+- **Normal monsters are different:** any hit that lands still gives you the drop (section 4.1).
+
+**The fight (raid and Trial):**
+- **HP:** 6 armor plates and a body, scaled to the recommended Power R (and to the fighters).
 - **Phases:**
-  1. **Armor:** blast the plates off while walking out of the red slam circles. Each hit you take costs 5% of your starting beam meter.
+  1. **Armor:** blast the plates off while walking out of the red slam circles. Each hit you take costs 5% of **your** starting beam meter.
   2. **Rage:** the boss's own mechanic (see each zone).
-  3. **Beam clash:**
-     - **start:** the meter starts at 60% minus 5% per hit (never below 30%);
-     - **pushing:** PERFECT +12%, other releases +6%;
-     - **push-back:** the boss pushes back 3%/s at R (×R ÷ your Power, up to ×4);
-     - **counters:** tap the red flash: +5% (a miss: −8%);
-     - **end:** win at 100%, lose at 0% or after 30 s.
+  3. **Beam clash:** **everyone's beams** push against the boss's beam on one shared meter:
+     - each player's PERFECT +12% ÷ the number of fighters, other releases +6% ÷ the number of fighters;
+     - tap the red flash: +5% (a miss: −8%) ÷ the number of fighters;
+     - the boss pushes back 3%/s at R (×R ÷ the group's average Power, up to ×4);
+     - win at 100%.
+
+  The model simulates the solo Trial; a group raid is at least as fast.
 
 **Model win rates** (2 hits taken):
 
@@ -328,9 +335,8 @@ Every egg has its own pets and its own odds (see each zone). **A pet's tier come
 | average | 23% | 98% | 100% | 100% |
 | strong | 97% | 100% | 100% | 100% |
 
-- **Win:** you **transform** to the zone's form; **Boss Shards** (worth about 3 eggs of the next zone; they don't count against the bag cap) burst into your storm, and you sell them at that zone's altar; the next zone opens.
-- **Lose:** you're told exactly why, and can retry instantly.
-- **Replays:** Boss Shards come only from the first win.
+- **First win:** you **transform** to the zone's form; **Boss Shards** (worth about 3 eggs of the next zone; they don't count against the bag cap) burst into your storm, and you sell them at that zone's altar; the next zone opens.
+- **Lose:** you're told exactly why; retry in the next raid or start a Trial.
 
 ## 10. Your aura
 
@@ -397,6 +403,7 @@ New systems **unlock when you enter each new zone** (the Pet Simulator "new mach
 | 8 Seraphora Gate | **Relic Shrine** | the Halo Vault | ~3 h 57 |
 | 9 Drakora Sanctum | **Infinity Tower** | the Dragon Spire | ~5 h 31 |
 | 10 Aurora Nexus | **Ascension Gate**, Boundless Hall | the Nexus Core | ~7 h 40 |
+| After beating zone 10 | **the Nexus Titan** (an always-respawning raid boss), the **Weekly Limited Egg**, **XP Shards** and **Awakening** | the Heart of Aura | ~10 h 35 |
 
 Every machine also gets a pad on the hub's teleporter ring once unlocked.
 
@@ -503,6 +510,33 @@ See 13.1.
   - a new **halo tier**;
   - Ascended-only cosmetics.
 - **The second run is much faster,** and it's where long-term players and the weekly zone updates live. Tuned in the model before it's built.
+
+### 13.12 The endgame in Aurora Nexus (owner): the Nexus Titan, the Weekly Limited Egg, XP Shards
+
+This is what players do while they wait for the weekly update.
+
+**The Nexus Titan: an always-respawning raid boss.**
+- **When:** after the Ascendant falls, the **Nexus Titan** (a colossal crystal giant made of every element) takes over the Heart of Aura. It **respawns 60 s after each death**, around the clock.
+- **The fight:** a raid like any boss (section 9), with the same 8% reward-share rule. Its HP and power grow each week with the update.
+- **Rewards for every qualifying player:**
+  - **huge Boss Shards:** about 3 eggs' worth of Aurora Nexus coins per kill, so a full storm of coins every few minutes;
+  - **XP Shards** (below);
+  - **Enchant Crystals** and **Relic Shards**;
+  - a **weekly damage leaderboard** on the hub wall.
+
+**The Weekly Limited Egg.**
+- **Where:** in Aurora Nexus, for one week only. It disappears when the next update lands, and a new one arrives with it.
+- **Cost:** **coins**, so the Titan's coins have something to buy.
+- **Its pets:** every pet is **Limited (Week N)**, never available again, with Strength **×1.5 the Aurora Nexus table**, a preview of the next zone. It has its own table (all 10 tiers, plus the Boundless line), and **Secret+ from it are serialized "Week N #x"**.
+- **Why:** a reason to grind the Titan every day of the week, and a weekly status item.
+
+**XP Shards: pet food, back for the endgame.**
+- **Where they come from:** the Titan (and every raid after a zone's first clear). They go into your **food pouch**, not the storm.
+- **Feeding:** tap FEED on any pet (or Feed All). One XP Shard = a big chunk of XP that grows with each zone.
+- **What they're for:**
+  - **Instant levels:** new pets from the newest egg (or the Weekly Limited Egg) jump to level 30 fast, so you can min-max between updates.
+  - **Awakening (levels 31-50):** **only XP Shards** can push a pet past level 30. Each Awakened level is +2% Strength (level 50 = ×1.4 on top of level 30), and the pet gets an Awakened glow that brightens every 5 levels.
+- **XP from kills** (section 5.5) still works as before, up to level 30.
 
 ### 13.11 Trading (after boss 2, in the hub)
 - **How it works:** a safe trade window. Both players confirm, there's a 3 s lock, and the server validates and logs every trade.
@@ -1119,7 +1153,7 @@ See 13.1.
 | Ambient VFX | rainbow shifts, everything glows in every colour, aura waves |
 | Sound + music | every zone's theme woven together into one final track |
 | Mutation Storm here | **Aurora Surge:** every zone's storm at once |
-| **New in this zone** | the **Ascension Gate** (rebirth; section 13.10) and the **Boundless Hall** (statues of every Boundless owner) |
+| **New in this zone** | the **Ascension Gate** (rebirth; section 13.10) and the **Boundless Hall** (statues of every Boundless owner). After the Ascendant: the **Nexus Titan** (an always-respawning raid boss), the **Weekly Limited Egg** and **XP Shards** with Awakening (section 13.12) |
 
 **Numbers:** Shrine 500K Power/s · Egg 3.5T coins.
 
@@ -1194,7 +1228,7 @@ See 13.1.
 
 ## 25. After zone 10 (endgame)
 
-- **Ascension** (section 13.10), the **Infinity Tower** (13.9), ★5 pets (243 copies), level-30 Shiny, mutated, enchanted teams.
+- **The Nexus Titan** raid, around the clock (13.12), the **Weekly Limited Egg**, **Awakening** (levels 31-50 with XP Shards), **Ascension** (13.10), the **Infinity Tower** (13.9), ★5 pets (243 copies), and Shiny, mutated, enchanted teams.
 - **Secret+ hunting:** Secret, Divine, Impossible and the monthly **Boundless**, each with its serial.
 - **Mutation hunting:** Celestial monsters are 1 in 10,000; Mutation Storms double the chances.
 - **Leaderboards:** top Power, most Secrets and Boundless owners, each in the server and globally; the top 3 get statues.
@@ -1202,14 +1236,15 @@ See 13.1.
 
 ## 26. Live updates (the plan after launch)
 
-- **A new zone about every 1-2 weeks** (11, 12, …), each with a new egg, monsters, a boss and a form. Each new zone adds roughly 2-4 hours for a free player and is tuned in the model first.
+- **A new zone about every week** (11, 12, …), each with a new egg, monsters, a raid boss and a form. Each new zone adds roughly 2-4 hours for a free player and is tuned in the model first.
+- **Every week:** a new **Weekly Limited Egg** and a stronger **Nexus Titan** (13.12), moved to the newest zone.
 - **Every month:** a new Boundless pet, new Exclusive Egg themes, a new Aura Pass season, and new Limited drops like the Verity items.
 - **Later systems** (each keeps the core rules):
   - **global events** on one clock;
   - **boss replays** with Boss Seals (eggs, not coins);
   - **Wild Spirits:** a rare roaming pet mini-boss;
   - **trading:** a safe window, unlocked after boss 2;
-  - a **World Boss** (if option B in section 9 isn't chosen).
+  - (the World Boss is covered by the raid bosses and the Nexus Titan).
 
 ---
 

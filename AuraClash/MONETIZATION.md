@@ -257,18 +257,25 @@ Season pets and rewards are never sold again.
 3. +2 Pet Slots (repeatable).
 4. VIP and the ×2 passes.
 5. The Aura Pass.
-6. Potions, Mutation Storms, coin packs.
+6. Potions, Mutation Storms, coin packs, and the machine products (Enchant Crystals, XP Shards, Raid Summons).
 
 **Track:** payer %, revenue per daily player, D1 / D7 retention, best sellers, and the two pop-ups' conversion.
 
-## 15. Possible new products from the v8 machines (not added; your call)
+## 15. Machine and endgame products (owner: yes)
 
-- **Enchant Crystal packs** (e.g. 10 for 49 R$).
-- **+1 Nursery nest** pass (199 R$).
-- **Nursery "Hurry"** (finish a stay now, 25 R$).
-- **Relic Shard packs.**
+Each goes live when its machine ships (GAME-BIBLE 13).
 
-Each would sell well (they're how Pet Simulator monetizes its machines). They stay out until you say yes.
+| Product | R$ | What it does | Type |
+|---|---|---|---|
+| **Enchant Crystals** | 10 for 49 · 50 for 199 | rolls at the Enchant Forge | repeatable |
+| **Nursery+** | 199 | 5 nests in the Spirit Nursery instead of 3 | pass |
+| **Nursery Hurry** | 25 | finishes one nest's stay now (its full Shiny chance and gift still roll) | repeatable |
+| **Relic Shards** | 49 · 199 | levels relics at the Relic Shrine | repeatable |
+| **XP Shards** | 49 · 199 | about 10 / 50 levels' worth of pet food (endgame min-maxing, Awakening) | repeatable |
+| **Raid Summon** | 99 | starts the zone's raid boss **now** for the whole server, with a "Thanks to [buyer]!" banner | repeatable |
+
+- **The Weekly Limited Egg** is bought with **coins** (the Nexus Titan's coins), not Robux, so the endgame grind has a goal. Coin packs (section 4) still help, since they scale to your zone.
+- **The 8% rule** (GAME-BIBLE 9) means a Raid Summon buyer can't carry players who don't fight.
 
 ## 16. Build timing and checks
 

@@ -327,6 +327,15 @@ def test_quest_difficulty_tiers():                          # zones 1-3 very eas
     assert all(q[-1] == ("power", M.BOSS[z]["rec"]) for z, q in enumerate(M.QUESTS))
 
 
+def test_raid_reward_share_needs_real_damage():          # owner: 8% of the damage to share raid rewards
+    assert M.RAID_SHARE == 0.08
+    small = {"a": 50, "b": 40, "tapper": 1}                    # 3 fighters: need 8%; one tap gets nothing
+    assert M.raid_recipients(small) == ["a", "b"]
+    crowd = {f"p{i}": 5 for i in range(20)}                    # 20 equal fighters, 5% each: half an equal share = 2.5%
+    crowd["tapper"] = 0.1
+    assert len(M.raid_recipients(crowd)) == 20 and "tapper" not in M.raid_recipients(crowd)
+
+
 def test_newcomer_next_to_a_veteran_gets_the_drop():
     assert M.loot_recipients({"newcomer": 20, "veteran": 180}) == ["newcomer", "veteran"]
     assert M.loot_recipients({"bystander": 0, "veteran": 200}) == ["veteran"]

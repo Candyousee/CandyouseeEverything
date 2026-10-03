@@ -773,6 +773,20 @@ def loot_recipients(damage_log):
     return sorted(pid for pid, dmg in damage_log.items() if dmg > 0)
 
 
+RAID_SHARE = 0.08          # raid bosses: you need 8% of the damage to share the rewards ...
+
+
+def raid_recipients(damage_log):
+    """... or half of an equal share when the raid is crowded (with 20 players nobody could otherwise all reach 8%).
+    One tap with weak pets never qualifies."""
+    total = sum(damage_log.values())
+    fighters = sum(1 for d in damage_log.values() if d > 0)
+    if total <= 0 or fighters == 0:
+        return []
+    need = min(RAID_SHARE, 0.5 / fighters)
+    return sorted(pid for pid, d in damage_log.items() if d / total >= need)
+
+
 def combo_avg(p):
     """Average combo multiplier on a PERFECT: stationary distribution of the +1 / -1 combo ladder."""
     pi = [1.0] * 5
