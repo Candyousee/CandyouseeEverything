@@ -31,13 +31,13 @@ Winter researches the current top games in this style online before the concept 
 ## Target frames (art bible)
 
 `ART/bible/01-09.png`, generated on the GPU and approved by the owner once:
-1. the player in the Training Grove with a full Shard Storm and pets lounging around them;
+1. the player in Lumora Grove (the Lumora Tree behind) with a full Shard Storm and pets lounging around them;
 2. a PERFECT blast shattering a Crag Brute, pets pouncing;
 3. Overdrive chaining across a pack of Shardlings, one of them a Gold mutation;
 4. the Sell Altar cash-in;
 5. a Legendary hatch;
 6. the Stone Golem beam clash;
-7. the Lava Dojo overview;
+7. the Pyrora Dojo overview (pagoda, lava terraces);
 8. the HUD over gameplay;
 9. meditation at the Shrine: players sitting on mats, auras flaring, pets in circles around them.
 
@@ -46,7 +46,7 @@ Winter researches the current top games in this style online before the concept 
 | Area | Rule for this game |
 |---|---|
 | **Shape language** | Round, soft and chunky: bevelled edges everywhere (no sharp 90° corners on props), slightly oversized heads and paws on pets, big readable silhouettes. The crystals on monsters are the only sharp shapes, so they stand out as the thing you hit |
-| **Palette** | Zone 1 Training Grove: mint grass `#8EE3B0`, warm path `#F5D9A8`, sky `#9FD8FF`, crystals cyan/violet `#4FE6FF` `#B36BFF`. Zone 2 Lava Dojo: warm stone `#E8A07A`, dark rock `#5B3A4A`, lava `#FF6A2B`, crystals red/gold `#FF3D5A` `#FFC93D`. Shards cyan `#5FF0FF`, Bright Shards gold `#FFD84A`, Gems magenta `#FF4FD8`. Bases 40-60% saturation; hero objects 85-100% |
+| **Palette** | Zone 1 Lumora Grove: mint grass `#8EE3B0`, warm path `#F5D9A8`, sky `#9FD8FF`, crystals cyan/violet `#4FE6FF` `#B36BFF`. Zone 2 Pyrora Dojo: warm stone `#E8A07A`, dark rock `#5B3A4A`, lava `#FF6A2B`, crystals red/gold `#FF3D5A` `#FFC93D`. Shards cyan `#5FF0FF`, Bright Shards gold `#FFD84A`, Gems magenta `#FF4FD8`. Bases 40-60% saturation; hero objects 85-100% |
 | **Materials** | **Smooth plastic everywhere:** low roughness (0.2-0.35), no realistic textures (no grass blades, dirt or rock photos). Surfaces get **soft gradients** (lighter on top, darker at the base) and baked ambient occlusion in the colour. Crystals are glossy and slightly see-through with an inner glow. Pets are soft-matte plastic with a gloss highlight on the head |
 | **Ground** | Sculpted, smooth meshes (not Roblox terrain): rounded grass mounds, bevelled paths and soft rock blobs, with gentle gradient colour and painted-in shadow. Small decoration is simple shapes (lollipop trees, round bushes, pebble clusters) |
 | **Outlines** | Clean dark outlines on characters, pets, crystal monsters, eggs and key props, built in Blender as an **inverted-hull mesh** (a slightly bigger back-faced shell in a darker shade of the object's own colour, never pure black). Thickness scales with object size. Ground and background get none or thin ones, so foreground pops. **Don't use Roblox Highlight instances for outlines** (there's a limit of 31 and they cost performance); Highlight is only for the selected target ring |
@@ -63,14 +63,50 @@ Winter researches the current top games in this style online before the concept 
 
 | Zone | Bases | Accent / crystals | Light mood |
 |---|---|---|---|
-| 3 Frost Peaks | snow white `#EEF6FF`, pale blue rock `#BFD7EA` | ice cyan `#7FE7FF`, aurora green `#7DFFB2` | cool, crisp, aurora sky |
-| 4 Storm Cliffs | slate lilac `#9A90B8`, cloud grey-blue `#C9CDE6` | electric yellow `#FFE34D`, violet `#9B5CFF` | dramatic, flickering lightning |
-| 5 Sakura Realm | blossom pink `#F7C6D9`, moss green `#9ED39A` | hot pink `#FF5FA2`, jade `#2FD6A0` | soft golden afternoon |
-| 6 Void Rift | deep plum `#3B2A55`, dusk violet `#5C4A80` (darker zone, still never black) | void magenta `#E04BFF`, rune cyan `#4BF0FF` | moody, glowing runes |
-| 7 Galaxy Throne | navy space `#1E2A5A`, nebula purple `#4B3C8C` | star gold `#FFD86B`, comet blue `#6BC8FF` | starry, planets in the sky |
-| 8 Celestial Gate | cloud white `#FFF8EC`, soft gold `#F2DFA6` | pure gold `#FFC93D`, halo white `#FFFFFF` with prism edges | radiant, heavenly bloom |
-| 9 Dragon Sanctum | cloud cream `#FFF3DC`, jade `#8FD6B5` | dragon gold `#FFB830`, ember red `#FF5A3D` | warm, treasure glow |
-| 10 Aura Nexus | soft white-violet `#F1ECFF` | every zone's accent, shifting (rainbow `#FF5FA2` → `#4FE6FF` → `#FFE34D`) | prismatic, ever-changing |
+| 3 Glacora Peaks | snow white `#EEF6FF`, pale blue rock `#BFD7EA` | ice cyan `#7FE7FF`, aurora green `#7DFFB2` | cool, crisp, aurora sky |
+| 4 Voltora Cliffs | slate lilac `#9A90B8`, cloud grey-blue `#C9CDE6` | electric yellow `#FFE34D`, violet `#9B5CFF` | dramatic, flickering lightning |
+| 5 Blossora Gardens | blossom pink `#F7C6D9`, moss green `#9ED39A` | hot pink `#FF5FA2`, jade `#2FD6A0` | soft golden afternoon |
+| 6 Nyxora Rift | deep plum `#3B2A55`, dusk violet `#5C4A80` (darker zone, still never black) | void magenta `#E04BFF`, rune cyan `#4BF0FF` | moody, glowing runes |
+| 7 Astora Throne | navy space `#1E2A5A`, nebula purple `#4B3C8C` | star gold `#FFD86B`, comet blue `#6BC8FF` | starry, planets in the sky |
+| 8 Seraphora Gate | cloud white `#FFF8EC`, soft gold `#F2DFA6` | pure gold `#FFC93D`, halo white `#FFFFFF` with prism edges | radiant, heavenly bloom |
+| 9 Drakora Sanctum | cloud cream `#FFF3DC`, jade `#8FD6B5` | dragon gold `#FFB830`, ember red `#FF5A3D` | warm, treasure glow |
+| 10 Aurora Nexus | soft white-violet `#F1ECFF` | every zone's accent, shifting (rainbow `#FF5FA2` → `#4FE6FF` → `#FFE34D`) | prismatic, ever-changing |
+
+## Zones must look nothing alike (owner)
+
+Each zone has its own silhouette, palette, sky, materials, ambient VFX and music: the full design tables are in GAME-BIBLE Part B. **Test:** a screenshot of any zone, with no UI, must say which zone it is at a glance. Each zone also gets:
+- **one giant landmark** (the Lumora Tree, the pagoda, the frozen whale, the sky-whale cloud, the colossal sakura, the cracked moon, the orbiting planets, the golden gate, the sleeping dragon, the floating fragments);
+- **its own Mutation Storm look.**
+
+## Pet visual ladder (pets decide this game, with the VFX)
+
+| Tier | Size | Treatment | Animation | VFX |
+|---|---|---|---|---|
+| Common | 1× | clean toon plastic, outline | 2 idles, 1 attack | none |
+| Uncommon | 1× | + a coloured accent part (horn, tail tip) | + a happy reaction | small sparkle on the attack |
+| Rare | 1.1× | + a glossy gem or marking | + a unique attack move | a trail on the attack |
+| Epic | 1.2× | + a glowing part (eyes, mane) | 3 idles | a soft aura ring |
+| Legendary | 1.3× | + an element effect (flames, frost, sparks) | a flashy attack | a constant particle aura |
+| Mythic | 1.4× | animated texture (flowing patterns) | a special entrance | particles + light |
+| **Secret** | 1.5× | unique design, an animated body part (wings, halo) | its own full animation set | a hero aura + its serial floating above it |
+| **Divine** | 1.7× | radiant materials, layered glow | + a signature move with a screen effect | a big aura and light beams |
+| **Impossible** | 2× | reality-bending (glitch, prism, starfield skin) | + a cinematic idle | world distortion around it |
+| **Boundless** | 2.5× | the month's showpiece: the best model in the game | the full set + an emote | a small storm of its own; the ground glows where it walks |
+
+On top, as visible layers:
+- **Pet mutations:** Gold, Fire / Frost, Rainbow, Void and Celestial coats.
+- **Shiny:** a sparkle coat.
+- **Stars:** from a badge up to a ★5 halo.
+- **Enchants:** runes.
+
+So no two endgame pets look the same.
+
+## Model quality bar (zones, monsters, pets, bosses)
+
+- **Every model starts from GPU concept sheets** (several options; the owner approves the zone and pet sheets), then is built in Blender (bevels, the inverted-hull outline, gradient colour, baked AO).
+- **Readable at gameplay distance first, detailed up close second.**
+- **Every pet** gets idle, walk, attack, dazed and meditate animations (more by tier). **Every monster** gets idle, walk, telegraph, attack, hit and shatter. **Every boss** gets a full set, plus a death.
+- **Budgets:** pets ≤ 4K tris (Boundless ≤ 10K); monsters ≤ 6K; bosses ≤ 20K per mesh; 1024 textures; LODs for others' pets.
 
 ## Never in this game
 

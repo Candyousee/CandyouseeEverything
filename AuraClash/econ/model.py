@@ -21,8 +21,8 @@ OD_CHAIN_N, OD_CHAIN_X, OD_AFTER = 2, 0.5, 2   # chains to 2 more monsters at 50
 
 # ---------------- RULES: zones ----------------
 ZONES = 10
-ZONE_NAMES = ["Training Grove", "Lava Dojo", "Frost Peaks", "Storm Cliffs",
-              "Sakura Realm", "Void Rift", "Galaxy Throne", "Celestial Gate", "Dragon Sanctum", "Aura Nexus"]
+ZONE_NAMES = ["Lumora Grove", "Pyrora Dojo", "Glacora Peaks", "Voltora Cliffs", "Blossora Gardens",   # naming theme:
+              "Nyxora Rift", "Astora Throne", "Seraphora Gate", "Drakora Sanctum", "Aurora Nexus"]      # "-ora" + a place
 MONSTER_NAMES = [("Shardling", "Crystal Boar", "Crag Brute"),
                  ("Ember Slime", "Lava Hound", "Obsidian Brute"),
                  ("Snowling", "Ice Ram", "Glacier Titan"),
@@ -84,7 +84,8 @@ def boss_shard_value(z):
 # ---------------- RULES: pets ----------------
 TIERS = ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Secret", "Divine", "Impossible", "Boundless"]
 RARITIES = TIERS
-TIER_STR = [1, 1.5, 2.5, 4, 10, 25, 100, 400, 2_000, 100_000]    # base Strength by tier (Boundless: always the strongest)
+TIER_STR = [1, 1.5, 2.5, 4, 10, 25]                              # base Strength, Common .. Mythic
+SECRET_MULT = {6: 1, 7: 10, 8: 100, 9: 1000}   # Secret+ = this x YOUR best normal pet (live, so it scales all game), x its stars
 LUCK_EXP = [0, 0, 0, 0, 0.3, 0.5, 0.8, 0.9, 1.0, 1.0]           # luck works hardest on the rarest tiers
 SECRET_TIERS = (6, 7, 8, 9)                                     # Secret and above: serialized; "Secret luck" applies
 # A tier is DEFINED by its odds band (lower bound inclusive). "Secret 1 in 1M+", "Divine 1 in 10M+",
@@ -212,15 +213,15 @@ def ladder_cost(tiers):
 
 
 SLOT_PACK_PRICE, SLOT_PACK_MAX = 199, 10                         # +2 pet slots per purchase, up to 10 purchases
-PASS_PRICES = dict(vip=399, coins2=399, secret2=199, hatch_speed2=399, hatch3=99, hatch8=399,
+PASS_PRICES = dict(vip=399, coins2=399, secret2=199, hatch_speed2=399, hatch8=399,
                    huge_storm=199, auto_sell=199, offline_plus=99, mutation_magnet=99)
 
 PAID = {   # what a spending profile changes (MONETIZATION.md); rs = what it costs in Robux
     "free":    dict(coin_x=1.0, med_x=1.0, luck=1.0, secret_x=1.0, hatch_x=1.0, multi=1, slots=0, rs=0),
     "starter": dict(coin_x=1.0, med_x=8.0, luck=8.0, secret_x=1.0, hatch_x=1.0, multi=1, slots=0,     # 3 ladder tiers
                     rs=ladder_cost(3)),
-    "vip":     dict(coin_x=3.0, med_x=1.5 * 64, luck=64.0, secret_x=1.5, hatch_x=1.5, multi=3, slots=1,   # VIP + 2x Coins
-                    rs=PASS_PRICES["vip"] + PASS_PRICES["coins2"] + PASS_PRICES["hatch3"] + ladder_cost(6)),  # + x3 hatch + 6 tiers
+    "vip":     dict(coin_x=3.0, med_x=1.5 * 64, luck=64.0, secret_x=1.5, hatch_x=1.5, multi=1, slots=1,   # VIP + 2x Coins
+                    rs=PASS_PRICES["vip"] + PASS_PRICES["coins2"] + ladder_cost(6)),  # + 6 ladder tiers
     "whale":   dict(coin_x=3.0, med_x=1.5 * 2048, luck=2048.0, secret_x=3.0, hatch_x=3.0, multi=8, slots=1 + 20,
                     rs=sum(PASS_PRICES.values()) + ladder_cost(11) + SLOT_PACK_PRICE * SLOT_PACK_MAX),
 }
@@ -289,7 +290,9 @@ class Pet:
     def __init__(self, z, r, sp):
         self.z, self.r, self.sp, self.stars, self.lv, self.xp = z, r, sp, 0, 1, 0
 
-    def strength(self):
+    def strength(self, best_normal=1.0):
+        if self.r in SECRET_MULT:                         # Secret+: relative to your best normal pet
+            return SECRET_MULT[self.r] * best_normal * STAR[self.stars]
         return TIER_STR[self.r] * PET_STEP ** self.z * STAR[self.stars] * (1 + LEVEL_X * (self.lv - 1))
 
 
@@ -326,8 +329,9 @@ class Player:
 
     def team(self):
         if self._team is None:
-            team = sorted(self.pets, key=lambda p: -p.strength())[: self.slots]
-            self._team = (team, sum(p.strength() for p in team))
+            bn = max((q.strength() for q in self.pets if q.r not in SECRET_MULT), default=1.0)
+            team = sorted(self.pets, key=lambda p: -p.strength(bn))[: self.slots]
+            self._team = (team, sum(p.strength(bn) for p in team))
         return self._team[0]
 
     def team_str(self):
@@ -574,7 +578,8 @@ class Player:
         z = self.zone
         if not free:
             self.coins -= EGG_PRICE[z]
-        self.t += HATCH_TIME / self.paid["multi"] / self.paid["hatch_x"]   # Hatch x3 / x8 are passes
+        multi = max(self.paid["multi"], 3 if self.milestones.get("boss1") is not None else 1)   # x3 free after boss 1; x8 pass
+        self.t += HATCH_TIME / multi / self.paid["hatch_x"]
         self.hatches += 1
         self.zone_hatches[z] = self.zone_hatches.get(z, 0) + 1
         if self.hatches == 1:
@@ -589,7 +594,8 @@ class Player:
         self.auto_fuse()
         if len(self.pets) > INVENTORY:                       # auto-delete the weakest unequipped pets
             keep = set(map(id, self.team()))
-            spare = sorted((p for p in self.pets if id(p) not in keep), key=lambda p: p.strength())
+            spare = sorted((p for p in self.pets if id(p) not in keep and p.r not in SECRET_MULT),   # Secret+ auto-locked
+                           key=lambda p: p.strength())
             for p in spare[: len(self.pets) - INVENTORY]:
                 self.pets.remove(p)
             self.dirty()
@@ -867,7 +873,7 @@ def report(n_full=40, n_two=200):
     for z in range(ZONES):
         cells = [fmt(st.median(x.milestones.get(f"boss{z + 1}", 24 * 3600) for x in paid_rows[k])) for k in PAID]
         P(f"   {z + 1}      " + "".join(f"{c:12s}" for c in cells))
-    P("   Training Grove egg odds at each profile's luck (Legendary / Mythic / Secret / Divine / Impossible / Boundless):")
+    P("   Lumora Grove egg odds at each profile's luck (Legendary / Mythic / Secret / Divine / Impossible / Boundless):")
     for k, v in PAID.items():
         o = egg_odds(0, v["luck"], v["secret_x"])
         P(f"   {k:8s} " + " / ".join(("1 in " + f"{1 / x:,.0f}") if x < 0.01 else f"{x * 100:.2f}%" for x in o[6:]))

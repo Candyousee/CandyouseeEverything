@@ -1,4 +1,4 @@
-# AURA CLASH: Game Plan v7 (3 October 2026)
+# AURA CLASH: Game Plan v8 (3 October 2026)
 
 **This file:** the market case, the pitch, the research, the concept test, and the **build order**.
 
@@ -81,14 +81,14 @@ Everything gameplay-facing is built from scratch. **Steps 1-5 are first proved i
 | Step | Build | Done when |
 |---|---|---|
 | 1 | **Timing core:** hold-release blast, combo ±1, Overdrive (8 s timestamp from the 5th PERFECT's hit) + chains, auto-aim; the **Focus ring** (GAME-BIBLE 2-3) | Server validation matches the rules; it feels right on PC, mobile and gamepad |
-| 2 | **Monsters zones 1-2:** 3 types each, AI (wander, telegraph, hit), green HP bars, spawns + the Big cap, knockout to Shrine, **mutations** (one exact roll per spawn), shared monsters with personal loot (GAME-BIBLE 4.1-4.2, 12-13) | P9, P11 pass; ≤ 30 monsters, 60 fps on mobile |
-| 3 | **Shard Storm + SELL + Shrine hub:** storm (4 looks, ≤ 12 meshes), SELL teleport + Stay, the shop (Egg / Bag / Mat / Surge) (GAME-BIBLE 4.3, 7) | P10, P12 pass |
+| 2 | **Monsters zones 1-2:** 3 types each, AI (wander, telegraph, hit), green HP bars, spawns + the Big cap, knockout to Shrine, **mutations** (one exact roll per spawn), shared monsters with personal loot (GAME-BIBLE 4.1-4.2, 14-15) | P9, P11 pass; ≤ 30 monsters, 60 fps on mobile |
+| 3 | **Shard Storm + SELL + the Lumora Plaza hub:** storm (4 looks, ≤ 12 meshes), SELL teleport + Stay, the shop (Egg / Bag / Mat / Surge), **the hub with the Leaderboard Wall (server boards), the teleporter ring, and empty store stands as art placeholders** (GAME-BIBLE 4.3, 7, 12) | P10, P12 pass |
 | 4 | **Meditation:** mats, AFK, Focus, the rate formula, offline from server time, AFK idle-rejoin (GAME-BIBLE 3) | Rates match the model |
 | 5 | **Minimal pets (greybox):** the zone 1 egg (real odds, a simple pop); 3 slots + Equip Best; pets follow, attack (team hit capped at 100% of Power), get dazed, boost meditation; **XP from kills**. No fusion, cutscenes or idle animations yet | Hunt → sell → buy an egg → the pet visibly speeds up hunting **and** meditation. **Greybox fun gate on steps 1-5**, then owner playtest #1 greybox (PIPELINE 3b) |
-| 6 | **Eggs (full):** odds card (7 rarities), honest cracks, guarantees, the hatch ladder incl. Mythic / Divine / Secret cutscenes, Hatch ×3 after boss 1 (GAME-BIBLE 5.1, 6) | P6-P8 pass |
-| 7 | **Pets (full):** tank AI, idle / charge / meditate behaviours, stars 0-5 + the Fusion Altar, auto-fuse, levels 1-30 with XP bars, inventory 250 + auto-delete + locks + mailbox (GAME-BIBLE 5) | Model rule tests mirrored in-game; 10 pets × full server at 60 fps |
-| 8 | **Rank quests + tutorial** (zones 1-2 lists; the first 8 minutes; the hand pointer) (GAME-BIBLE 8, 11, 12) | A new player reaches boss 1 unaided |
-| 9 | **Bosses:** Stone Golem + Magma Oni (3 phases, beam clash), **Boss Shards**, forms Spark → BLAZE → INFERNO (GAME-BIBLE 9, 10, 12-13) | Scripted-bot win rates resemble `econ/RESULTS.txt` section 6 |
+| 6 | **Eggs (full):** odds card (each egg's own table, 10 tiers), honest cracks, guarantees, the hatch ladder incl. the Mythic-to-Boundless cutscenes, serials for Secret+, Hatch ×3 free after boss 1 (GAME-BIBLE 5.1, 6) | P6-P8 pass |
+| 7 | **Pets (full):** tank AI, idle / charge / meditate behaviours, stars 0-2 at the Fusion Altar (★3-★5 come with the Star Forge in zone 5), auto-fuse, Secret+ scaling to your best pet, levels 1-30 with XP bars, inventory 250 + auto-delete + locks + mailbox (GAME-BIBLE 5) | Model rule tests mirrored in-game; 10 pets × full server at 60 fps |
+| 8 | **Rank quests + tutorial** (zones 1-2 lists; the first 8 minutes; the hand pointer) (GAME-BIBLE 8, 11, 14) | A new player reaches boss 1 unaided |
+| 9 | **Bosses:** Stone Golem + Magma Oni (3 phases, beam clash), **Boss Shards**, forms Spark → BLAZE → INFERNO (GAME-BIBLE 9, 10, 14-15). **The boss format is under review** (GAME-BIBLE 9: options A-D); build the chosen one | Scripted-bot win rates resemble `econ/RESULTS.txt` section 6 |
 | 10 | **Saving** with the three-outcome contract (CORE-GAME 2) | P1-P8, P10-P12, P14 pass in the real game |
 | 11 | **Test tools:** cheat panel, session log, Low effects | The owner can run playtest #1 without help |
 
@@ -106,8 +106,8 @@ All of it follows STYLE-SHEET (GPU concepts → Blender, outlines, smooth plasti
 ### 5b. After playtest #1 passes (to launch)
 
 1. **Monetization** (MONETIZATION.md v3): the buff system and the 2× Boost ladder, store, passes, slot packs, coin packs, both Exclusive Eggs + PolicyService gating, the Verity Limiteds (our own art), packs, Aura Pass, hourly / daily / group rewards, the two pop-ups. Tests P13, P15-P20.
-2. **Zones 3-10** (GAME-BIBLE 14-21), one at a time, each through the art pipeline and the model.
-3. **Full art pass**, then a **private soft launch** (the owner decides access; Winter never changes it), then the Later systems (GAME-BIBLE 22).
+2. **Zones 3-10** (GAME-BIBLE 16-23), one at a time, each through the art pipeline and the model, **each with its machine** (GAME-BIBLE 13: Codex, Enchant Forge, Nursery, Star Forge, Reactor, Aura Forge, Relic Shrine, Infinity Tower, Ascension). Each machine is added to the model before it ships.
+3. **Full art pass**, then a **private soft launch** (the owner decides access; Winter never changes it), then the live plan (GAME-BIBLE 26).
 
 ## 6. Design targets (checked by `econ/tests.py`)
 
@@ -118,7 +118,7 @@ These are **model targets for a free player playing solo, not promises.** The si
 | Boss 1 at 4-9 min | ~5.5 min |
 | Boss 2 at 15-30 min | ~24 min |
 | Every zone takes longer than the one before | yes |
-| **Free first run (boss 10) in about 10-12 h** (owner) | **10 h 57** |
+| **Free first run (boss 10) in about 10-12 h** (owner) | **10 h 34** |
 | **Whale first run about 3 h** (owner) | **3 h 14** |
 | Pets 30-50% of damage (never more than your blasts) | 37% |
 | Average player wins the clash ≥ 90% at recommended Power; weak ≥ 60%; under-powered (½) average ≤ 40% | 100% / 79% / 23% |

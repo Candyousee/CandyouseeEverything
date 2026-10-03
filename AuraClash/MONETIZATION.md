@@ -4,7 +4,7 @@
 
 **The principles:**
 1. **Sell multipliers and exclusives.** Boosts multiply what you earn by playing, so payers keep playing and buying. (Coin packs are the one direct-resource item, an owner decision.)
-2. **Free players can finish everything** (about 11 h for a first run) and get exclusive eggs from hourly and daily rewards. They fill the servers payers show off in.
+2. **Free players can finish everything** (about 10 h 30 for a first run) and get exclusive eggs from hourly and daily rewards. They fill the servers payers show off in.
 3. **Everything bought is visible:** titles, serial numbers, server-wide boosts that thank the buyer, global announcements.
 4. **Odds, stock and timers are always real.**
 
@@ -37,10 +37,10 @@ Every boost is **permanent**, **timed** or **server-wide**, and they all **multi
 
 | Spend | Profile | All 10 zones |
 |---|---|---|
-| 0 R$ | free | **~10 h 50** (10 h 50-11 h depending on the model sample) |
-| 31 R$ | starter: 3 ladder tiers | **6 h 41** |
-| 1,085 R$ | VIP + 2× Coins + Hatch ×3 + 6 ladder tiers | **3 h 23** |
-| 7,263 R$ | whale: every pass + all 11 tiers + 10 slot packs | **3 h 14** |
+| 0 R$ | free | **~10 h 35** |
+| 31 R$ | starter: 3 ladder tiers | **6 h 25** |
+| 986 R$ | VIP + 2× Coins + 6 ladder tiers | **3 h 22** |
+| 7,164 R$ | whale: every pass + all 11 tiers + 10 slot packs | **3 h 14** |
 
 **Why this shape works:**
 - **The 3 R$ first tier** is the easiest first purchase possible, and after one purchase players buy again far more readily.
@@ -54,14 +54,13 @@ Every boost is **permanent**, **timed** or **server-wide**, and they all **multi
 | **2× Coins** | 399 | everything you sell ×2 |
 | **2× Secret Luck** | 199 | doubles Secret, Divine, Impossible and Boundless chances |
 | **2× Hatch Speed** | 399 | hatch animations twice as fast |
-| **Hatch ×3** | 99 | 3 eggs per hatch |
 | **Hatch ×8** | 399 | 8 eggs per hatch |
 | **Huge Storm** | 199 | ×2 bag capacity (the visual stays capped) |
 | **Auto-Sell** | 199 | sells automatically when full, no teleport |
 | **Offline+** | 99 | offline meditation at 50%, up to 16 h |
 | **Mutation Magnet** | 99 | your mutated shards are worth ×1.5 |
 
-- **Auto-Hatch is free for everyone.**
+- **Auto-Hatch is free for everyone, and Hatch ×3 is free after boss 1.**
 - **Bundle:** VIP + 2× Coins + 2× Secret Luck + 2× Hatch Speed for **1,099** (instead of 1,396).
 
 ## 4. Repeatable products
@@ -87,7 +86,7 @@ Every boost is **permanent**, **timed** or **server-wide**, and they all **multi
 
 Luck has **no cap**. It works hardest on the rarest tiers (GAME-BIBLE 5.1), and the odds always add to 100%.
 
-**Training Grove egg** (from the model):
+**Lumora Grove egg** (from the model):
 
 | Luck | Legendary | Mythic | Secret | Divine | Impossible | Boundless |
 |---|---|---|---|---|---|---|
@@ -100,9 +99,9 @@ Add potions, Server Luck and the group bonus, and a maxed player can realistical
 
 ## 6. Exclusive Eggs (tier system: no Huge / Titanic)
 
-Both eggs use the **same tier bands** as zone eggs, so a 1-in-2M exclusive is a real Secret, and both have the **Boundless** line. **Boundless is always the strongest pet in the game** (base 100,000 at your best zone's scale, the same in every egg).
+Both eggs use the **same tier bands** as zone eggs, so a 1-in-2M exclusive is a real Secret, and both have the **Boundless** line. **Secret and rarer follow the game-wide rule** (GAME-BIBLE 5.1): Secret = your best pet, Divine ×10, Impossible ×100, Boundless ×1,000, so they're the same in every egg and never go out of date.
 
-- **Strength:** exclusive pets are much stronger than zone pets of the same tier, and **scale to your best zone**, so they never go out of date:
+- **Strength (Common to Mythic):** exclusive pets are much stronger than zone pets of the same tier, and **scale to your best zone**, so they never go out of date:
   - **Daily Exclusive:** ×5 the tier's base;
   - **Shop Exclusive:** ×10.
 - **Looks:** exclusives are the best-looking pets in the game: animated neon / holographic / royal bodies, their own attacks and trails.
@@ -120,10 +119,10 @@ Both eggs use the **same tier bands** as zone eggs, so a 1-in-2M exclusive is a 
 | Neon Dragon | Epic | 1.2% | 20 |
 | Neon Phoenix | Legendary | 1 in 350 | 50 |
 | Neon Kirin | Mythic | 1 in 20,000 | 125 |
-| Neon Seraph | Secret | 1 in 2M | 500 |
-| Neon Leviathan | Divine | 1 in 200M | 2,000 |
-| Neon Infinity | Impossible | 1 in 20B | 10,000 |
-| Boundless (this month's) | Boundless | 1 in 1T | 100,000 |
+| Neon Seraph | Secret | 1 in 2M | = your best pet |
+| Neon Leviathan | Divine | 1 in 200M | 10× your best pet |
+| Neon Infinity | Impossible | 1 in 20B | 100× your best pet |
+| Boundless (this month's) | Boundless | 1 in 1T | 1,000× your best pet |
 
 ### 6.2 Shop Exclusive Egg ("Royal Spirits", month 1)
 **Shop only: 99 R$ / 3 for 279 / 10 for 849** (also on the Aura Pass premium track).
@@ -137,10 +136,10 @@ Both eggs use the **same tier bands** as zone eggs, so a 1-in-2M exclusive is a 
 | Royal Dragon | Epic | 1.9% | 40 |
 | Royal Kirin | Legendary | 1 in 250 | 100 |
 | Royal Seraph | Mythic | 1 in 12,000 | 250 |
-| Royal Sovereign | Secret | 1 in 1M | 1,000 |
-| Royal Emperor | Divine | 1 in 50M | 4,000 |
-| Royal Infinity | Impossible | 1 in 5B | 20,000 |
-| Boundless (this month's) | Boundless | 1 in 1T | 100,000 |
+| Royal Sovereign | Secret | 1 in 1M | = your best pet |
+| Royal Emperor | Divine | 1 in 50M | 10× your best pet |
+| Royal Infinity | Impossible | 1 in 5B | 100× your best pet |
+| Boundless (this month's) | Boundless | 1 in 1T | 1,000× your best pet |
 
 - **Guarantees:**
   - every 10-pack contains at least one **Epic or better**;
@@ -262,7 +261,16 @@ Season pets and rewards are never sold again.
 
 **Track:** payer %, revenue per daily player, D1 / D7 retention, best sellers, and the two pop-ups' conversion.
 
-## 15. Build timing and checks
+## 15. Possible new products from the v8 machines (not added; your call)
+
+- **Enchant Crystal packs** (e.g. 10 for 49 R$).
+- **+1 Nursery nest** pass (199 R$).
+- **Nursery "Hurry"** (finish a stay now, 25 R$).
+- **Relic Shard packs.**
+
+Each would sell well (they're how Pet Simulator monetizes its machines). They stay out until you say yes.
+
+## 16. Build timing and checks
 
 - **Not in the two-zone playtest build.** Built straight after playtest #1, before zones 3-10 go live.
 - **Before launch (CORE-GAME tests):**

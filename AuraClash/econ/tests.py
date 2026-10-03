@@ -70,6 +70,7 @@ def test_ladder_doubles_luck_and_power_together():         # owner: one "2x Boos
     for k in ("starter",):
         assert M.PAID[k]["luck"] == M.PAID[k]["med_x"] == 8
     assert M.PAID["whale"]["luck"] == 2048 and M.PAID["whale"]["med_x"] == 1.5 * 2048   # x VIP 1.5 on Power
+    assert "hatch3" not in M.PASS_PRICES                       # Hatch x3 is free after boss 1 again
     assert M.SLOT_PACK_PRICE == 199 and M.SLOT_PACK_MAX == 10
 
 
@@ -232,7 +233,7 @@ def test_xp_scales_with_zone():
 def test_team_hit_is_capped_at_your_power():             # BIBLE 3.3: your blasts always matter
     pl = M.Player("average", 1)
     pl.slots = 10
-    pl.pets = [M.Pet(7, 9, 11) for _ in range(10)]
+    pl.pets = [M.Pet(7, 5, 7) for _ in range(10)]
     pl.dirty()
     assert pl.team_hit_x() == M.TEAM_HIT_CAP == 1.0
     pl.pets = [M.Pet(0, 0, 0)]
@@ -241,10 +242,28 @@ def test_team_hit_is_capped_at_your_power():             # BIBLE 3.3: your blast
 
 
 def test_level_and_strength():
-    p = M.Pet(2, 6, 8)                                       # zone 3 Secret
+    p = M.Pet(2, 5, 7)                                       # zone 3 Mythic
     p.stars, p.lv = 5, 30
-    assert abs(p.strength() - 100 * 4 * 32 * (1 + 0.05 * 29)) < 1e-6
-    assert M.TIER_STR == [1, 1.5, 2.5, 4, 10, 25, 100, 400, 2_000, 100_000]
+    assert abs(p.strength() - 25 * 4 * 32 * (1 + 0.05 * 29)) < 1e-6
+    assert M.TIER_STR == [1, 1.5, 2.5, 4, 10, 25]
+
+
+def test_secret_plus_scale_with_your_best_pet():          # owner: Secret = best, Divine x10, Impossible x100, Boundless x1000
+    assert M.SECRET_MULT == {6: 1, 7: 10, 8: 100, 9: 1000}
+    pl = M.Player("average", 1)
+    pl.slots = 5
+    best = M.Pet(4, 4, 6)                                      # a zone-5 Legendary
+    best.lv = 30
+    secrets = [M.Pet(0, t, 8) for t in (6, 7, 8, 9)]          # hatched back in zone 1
+    pl.pets = [best] + secrets
+    pl.dirty()
+    bn = best.strength()
+    got = sorted(p.strength(bn) for p in pl.team())
+    assert got == sorted([bn, bn, 10 * bn, 100 * bn, 1000 * bn])
+    better = M.Pet(6, 4, 6)                                    # a better normal pet arrives later...
+    pl.pets.append(better)
+    pl.dirty()
+    assert max(p.strength(better.strength()) for p in pl.team()) == 1000 * better.strength()   # ...and they all scale up
 
 
 # ---------- economy rules ----------

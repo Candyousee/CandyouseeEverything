@@ -1,10 +1,10 @@
-# HANDOFF → Winter: build the Aura Clash two-zone playable test (v7)
+# HANDOFF → Winter: build the Aura Clash two-zone playable test (v8)
 
 > **GO (owner):** the gameplay direction is approved. Build the two-zone test, **starting with the steps 1-5 greybox** and its fun gate. The saving contract (CORE-GAME 2) is a hard requirement for step 10. **No monetization in this build** (it comes straight after playtest #1).
 
 **Status:**
-- the design is v7 (meditation + crystal-monster hunting + pets; 10 zones designed);
-- the numbers come from `econ/model.py`, and `python tests.py` passes 29/29;
+- the design is v8 (meditation + crystal-monster hunting + pets; 10 zones designed in detail, with machines unlocking zone by zone);
+- the numbers come from `econ/model.py`, and `python tests.py` passes 30/30;
 - the art style is chosen (STYLE-SHEET).
 
 **Don't rewrite the concept.** The next evidence must come from the real game.
@@ -12,7 +12,7 @@
 ## Read first (in this order)
 
 1. **`README.md`:** the doc map.
-2. **`GAME-BIBLE.md`:** every rule and number. **It wins on any conflict.** For this build: Part A (sections 1-11) + zones 1-2 (sections 12-13). Hatch ×1 and Auto-Hatch only (Hatch ×3 / ×8 are passes, in the monetization phase).
+2. **`GAME-BIBLE.md`:** every rule and number. **It wins on any conflict.** For this build: Part A sections 1-12 (the hub included: Leaderboard Wall with server boards, teleporter ring, store stands as art placeholders) + **zones 1-2 (sections 14-15), built to the zone design tables there**. Hatch ×1, Auto-Hatch, and **Hatch ×3 after boss 1**. Section 13 machines come later, except the Fusion Altar (★1-★2).
 3. **`CORE-GAME.md`:**
    - server authority;
    - **section 2 (saving tests)** and **section 3 (playtest #1)** are the **acceptance criteria**.
@@ -32,10 +32,18 @@
 - **Concept sheets** (GPU → Blender):
   - 6 monsters + 6 mutation looks;
   - 22 pets (11 per zone; Secret, Divine and Impossible as silhouettes) + this month's Boundless;
+  - **Lumora Grove and Pyrora Dojo key art from their design tables** (layout, landmarks, materials, sky, VFX), then Lumora Plaza (the hub);
   - Spark / BLAZE / INFERNO;
   - the Shrine hub;
   - the Stone Golem, the Magma Oni;
   - the HUD.
+
+## The bar: pets and VFX decide this game (owner)
+
+**After the core loop, the pets and the VFX are what make or break Aura Clash.** Treat every pet and every zone as a hero asset:
+- **Pets:** follow the pet visual ladder in STYLE-SHEET. Every species gets its own attack, its own idle animations, and a rarity treatment you can read from across the zone.
+- **Zones:** every zone must look completely different from the others. Build from its design table in GAME-BIBLE Part B (landmarks, sky, materials, ambient VFX).
+- **Hero moments:** hatches, transformations and Mutation Storms run at VFX ladder level 5, plus a +1 pass.
 
 ## Rules that are easy to get wrong
 
@@ -57,6 +65,7 @@
   - **The combo drops one level on a miss,** not to zero.
   - **Overdrive is 8 s of real time,** set when the 5th PERFECT lands. Chains hit at most 2 monsters next to the target, and overkill is lost.
   - **Shared monsters, personal loot:** everyone whose hit landed gets their own full drop and quest credit. (The protected beginner pack is **removed**, owner decision.)
+- **Secret+ Strength is live:** Secret = your best normal pet, Divine ×10, Impossible ×100, Boundless ×1,000, recomputed when your best pet changes.
 - **Progress:**
   - **The boss gate** = all of that zone's quests done (the last one is the Power target). Quest difficulty: zones 1-3 very easy, 4-6 easy, 7 medium, 8 hard.
   - **Offline:** server time, 25% of AFK, 8 h cap, claimed once (confirmed save).

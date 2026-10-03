@@ -1,4 +1,4 @@
-# AURA CLASH: Core Game v7 (server authority, saving, tests, playtest, performance)
+# AURA CLASH: Core Game v8 (server authority, saving, tests, playtest, performance)
 
 **Doc map (what wins on a conflict):**
 1. **`GAME-BIBLE.md`:** every game rule and number, zone by zone. Backed by `econ/model.py` + `econ/tests.py`. **Wins on any game-rule conflict.**
@@ -119,6 +119,8 @@ Old versions are in `archive/`, for history only. **Nothing in `archive/` is a r
 | P17 | **Luck + odds card:** stack 2× Boost ×2,048 + VIP + Luck Potion + Server Luck + group + 2× Secret Luck | no cap applied; the card's odds add to 100% and equal the rolled odds over 1,000,000 hatches (±4 SD for Legendary and Mythic) |
 | P19 | **Serials:** 3 servers hatch Secrets of the same species at the same moment (forced test odds) | numbers 1, 2, 3 each used once; a failed save never burns or duplicates a number |
 | P20 | **Slot packs:** buy +2 Pet Slots 11 times | 10 succeed (+20 slots); the 11th prompt never opens |
+| P21 | **Machines (as each ships):** Nursery stays use server time and can't be collected twice; enchant rolls, Reactor infusions and relic levels happen on the server, each consuming its cost in the same save as its result | no duplicate collects, no free rolls, no lost shards |
+| P22 | **Secret+ scaling:** get a better normal pet while owning a Secret and a Boundless | their Strength updates to ×1 and ×1,000 of the new best pet, immediately and after a rejoin |
 | P18 | **Daily login:** claim, change the device clock, rejoin another server; skip 2 days, then log in | one claim per server (UTC) day; after the skip you claim the **next** day of the cycle (nothing resets) |
 
 ## 3. PLAYTEST #1 (behaviour first)
@@ -180,5 +182,5 @@ Old versions are in `archive/`, for history only. **Nothing in `archive/` is a r
   - other players sharing monsters (personal loot means crowded servers pay faster than the model);
   - walking between areas (beyond a per-kill overhead);
   - coin packs, potions, Exclusive Eggs, the Aura Pass;
-  - saving and purchases (tests P1-P20 are for the real game).
+  - saving and purchases (tests P1-P22 are for the real game).
 - **Decisions** (like when to meditate) follow a simple "average player" policy. **The playtest is the real test.**
