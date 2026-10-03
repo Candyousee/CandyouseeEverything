@@ -1,4 +1,4 @@
-"""AURA CLASH v6 balance model: plays the rules second by second with simulated players, zones 1-8.
+"""AURA CLASH v7 balance model: plays the rules second by second with simulated players, zones 1-10.
 
 Meditation (AFK / Focus / offline), hunting crystal monsters with hold-release blasts (PERFECT, combo,
 Overdrive chains), mutations, the capped Shard Storm + SELL, coins -> eggs / Bag / Mat / Surge,
@@ -20,9 +20,9 @@ OD_STREAK, OD_TIME, SURGE_STEP = 5, 8.0, 2.0   # 5 PERFECTs in a row -> Overdriv
 OD_CHAIN_N, OD_CHAIN_X, OD_AFTER = 2, 0.5, 2   # chains to 2 more monsters at 50%; combo after = level 2 (x1.5)
 
 # ---------------- RULES: zones ----------------
-ZONES = 8
+ZONES = 10
 ZONE_NAMES = ["Training Grove", "Lava Dojo", "Frost Peaks", "Storm Cliffs",
-              "Sakura Realm", "Void Rift", "Galaxy Throne", "Celestial Gate"]
+              "Sakura Realm", "Void Rift", "Galaxy Throne", "Celestial Gate", "Dragon Sanctum", "Aura Nexus"]
 MONSTER_NAMES = [("Shardling", "Crystal Boar", "Crag Brute"),
                  ("Ember Slime", "Lava Hound", "Obsidian Brute"),
                  ("Snowling", "Ice Ram", "Glacier Titan"),
@@ -30,7 +30,9 @@ MONSTER_NAMES = [("Shardling", "Crystal Boar", "Crag Brute"),
                  ("Petal Sprite", "Blossom Fox", "Ancient Treant"),
                  ("Void Mite", "Shade Stalker", "Rift Behemoth"),
                  ("Star Mote", "Comet Beast", "Nebula Giant"),
-                 ("Halo Sprite", "Seraph Knight", "Celestial Guardian")]
+                 ("Halo Sprite", "Seraph Knight", "Celestial Guardian"),
+                 ("Ember Drakelet", "Crystal Wyvern", "Elder Dragon Golem"),
+                 ("Aura Wisp", "Prism Knight", "Nexus Colossus")]
 HP_BASE, HP_STEP = (20, 200, 2000), 16         # monster HP x16 per zone
 VAL_BASE, VAL_STEP = (3, 40, 250), 10          # Shard, Bright Shard, Gem coins x10 per zone
 DROPS = [(1, 0.0, 0.0), (3, 0.2, 0.0), (8, 2.0, 0.1)]   # shards, bright (expected), gem chance
@@ -50,16 +52,19 @@ def shard_val(z):
     return tuple(v * VAL_STEP ** z for v in VAL_BASE)
 
 
-SHRINE = [0.5 * 4 ** z for z in range(ZONES)]                   # Power / s, AFK
-EGG_PRICE = [60, 1_500, 25_000, 400_000, 6_000_000, 100_000_000, 1_500_000_000, 25_000_000_000]
+SHRINE = [0.5 * 4 ** min(z, 3) * 5 ** max(0, z - 3) for z in range(ZONES)]   # Power / s, AFK: x4 per zone, x5 from zone 5
+EGG_PRICE = [60, 1_500, 25_000, 400_000, 6_000_000, 100_000_000, 1_500_000_000, 25_000_000_000,
+             250_000_000_000, 3_500_000_000_000]
 BOSS = [dict(name="Stone Golem", rec=300, form="BLAZE"),
         dict(name="Magma Oni", rec=10_000, form="INFERNO"),
         dict(name="Frost Wyrm", rec=200_000, form="GLACIER"),
         dict(name="Thunder Roc", rec=4_000_000, form="TEMPEST"),
-        dict(name="Blossom Ronin", rec=80_000_000, form="BLOOM"),
-        dict(name="Void Leviathan", rec=1_600_000_000, form="ECLIPSE"),
-        dict(name="Star Emperor", rec=25_000_000_000, form="COSMIC"),
-        dict(name="The Ascendant", rec=400_000_000_000, form="ASCENDED")]
+        dict(name="Blossom Ronin", rec=60_000_000, form="BLOOM"),
+        dict(name="Void Leviathan", rec=1_000_000_000, form="ECLIPSE"),
+        dict(name="Star Emperor", rec=15_000_000_000, form="COSMIC"),
+        dict(name="Archangel Sentinel", rec=200_000_000_000, form="RADIANT"),
+        dict(name="Elder Dragon Emperor", rec=2_500_000_000_000, form="DRAGONSOUL"),
+        dict(name="The Ascendant", rec=30_000_000_000_000, form="ASCENDED")]
 BOSS_HP_X = [1.0] + [2.5] * (ZONES - 1)
 BOSS_SHARD_EGGS = 3                            # Boss Shards sell for about 3 eggs of the NEXT zone (the last: 3 of its own)
 PLATES, PLATE_HP_X, BODY_HP_X = 6, 3.3, 20     # boss HP = these x recommended Power x BOSS_HP_X
@@ -77,13 +82,82 @@ def boss_shard_value(z):
 
 
 # ---------------- RULES: pets ----------------
-RARITIES = ["Common", "Rare", "Epic", "Legendary", "Mythic", "Divine", "Secret", "Ultra Secret", "Infinity Secret"]
-_RARE = [0.001, 0.0001, 1e-6, 1 / 50_000_000, 1 / 1_000_000_000]   # Mythic 1/1K, Divine 1/10K, Secret 1/1M, Ultra 1/50M, Infinity 1/1B
-ODDS = [0.60, 0.28, 0.10, 1 - 0.98 - sum(_RARE)] + _RARE   # Legendary takes the remainder (1.88989798%), so the sum is exactly 1
-R_STR = [1, 2, 4, 10, 20, 40, 100, 400, 2000]
-SPECIES = [2, 2, 1, 1, 1, 1, 1, 1, 1]          # 11 species per zone
-SECRET_TIERS = (6, 7, 8)                       # Secret, Ultra Secret, Infinity Secret
-LUCK_EXP = [0, 0, 0, 0.3, 0.5, 0.7, 0.85, 0.95, 1.0]   # luck works hardest on the rarest pets
+TIERS = ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Secret", "Divine", "Impossible", "Boundless"]
+RARITIES = TIERS
+TIER_STR = [1, 1.5, 2.5, 4, 10, 25, 100, 400, 2_000, 10_000]     # base Strength by tier
+LUCK_EXP = [0, 0, 0, 0, 0.3, 0.5, 0.8, 0.9, 1.0, 1.0]           # luck works hardest on the rarest tiers
+SECRET_TIERS = (6, 7, 8, 9)                                     # Secret and above: serialized; "Secret luck" applies
+# A tier is DEFINED by its odds band (lower bound inclusive). "Secret 1 in 1M+", "Divine 1 in 10M+",
+# "Impossible 1 in 1B+", "Boundless 1 in 1T+" (owner).
+def tier_of(p):
+    """Tier from the odds band: Common >= 25%, Uncommon >= 10%, Rare >= 2%, Epic >= 0.5%, Legendary >= 1 in 10K,
+    Mythic rarer than that down to 1 in 1M; Secret 1 in 1M+, Divine 1 in 10M+, Impossible 1 in 1B+, Boundless 1 in 1T+."""
+    for t, lo in enumerate((0.25, 0.10, 0.02, 0.005, 1e-4)):
+        if p >= lo:
+            return t
+    for t, hi in ((5, 1e-6), (6, 1e-7), (7, 1e-9), (8, 1e-12)):
+        if p > hi:
+            return t
+    return 9
+
+
+BOUNDLESS_P = 1e-12                       # 1 in 1T: in EVERY egg; a new Boundless pet every month (global)
+EGG_NAMES = [
+    ["Light Fox", "Glow Bunny", "Prism Owl", "Sun Pup", "Halo Lynx", "Dawn Griffin", "Solar Kirin", "Radiant Pegasus", "Aurora Dragon", "Prism Archangel", "Lumen the Endless"],
+    ["Ember Imp", "Cinder Pup", "Magma Toad", "Blaze Ferret", "Lava Salamander", "Inferno Wolf", "Phoenix", "Sunforge Drake", "Volcano Titan", "Solar Behemoth", "Ignis Eternal"],
+    ["Snow Hare", "Frost Penguin", "Ice Fox", "Glacier Seal", "Crystal Yeti", "Blizzard Owl", "Frost Kirin", "Aurora Stag", "Glacial Leviathan", "Frostfall Empress", "Absolute Zero"],
+    ["Static Mouse", "Volt Bat", "Thunder Pup", "Zap Lizard", "Storm Falcon", "Lightning Tiger", "Thunderbird", "Tempest Dragon", "Raijin", "Storm Sovereign", "Thunder Infinite"],
+    ["Petal Bunny", "Leaf Kit", "Koi Spirit", "Bamboo Panda", "Sakura Fox", "Moss Golem", "Kitsune", "Jade Dragon", "Celestial Koi", "Eternal Bloom Dragon", "World Tree Spirit"],
+    ["Shadow Cat", "Void Bat", "Rift Wisp", "Gloom Wolf", "Shade Panther", "Void Serpent", "Eclipse Dragon", "Abyss Kraken", "Null Wyrm", "Abyssal Emperor", "The Void Itself"],
+    ["Star Puff", "Comet Pup", "Nebula Jelly", "Meteor Fox", "Galaxy Whale", "Orbit Lion", "Supernova Phoenix", "Cosmic Dragon", "Starborn Titan", "Galaxy Devourer", "Big Bang"],
+    ["Halo Chick", "Angel Bunny", "Seraph Cat", "Wing Pup", "Archon Owl", "Seraph Lion", "Celestial Kirin", "Holy Griffin", "The First Light", "Seraph Prime", "Eternal Halo"],
+    ["Dragon Hatchling", "Ember Wyrmling", "Jade Drakelet", "Scale Pup", "Crystal Wyvern", "Storm Drake", "Ancient Dragon", "Dragon King", "Primordial Dragon", "Dragon God", "Endless Wyrm"],
+    ["Aura Sprite", "Prism Puff", "Spectrum Fox", "Halo Hound", "Nexus Owl", "Prism Tiger", "Rainbow Kirin", "Aura Phoenix", "Spectrum Dragon", "Nexus Sovereign", "Aura Infinite"],
+]
+# Two egg layouts so eggs differ (owner): odd zones "two Commons", even zones "three Commons". Every zone then
+# gets its own numbers: (commons, rare tiers as 1-in-N).
+EGG_ODDS = [   # zone: [11 chances in EGG_NAMES order]; the first Common takes the exact remainder
+    [0.35, 0.34, 0.18, 0.08, 0.035, 0.012, 1 / 400, 1 / 25_000, 1 / 2_500_000, 1 / 100_000_000, 1 / 10_000_000_000],
+    [0.30, 0.28, 0.26, 0.11, 0.036, 0.010, 1 / 300, 1 / 15_000, 1 / 1_500_000, 1 / 50_000_000, 1 / 5_000_000_000],
+    [0.37, 0.32, 0.18, 0.08, 0.035, 0.012, 1 / 450, 1 / 30_000, 1 / 3_000_000, 1 / 150_000_000, 1 / 20_000_000_000],
+    [0.31, 0.27, 0.26, 0.11, 0.036, 0.010, 1 / 350, 1 / 20_000, 1 / 2_000_000, 1 / 80_000_000, 1 / 8_000_000_000],
+    [0.36, 0.33, 0.17, 0.09, 0.035, 0.012, 1 / 500, 1 / 35_000, 1 / 4_000_000, 1 / 200_000_000, 1 / 30_000_000_000],
+    [0.29, 0.29, 0.26, 0.11, 0.036, 0.010, 1 / 400, 1 / 25_000, 1 / 2_500_000, 1 / 120_000_000, 1 / 12_000_000_000],
+    [0.34, 0.35, 0.17, 0.09, 0.035, 0.012, 1 / 550, 1 / 40_000, 1 / 5_000_000, 1 / 300_000_000, 1 / 50_000_000_000],
+    [0.33, 0.26, 0.26, 0.11, 0.026, 0.010, 1 / 450, 1 / 30_000, 1 / 3_000_000, 1 / 200_000_000, 1 / 20_000_000_000],
+    [0.38, 0.31, 0.17, 0.09, 0.035, 0.012, 1 / 600, 1 / 50_000, 1 / 6_000_000, 1 / 500_000_000, 1 / 100_000_000_000],
+    [0.30, 0.30, 0.25, 0.11, 0.026, 0.010, 1 / 500, 1 / 40_000, 1 / 4_000_000, 1 / 300_000_000, 1 / 40_000_000_000],
+]
+
+
+def _build_egg(z):
+    odds = list(EGG_ODDS[z])
+    odds[0] = 1 - sum(odds[1:]) - BOUNDLESS_P              # exact total of 1 including the Boundless line
+    table = [(EGG_NAMES[z][k], tier_of(p), p) for k, p in enumerate(odds)]
+    table.append(("Boundless (this month's)", 9, BOUNDLESS_P))
+    return table
+
+
+EGGS = [_build_egg(z) for z in range(ZONES)]
+
+# Exclusive Eggs (MONETIZATION.md 6): same tier bands, a Boundless line, fixed odds (luck doesn't change paid eggs)
+def _exclusive(names, chances):
+    odds = [None] + list(chances)
+    odds[0] = 1 - sum(chances)
+    return [(n, tier_of(p), p) for n, p in zip(names, odds)]
+
+
+EXCLUSIVE_EGGS = {
+    "Daily Exclusive (Neon)": dict(price=(49, 99, 249), strength_x=5, table=_exclusive(
+        ["Neon Cat", "Neon Wolf", "Neon Tiger", "Neon Fox", "Neon Dragon", "Neon Phoenix", "Neon Kirin", "Neon Seraph",
+         "Neon Leviathan", "Neon Infinity", "Boundless (this month's)"],
+        [0.22, 0.09, 0.045, 0.012, 1 / 350, 1 / 20_000, 1 / 2_000_000, 1 / 200_000_000, 1 / 20_000_000_000, BOUNDLESS_P])),
+    "Shop Exclusive (Royal)": dict(price=(99, 279, 849), strength_x=10, table=_exclusive(
+        ["Royal Corgi", "Royal Lion", "Royal Griffin", "Royal Phoenix", "Royal Dragon", "Royal Kirin", "Royal Seraph",
+         "Royal Sovereign", "Royal Emperor", "Royal Infinity", "Boundless (this month's)"],
+        [0.30, 0.20, 0.07, 0.019, 1 / 250, 1 / 12_000, 1 / 1_000_000, 1 / 50_000_000, 1 / 5_000_000_000, BOUNDLESS_P])),
+}
+STARTER_SPECIES = 0                                     # the tutorial Light Fox
 PET_STEP = 2                                   # zone pets x2 Strength per zone
 STAR = [1, 2, 4, 8, 16, 32]                    # stars 0-5: each star doubles; 3 copies -> 1 of the next star
 MAX_STARS = 5
@@ -92,13 +166,14 @@ XP_TO_NEXT = lambda lv, pz: 10 * lv * XP_STEP ** pz   # a pet from zone pz needs
 PET_HIT_EVERY, PET_HIT_X = 1.5, 0.04           # each pet hits every 1.5 s for Strength x 4% of Power ...
 TEAM_HIT_CAP = 1.0                             # ... but the whole team's hit is capped at 100% of your Power
 MED_PER_STR = 0.10                             # meditation +10% per point of equipped Strength
-AUTO_FUSE_MAX_RARITY = 1                       # auto-fuse: Commons + Rares, unequipped copies only
+AUTO_FUSE_MAX_RARITY = 2                       # auto-fuse: Commons, Uncommons, Rares; unequipped copies only
 BASE_SLOTS, INVENTORY = 3, 250
 
 # ---------------- RULES: economy ----------------
 MAT_STEP = 0.25
 OFFLINE_X, OFFLINE_CAP_H = 0.25, 8
 #             name        chance      value  HP
+STORM_EVERY, STORM_LENGTH, STORM_X = 45 * 60, 5 * 60, 2.0   # natural Mutation Storms
 MUTATIONS = [("Gold",      1 / 25,     5,  2),
              ("Fire",      1 / 60,    10,  3),
              ("Frost",     1 / 60,    10,  3),
@@ -107,12 +182,13 @@ MUTATIONS = [("Gold",      1 / 25,     5,  2),
              ("Celestial", 1 / 10000, 250, 8)]
 BAG = [60, 100, 150, 200, 250, 300, 400, 500]
 BAG_PRICE = [50, 250, 3_000, 10_000, 100_000, 2_000_000, 50_000_000]
-MAT_PRICE = [100, 400, 4_000, 12_000, 150_000, 1_000_000, 20_000_000, 400_000_000, 10_000_000_000, 250_000_000_000]
+MAT_PRICE = [100, 400, 4_000, 12_000, 150_000, 1_000_000, 20_000_000, 400_000_000, 10_000_000_000, 250_000_000_000,
+             4_000_000_000_000, 60_000_000_000_000]
 SURGE_PRICE = [300, 5_000, 200_000, 30_000_000, 5_000_000_000]
 SELL_TIME, HATCH_TIME, ALTAR_TIME = 3.0, 2.0, 5.0
 
 # ---------------- RULES: rank quests (difficulty tiers; owner) ----------------
-TIER = ["very easy", "very easy", "very easy", "easy", "easy", "easy", "medium", "hard"]
+TIER = ["very easy"] * 3 + ["easy"] * 3 + ["medium"] * 2 + ["hard"] * 2
 TIER_QUESTS = {
     "very easy": lambda z: [("focus", 20 if z == 0 else 60), ("kill", 0, 20 if z == 0 else 50),
                             ("hatch", 5 if z == 0 else 8), ("kill", 1, 10 if z == 0 else 20)]
@@ -120,7 +196,7 @@ TIER_QUESTS = {
     "easy":      lambda z: [("focus", 90), ("kill", 0, 80), ("hatch", 12), ("kill", 1, 40), ("kill", 2, 5), ("level", 15)],
     "medium":    lambda z: [("focus", 120), ("kill", 0, 150), ("hatch", 20), ("kill", 1, 80), ("kill", 2, 15),
                             ("mutated", 0, 5), ("stars", 2)],
-    "hard":      lambda z: [("focus", 180), ("kill", 0, 300), ("hatch", 40), ("kill", 1, 150), ("kill", 2, 40),
+    "hard":      lambda z: [("focus", 180), ("kill", 0, 250), ("hatch", 30), ("kill", 1, 120), ("kill", 2, 30),
                             ("mutated", 3, 1), ("stars", 3), ("level", 25)],
 }
 QUESTS = [TIER_QUESTS[TIER[z]](z) + [("power", BOSS[z]["rec"])] for z in range(ZONES)]
@@ -128,21 +204,25 @@ SLOT_QUESTS = {(0, 0), (0, 3), (1, 0), (1, 3), (2, 0), (3, 0), (4, 0)}   # 3 + 7
 # every other quest (except the last, which opens the boss gate) gives a free egg of that zone
 
 # ---------------- MONETIZATION (MONETIZATION.md): what a purchase changes ----------------
-LADDER_PRICES = [3, 9, 19, 29, 49, 79, 149, 249, 399, 799, 999]   # x2 per tier: x2 ... x2048 (Power ladder and Luck ladder)
+LADDER_PRICES = [3, 9, 19, 29, 49, 79, 149, 249, 399, 799, 999]   # "2x Boost" ladder: each tier doubles Luck AND Power
 
 
 def ladder_cost(tiers):
     return sum(LADDER_PRICES[:tiers])
 
 
-PAID = {   # what a spending profile changes (MONETIZATION.md); "R$" = what it costs
-    "free":    dict(coin_x=1.0, med_x=1.0, luck=1.0, secret_x=1.0, hatch_x=1.0, slots=0, rs=0),
-    "starter": dict(coin_x=1.0, med_x=8.0, luck=8.0, secret_x=1.0, hatch_x=1.0, slots=0,          # 3 tiers of each ladder
-                    rs=2 * ladder_cost(3)),
-    "vip":     dict(coin_x=3.0, med_x=1.5 * 64, luck=64.0, secret_x=1.0, hatch_x=1.0, slots=1,    # VIP + 2x Coins + 6 ladder tiers each
-                    rs=499 + 399 + 2 * ladder_cost(6)),
-    "whale":   dict(coin_x=3.0, med_x=1.5 * 2048, luck=2048.0, secret_x=2.0, hatch_x=2.0, slots=4, # everything permanent
-                    rs=499 + 399 + 2 * ladder_cost(11) + 199 + 399 + 449),
+SLOT_PACK_PRICE, SLOT_PACK_MAX = 199, 10                         # +2 pet slots per purchase, up to 10 purchases
+PASS_PRICES = dict(vip=399, coins2=399, secret2=199, hatch_speed2=399, hatch3=99, hatch8=399,
+                   huge_storm=199, auto_sell=199, offline_plus=99, mutation_magnet=99)
+
+PAID = {   # what a spending profile changes (MONETIZATION.md); rs = what it costs in Robux
+    "free":    dict(coin_x=1.0, med_x=1.0, luck=1.0, secret_x=1.0, hatch_x=1.0, multi=1, slots=0, rs=0),
+    "starter": dict(coin_x=1.0, med_x=8.0, luck=8.0, secret_x=1.0, hatch_x=1.0, multi=1, slots=0,     # 3 ladder tiers
+                    rs=ladder_cost(3)),
+    "vip":     dict(coin_x=3.0, med_x=1.5 * 64, luck=64.0, secret_x=1.5, hatch_x=1.5, multi=3, slots=1,   # VIP + 2x Coins
+                    rs=PASS_PRICES["vip"] + PASS_PRICES["coins2"] + PASS_PRICES["hatch3"] + ladder_cost(6)),  # + x3 hatch + 6 tiers
+    "whale":   dict(coin_x=3.0, med_x=1.5 * 2048, luck=2048.0, secret_x=3.0, hatch_x=3.0, multi=8, slots=1 + 20,
+                    rs=sum(PASS_PRICES.values()) + ladder_cost(11) + SLOT_PACK_PRICE * SLOT_PACK_MAX),
 }
 
 PROFILES = {  # perfect rate, Focus average multiplier, counter success, mean hits taken per boss
@@ -156,39 +236,51 @@ def seed(*parts):
     return zlib.crc32("|".join(map(str, parts)).encode())
 
 
-LUCK_CAP = 10_000.0                            # Luck ladder x potions x server boosts x group, capped
-RARE_SHARE_CAP = 0.90                          # Legendary-and-up can never be more than 90% of hatches
+RARE_SHARE_MAX = 0.90       # NOT a luck cap: luck has no cap, but chances must add to 100%,
+                            # so Legendary-and-up together can never pass 90% of hatches.
+_ODDS_CACHE = {}
 
 
-def odds_with_luck(luck=1.0, secret_x=1.0):
-    """Each rarity from Legendary up is multiplied by luck ** LUCK_EXP (more on rarer pets); the 2x Secret Luck pass
-    doubles the three Secret tiers. Common / Rare / Epic share what's left in their usual 60:28:10 ratio.
-    The egg card shows exactly these odds."""
-    luck = max(1.0, min(luck, LUCK_CAP))
-    odds = list(ODDS)
-    for i in range(3, len(odds)):
-        odds[i] = ODDS[i] * luck ** LUCK_EXP[i] * (secret_x if i in SECRET_TIERS else 1.0)
-    rare = sum(odds[3:])
-    if rare > RARE_SHARE_CAP:
-        odds[3:] = [o * RARE_SHARE_CAP / rare for o in odds[3:]]
-        rare = RARE_SHARE_CAP
-    base_low = sum(ODDS[:3])
-    for i in range(3):
-        odds[i] = ODDS[i] / base_low * (1 - rare)
+def egg_odds(z, luck=1.0, secret_x=1.0):
+    """The real odds for zone z's egg at this luck (what the egg card shows). Tiers from Legendary up are
+    multiplied by luck ** LUCK_EXP[tier] (Secret+ also by secret_x); lower tiers share the rest in their own ratio."""
+    key = (z, luck, secret_x)
+    if key in _ODDS_CACHE:
+        return _ODDS_CACHE[key]
+    luck = max(1.0, luck)
+    rare_idx = [k for k, (_, t, _) in enumerate(EGGS[z]) if t >= 4]
+    low_idx = [k for k, (_, t, _) in enumerate(EGGS[z]) if t < 4]
+    odds = [p for _, _, p in EGGS[z]]
+    for k in rare_idx:
+        t = EGGS[z][k][1]
+        odds[k] = EGGS[z][k][2] * luck ** LUCK_EXP[t] * (secret_x if t in SECRET_TIERS else 1.0)
+    rare = sum(odds[k] for k in rare_idx)
+    if rare > RARE_SHARE_MAX:
+        for k in rare_idx:
+            odds[k] *= RARE_SHARE_MAX / rare
+        rare = RARE_SHARE_MAX
+    base_low = sum(EGGS[z][k][2] for k in low_idx)
+    for k in low_idx:
+        odds[k] = EGGS[z][k][2] / base_low * (1 - rare)
+    _ODDS_CACHE[key] = odds
     return odds
 
 
-def roll_rarity(rng, luck=1.0, secret_x=1.0):
-    odds = ODDS if (luck == 1.0 and secret_x == 1.0) else odds_with_luck(luck, secret_x)
+def roll_species(rng, z, luck=1.0, secret_x=1.0):
+    odds = egg_odds(z, luck, secret_x)
     x, acc = rng.random(), 0.0
-    for i, o in enumerate(odds):
+    for k, o in enumerate(odds):
         acc += o
         if x < acc:
-            return i
+            return k
     return 0
 
 
-egg_roll = roll_rarity
+def egg_roll(rng, z=0):
+    return EGGS[z][roll_species(rng, z)][1]
+
+
+
 
 
 class Pet:
@@ -198,7 +290,7 @@ class Pet:
         self.z, self.r, self.sp, self.stars, self.lv, self.xp = z, r, sp, 0, 1, 0
 
     def strength(self):
-        return R_STR[self.r] * PET_STEP ** self.z * STAR[self.stars] * (1 + LEVEL_X * (self.lv - 1))
+        return TIER_STR[self.r] * PET_STEP ** self.z * STAR[self.stars] * (1 + LEVEL_X * (self.lv - 1))
 
 
 class Player:
@@ -309,11 +401,17 @@ class Player:
                 best, best_rate = i, value / kt
         return best
 
+    def in_mutation_storm(self):
+        """A natural Mutation Storm hits every server for 5 min every 45 min (mutation chances x2)."""
+        return self.t % STORM_EVERY < STORM_LENGTH
+
     def roll_mutation(self):
-        """ONE roll against exclusive bands, so each mutation's real chance is exactly its advertised chance."""
+        """ONE roll against exclusive bands, so each mutation's real chance is exactly its advertised chance
+        (doubled during a Mutation Storm)."""
         x, acc = self.rng.random(), 0.0
+        mx = STORM_X if self.in_mutation_storm() else 1.0
         for m in MUTATIONS:
-            acc += m[1]
+            acc += m[1] * mx
             if x < acc:
                 return m
         return None
@@ -476,18 +574,16 @@ class Player:
         z = self.zone
         if not free:
             self.coins -= EGG_PRICE[z]
-        multi = 3 if self.milestones.get("boss1") is not None else 1   # Hatch x3 unlocks after boss 1
-        self.t += HATCH_TIME / multi / self.paid["hatch_x"]
+        self.t += HATCH_TIME / self.paid["multi"] / self.paid["hatch_x"]   # Hatch x3 / x8 are passes
         self.hatches += 1
         self.zone_hatches[z] = self.zone_hatches.get(z, 0) + 1
         if self.hatches == 1:
-            r, sp = 0, 0                                     # the tutorial Light Fox
-        elif self.hatches == 3 and not any(p.r >= 1 for p in self.pets):
-            r, sp = 1, 0                                     # guaranteed Rare on the 3rd hatch
+            sp = STARTER_SPECIES if z == 0 else 0           # the tutorial Light Fox
+        elif self.hatches == 3 and not any(p.r >= 2 for p in self.pets):
+            sp = next(k for k, (_, t, _) in enumerate(EGGS[z]) if t == 2)   # guaranteed Rare on the 3rd hatch
         else:
-            r = roll_rarity(self.rng, self.paid["luck"], self.paid["secret_x"])
-            sp = self.rng.randrange(SPECIES[r])
-        self.pets.append(Pet(z, r, sp))
+            sp = roll_species(self.rng, z, self.paid["luck"], self.paid["secret_x"])
+        self.pets.append(Pet(z, EGGS[z][sp][1], sp))
         self.note("first_hatch", "first hatch")
         self.dirty()
         self.auto_fuse()
@@ -708,7 +804,7 @@ def fmt(s):
 
 
 def big(x):
-    for v, suf in ((1e12, "T"), (1e9, "B"), (1e6, "M"), (1e3, "K")):
+    for v, suf in ((1e15, "Qa"), (1e12, "T"), (1e9, "B"), (1e6, "M"), (1e3, "K")):
         if abs(x) >= v:
             return f"{x / v:.3g}{suf}"
     return f"{x:.3g}"
@@ -717,9 +813,9 @@ def big(x):
 def report(n_full=40, n_two=200):
     out = []
     P = out.append
-    P("AURA CLASH v6 model results (python model.py). Free player, no monetization.\n")
-    P("1. Average player, one seeded playthrough of zones 1-2 (seed 189, close to the median; the GAME-BIBLE 12 script)")
-    pl = Player("average", 189, log=True).run(until_zone=2)
+    P("AURA CLASH v7 model results (python model.py). Free player, no monetization.\n")
+    P("1. Average player, one seeded playthrough of zones 1-2 (seed 15, close to the median; the GAME-BIBLE zone 1 script)")
+    pl = Player("average", 15, log=True).run(until_zone=2)
     for k, label in [("tutorial", "tutorial meditation done"), ("mut_tutorial", "tutorial Gold Shardling"),
                      ("first_sell", "first SELL"), ("first_hatch", "first hatch"), ("first_star", "first star fusion"),
                      ("quest_z0_0", "quest 1 (Focus 20 s)"), ("overdrive", "first Overdrive"),
@@ -737,7 +833,7 @@ def report(n_full=40, n_two=200):
         P(f"   {prof:8s}  {med('first_sell'):6.1f}     {med('boss1'):6.1f}   {med('boss2'):6.1f}     "
           f"{ms * 100:4.0f}%        {pd * 100:4.0f}%")
     P("")
-    P(f"3. All 8 zones, {n_full} players per profile: time to beat each boss (median h:mm:ss)")
+    P(f"3. All {ZONES} zones, {n_full} players per profile: time to beat each boss (median h:mm:ss)")
     P("   zone  " + "".join(f"{p:>12s}" for p in PROFILES))
     full = {prof: [Player(prof, 1000 + r).run() for r in range(n_full)] for prof in PROFILES}
     for z in range(ZONES):
@@ -761,7 +857,7 @@ def report(n_full=40, n_two=200):
     pd = st.mean(x.pet_dmg / max(1, x.pet_dmg + x.player_dmg) for x in avg)
     ms = st.mean(x.med_time / max(1, x.med_time + x.hunt_time) for x in avg)
     bc = st.mean(x.boss_coins / max(1, x.coins_earned) for x in avg)
-    P(f"   over all 8 zones: meditating {ms * 100:.0f}% of play time; pets {pd * 100:.0f}% of damage; "
+    P(f"   over all {ZONES} zones: meditating {ms * 100:.0f}% of play time; pets {pd * 100:.0f}% of damage; "
       f"Boss Shards {bc * 100:.0f}% of all coins")
     P("")
     P(f"5. What purchases change (average player, {n_full // 2} players each; time to beat each boss, h:mm:ss)")
@@ -771,10 +867,10 @@ def report(n_full=40, n_two=200):
     for z in range(ZONES):
         cells = [fmt(st.median(x.milestones.get(f"boss{z + 1}", 24 * 3600) for x in paid_rows[k])) for k in PAID]
         P(f"   {z + 1}      " + "".join(f"{c:12s}" for c in cells))
-    P("   hatch odds at each profile's luck (Legendary / Mythic / Divine / Secret / Ultra / Infinity):")
+    P("   Training Grove egg odds at each profile's luck (Legendary / Mythic / Secret / Divine / Impossible / Boundless):")
     for k, v in PAID.items():
-        o = odds_with_luck(v["luck"], v["secret_x"])
-        P(f"   {k:8s} " + " / ".join(("1 in " + f"{1 / x:,.0f}") if x < 0.01 else f"{x * 100:.2f}%" for x in o[3:]))
+        o = egg_odds(0, v["luck"], v["secret_x"])
+        P(f"   {k:8s} " + " / ".join(("1 in " + f"{1 / x:,.0f}") if x < 0.01 else f"{x * 100:.2f}%" for x in o[6:]))
     P("")
     P("6. Beam clash win rate (2,000 fights per cell; 2 hits taken in phases 1-2)")
     P("   Power / recommended:    0.5     0.75    1.0     1.5     2.0")
@@ -788,7 +884,8 @@ def report(n_full=40, n_two=200):
     P("")
     mut_ev = sum(m[1] * (m[2] - 1) for m in MUTATIONS)
     P(f"7. Mutations add about +{mut_ev * 100:.0f}% to average shard value per kill; "
-      f"{sum(m[1] for m in MUTATIONS) * 100:.1f}% of spawns are mutated")
+      f"{sum(m[1] for m in MUTATIONS) * 100:.1f}% of spawns are mutated (x2 during the natural 5-min Mutation Storm "
+      f"every 45 min)")
     P("")
     P("8. AFK-only player (never hunts): Power keeps growing, but the boss gate never opens")
     P("   (rank quests need kills and hatches, which need coins, which only hunting gives).")

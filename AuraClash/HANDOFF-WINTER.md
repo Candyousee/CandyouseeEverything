@@ -1,10 +1,10 @@
-# HANDOFF → Winter: build the Aura Clash two-zone playable test (v6)
+# HANDOFF → Winter: build the Aura Clash two-zone playable test (v7)
 
 > **GO (owner):** the gameplay direction is approved. Build the two-zone test, **starting with the steps 1-5 greybox** and its fun gate. The saving contract (CORE-GAME 2) is a hard requirement for step 10. **No monetization in this build** (it comes straight after playtest #1).
 
 **Status:**
-- the design is v6 (meditation + crystal-monster hunting + pets; 8 zones designed);
-- the numbers come from `econ/model.py`, and `python tests.py` passes 26/26;
+- the design is v7 (meditation + crystal-monster hunting + pets; 10 zones designed);
+- the numbers come from `econ/model.py`, and `python tests.py` passes 29/29;
 - the art style is chosen (STYLE-SHEET).
 
 **Don't rewrite the concept.** The next evidence must come from the real game.
@@ -12,7 +12,7 @@
 ## Read first (in this order)
 
 1. **`README.md`:** the doc map.
-2. **`GAME-BIBLE.md`:** every rule and number. **It wins on any conflict.** For this build: Part A (sections 1-11) + zones 1-2 (sections 12-13).
+2. **`GAME-BIBLE.md`:** every rule and number. **It wins on any conflict.** For this build: Part A (sections 1-11) + zones 1-2 (sections 12-13). Hatch ×1 and Auto-Hatch only (Hatch ×3 / ×8 are passes, in the monetization phase).
 3. **`CORE-GAME.md`:**
    - server authority;
    - **section 2 (saving tests)** and **section 3 (playtest #1)** are the **acceptance criteria**.
@@ -31,7 +31,7 @@
 - **Greybox first:** steps 1-5 in grey boxes, **including the minimal pet loop** (earn → buy a pet → become stronger). Then **Winter's fun gate** and owner playtest #1 greybox, before any art.
 - **Concept sheets** (GPU → Blender):
   - 6 monsters + 6 mutation looks;
-  - 22 pets (11 per zone; Divine and the three Secret tiers as silhouettes);
+  - 22 pets (11 per zone; Secret, Divine and Impossible as silhouettes) + this month's Boundless;
   - Spark / BLAZE / INFERNO;
   - the Shrine hub;
   - the Stone Golem, the Magma Oni;
@@ -49,7 +49,9 @@
   - **The team's hit is capped at 100% of your Power.** Meditation's +10% per Strength is not capped.
   - **Pets never attack on their own** and **never die** (they get dazed).
 - **Odds:**
-  - **9 rarities:** Common 60 / Rare 28 / Epic 10 / Legendary 1.88989798 % / Mythic 1 in 1,000 / **Divine 1 in 10,000** / **Secret 1 in 1M** / **Ultra Secret 1 in 50M** / **Infinity Secret 1 in 1B**. Luck is weighted toward the rarest (GAME-BIBLE 5.1). The card shows the real odds at your current luck; the crack colour always equals the result.
+  - **10 tiers defined by odds band:** Common, Uncommon, Rare, Epic, Legendary, Mythic, **Secret 1 in 1M+**, **Divine 1 in 10M+**, **Impossible 1 in 1B+**, **Boundless 1 in 1T+** (in every egg; a new one every month).
+  - **Every egg has its own table** (GAME-BIBLE Part B); the **Secret-and-rarer** tiers are **serialized**.
+  - **Luck has no cap** and is weighted toward the rarest. The card shows the real odds at your current luck; the crack colour always equals the result.
   - **Mutation odds:** one roll per spawn against the table.
 - **Combat:**
   - **The combo drops one level on a miss,** not to zero.

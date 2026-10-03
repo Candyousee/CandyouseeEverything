@@ -9,52 +9,89 @@ def within_4sd(count, n, p):
 
 
 # ---------- odds ----------
-def test_egg_odds_sum_to_one_and_match():          # BIBLE 5.1: the egg card shows the real odds
-    assert len(M.RARITIES) == len(M.ODDS) == len(M.R_STR) == len(M.SPECIES) == len(M.LUCK_EXP) == 9
-    assert abs(sum(M.ODDS) - 1) < 1e-12
-    assert M.ODDS[5] == 1 / 10_000 and M.ODDS[6] == 1 / 1_000_000
-    assert M.ODDS[7] == 1 / 50_000_000 and M.ODDS[8] == 1 / 1_000_000_000
-    assert M.RARITIES.index("Divine") == M.RARITIES.index("Mythic") + 1
+def test_every_egg_sums_to_one_and_tiers_match_their_bands():   # BIBLE 5.1: tiers are odds bands; eggs differ
+    assert M.TIERS == ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Secret", "Divine", "Impossible", "Boundless"]
+    tables = set()
+    for z, egg in enumerate(M.EGGS):
+        assert abs(sum(p for _, _, p in egg) - 1) < 1e-12, z
+        for name, t, p in egg:
+            assert M.tier_of(p) == t, (z, name, t, p)
+        assert egg[-1][1] == 9 and egg[-1][2] == M.BOUNDLESS_P == 1e-12      # Boundless (1 in 1T) in every egg
+        tiers = [t for _, t, _ in egg]
+        assert {0, 1, 2, 3, 4, 5, 6, 7, 8, 9} <= set(tiers), z            # every tier present
+        tables.add(tuple(round(p, 12) for _, _, p in egg))
+    assert len(tables) == M.ZONES                                           # no two eggs have the same odds
+    assert M.tier_of(1e-6) == 6 and M.tier_of(1e-7) == 7 and M.tier_of(1e-9) == 8 and M.tier_of(1e-12) == 9
+
+
+def test_exclusive_eggs_follow_the_tier_system():         # MONETIZATION 6: tiers by odds band, Boundless line, no Huge
+    expected = {"Daily Exclusive (Neon)": [0, 1, 2, 2, 3, 4, 5, 6, 7, 8, 9],
+                "Shop Exclusive (Royal)": [0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9]}
+    for name, egg in M.EXCLUSIVE_EGGS.items():
+        table = egg["table"]
+        assert abs(sum(p for _, _, p in table) - 1) < 1e-12, name
+        assert [t for _, t, _ in table] == expected[name], (name, [t for _, t, _ in table])
+        assert table[-1][2] == M.BOUNDLESS_P
+    assert M.EXCLUSIVE_EGGS["Daily Exclusive (Neon)"]["price"] == (49, 99, 249)
+    assert M.EXCLUSIVE_EGGS["Shop Exclusive (Royal)"]["price"] == (99, 279, 849)
+
+
+def test_egg_rolls_match_the_card():
     rng, n = random.Random(1), 400_000
-    counts = [0] * 9
-    for _ in range(n):
-        counts[M.egg_roll(rng)] += 1
-    for r in range(6):
-        assert within_4sd(counts[r], n, M.ODDS[r]), (M.RARITIES[r], counts[r], n * M.ODDS[r])
-    assert counts[6] + counts[7] + counts[8] <= 6
+    for z in (0, 1):
+        counts = {}
+        for _ in range(n):
+            k = M.roll_species(rng, z)
+            counts[k] = counts.get(k, 0) + 1
+        for k, (name, t, p) in enumerate(M.EGGS[z]):
+            if p > 1e-4:
+                assert within_4sd(counts.get(k, 0), n, p), (z, name, counts.get(k, 0), n * p)
 
 
-def test_luck_odds_are_valid_at_every_luck():          # MONETIZATION 2: the Luck ladder up to x2048 (+ boosts, cap x10,000)
+def test_luck_has_no_cap_and_odds_stay_valid():          # owner: no cap on luck
     prev = None
-    for luck in (1, 2, 8, 64, 2048, 10_000, 10**9):
-        for sx in (1.0, 2.0):
-            o = M.odds_with_luck(luck, sx)
+    for luck in (1, 2, 8, 64, 2048, 10_000, 10**6, 10**12):
+        for sx in (1.0, 3.0):
+            o = M.egg_odds(3, luck, sx)
             assert abs(sum(o) - 1) < 1e-9 and all(x > 0 for x in o), (luck, sx)
-            assert sum(o[3:]) <= M.RARE_SHARE_CAP + 1e-12
-            assert abs(o[0] / o[1] - 60 / 28) < 1e-9                       # Common : Rare keep their ratio
-        o = M.odds_with_luck(luck)
+            assert sum(x for x, (_, t, _) in zip(o, M.EGGS[3]) if t >= 4) <= M.RARE_SHARE_MAX + 1e-12
+        o = M.egg_odds(3, luck)
         if prev:
-            assert all(a >= b - 1e-15 for a, b in zip(o[3:], prev[3:]))   # more luck never lowers a rare chance
+            boundless = len(o) - 1
+            assert o[boundless] >= prev[boundless]                          # more luck always helps the rarest
         prev = o
-    assert M.odds_with_luck(10**9) == M.odds_with_luck(M.LUCK_CAP)        # capped
-    assert abs(M.odds_with_luck(1, 2.0)[6] - 2 * M.ODDS[6]) < 1e-15        # 2x Secret Luck doubles the Secret tiers
-    assert abs(M.odds_with_luck(2048)[8] - 2048 * M.ODDS[8]) < 1e-15       # luck works fully on Infinity Secret
+    assert M.egg_odds(3, 10**6)[-1] > M.egg_odds(3, 10_000)[-1]            # no cap: x1,000,000 beats x10,000
+    assert abs(M.egg_odds(0, 2048)[-1] - 2048 * 1e-12) < 1e-20              # luck works fully on Boundless
 
 
-def test_ladder_prices():                              # MONETIZATION 2: x2 per tier, 11 tiers to x2048
+def test_ladder_doubles_luck_and_power_together():         # owner: one "2x Boost" ladder for both
     assert M.LADDER_PRICES == [3, 9, 19, 29, 49, 79, 149, 249, 399, 799, 999]
-    assert M.ladder_cost(11) == 2_783 and 2 ** 11 == 2048
+    assert M.ladder_cost(11) == 2_783
+    for k in ("starter",):
+        assert M.PAID[k]["luck"] == M.PAID[k]["med_x"] == 8
+    assert M.PAID["whale"]["luck"] == 2048 and M.PAID["whale"]["med_x"] == 1.5 * 2048   # x VIP 1.5 on Power
+    assert M.SLOT_PACK_PRICE == 199 and M.SLOT_PACK_MAX == 10
 
 
-def test_paid_player_is_faster_but_free_player_finishes():   # boosts speed up, never gate
-    free = st.median(M.Player("average", 3000 + r).run().milestones["boss8"] for r in range(10))
-    starter = st.median(M.Player("average", 3000 + r, paid="starter").run().milestones["boss8"] for r in range(10))
-    whale = st.median(M.Player("average", 3000 + r, paid="whale").run().milestones["boss8"] for r in range(10))
-    assert whale < starter < free * 0.75 and free < 9 * 3600
+def test_paid_player_is_faster_but_free_player_finishes():   # targets: free ~10-12 h, whale ~3 h
+    free = st.median(M.Player("average", 3000 + r).run().milestones[f"boss{M.ZONES}"] for r in range(8)) / 3600
+    whale = st.median(M.Player("average", 3000 + r, paid="whale").run().milestones[f"boss{M.ZONES}"] for r in range(8)) / 3600
+    assert 9.5 <= free <= 12.5, free
+    assert 2.5 <= whale <= 4.0, whale
+
+
+def test_natural_mutation_storm_doubles_chances():      # MONETIZATION 5: storms also happen naturally
+    pl, n = M.Player("average", 3), 200_000
+    pl.t = 60                                                # inside a storm (first 5 min of every 45)
+    assert pl.in_mutation_storm() and M.STORM_EVERY == 2700 and M.STORM_LENGTH == 300
+    gold = sum(1 for _ in range(n) if (m := pl.roll_mutation()) and m[0] == "Gold")
+    assert within_4sd(gold, n, 2 / 25)
 
 
 def test_mutation_odds_are_the_advertised_odds():
     pl, n = M.Player("average", 2), 400_000
+    pl.t = 1000                                              # outside a Mutation Storm
+    assert not pl.in_mutation_storm()
     counts = {m[0]: 0 for m in M.MUTATIONS}
     for _ in range(n):
         m = pl.roll_mutation()
@@ -130,14 +167,14 @@ def test_stars_go_to_five_and_double_each_time():   # BIBLE 3.4: 3 copies -> nex
     assert M.STAR == [1, 2, 4, 8, 16, 32] and M.MAX_STARS == 5
     pl = M.Player("average", 0)
     pl.slots = 1
-    pets = [M.Pet(0, 3, 0) for _ in range(3)]
+    pets = [M.Pet(0, 4, 6) for _ in range(3)]               # Legendary
     for p in pets:
         p.stars = 4
     pets[2].lv = 12
     pl.pets = pets
     pl.fuse()
     assert len(pl.pets) == 1 and pl.pets[0].stars == 5 and pl.pets[0].lv == 12
-    five = [M.Pet(0, 3, 0) for _ in range(3)]
+    five = [M.Pet(0, 4, 6) for _ in range(3)]
     for p in five:
         p.stars = 5
     pl.pets = five
@@ -149,35 +186,35 @@ def test_stars_go_to_five_and_double_each_time():   # BIBLE 3.4: 3 copies -> nex
 def test_auto_fuse_never_touches_equipped_or_epics():
     pl = M.Player("average", 0)
     pl.slots = 3
-    pl.pets = [M.Pet(0, 2, 0) for _ in range(6)]             # 3 equipped + 3 spare Epics: manual only
+    pl.pets = [M.Pet(0, 3, 5) for _ in range(6)]             # 3 equipped + 3 spare Epics: manual only
     pl.dirty()
     pl.auto_fuse()
     assert len(pl.pets) == 6
     pl.slots = 1
-    pl.pets = [M.Pet(0, 3, 0)] + [M.Pet(0, 0, 0) for _ in range(3)]   # Legendary equipped, 3 spare Commons
+    pl.pets = [M.Pet(0, 4, 6)] + [M.Pet(0, 0, 0) for _ in range(3)]   # Legendary equipped, 3 spare Commons
     pl.dirty()
     pl.auto_fuse()
-    assert sorted((p.r, p.stars) for p in pl.pets) == [(0, 1), (3, 0)]
+    assert sorted((p.r, p.stars) for p in pl.pets) == [(0, 1), (4, 0)]
 
 
 def test_manual_fusion_needs_the_altar():
     pl = M.Player("average", 0)
     pl.slots = 3
-    pl.pets = [M.Pet(0, 2, 0) for _ in range(6)]             # 3 equipped + 3 spare Epics
+    pl.pets = [M.Pet(0, 3, 5) for _ in range(6)]             # 3 equipped + 3 spare Epics
     pl.dirty()
     pl.hatch(free=True)
-    assert sum(1 for p in pl.pets if p.r == 2 and p.stars == 0) == 6   # hatching never fuses Epics
+    assert sum(1 for p in pl.pets if p.r == 3 and p.stars == 0) == 6   # hatching never fuses Epics
     t0 = pl.t
     pl.bag, pl.bag_val = 1, 3
     pl.spend = lambda: None
     pl.sell()
-    assert any(p.r == 2 and p.stars == 1 for p in pl.pets) and pl.t >= t0 + M.SELL_TIME + M.ALTAR_TIME
+    assert any(p.r == 3 and p.stars == 1 for p in pl.pets) and pl.t >= t0 + M.SELL_TIME + M.ALTAR_TIME
 
 
 def test_xp_goes_automatically_to_equipped_pets_only():   # BIBLE 3.5: no food; kills give XP to the team
     pl = M.Player("average", 1)
     pl.slots = 1
-    eq, spare = M.Pet(0, 3, 0), M.Pet(0, 0, 0)
+    eq, spare = M.Pet(0, 4, 6), M.Pet(0, 0, 0)
     pl.pets = [eq, spare]
     pl.dirty()
     pl.power, pl.quest = 1000, 1
@@ -195,7 +232,7 @@ def test_xp_scales_with_zone():
 def test_team_hit_is_capped_at_your_power():             # BIBLE 3.3: your blasts always matter
     pl = M.Player("average", 1)
     pl.slots = 10
-    pl.pets = [M.Pet(7, 6, 0) for _ in range(10)]
+    pl.pets = [M.Pet(7, 9, 11) for _ in range(10)]
     pl.dirty()
     assert pl.team_hit_x() == M.TEAM_HIT_CAP == 1.0
     pl.pets = [M.Pet(0, 0, 0)]
@@ -204,10 +241,10 @@ def test_team_hit_is_capped_at_your_power():             # BIBLE 3.3: your blast
 
 
 def test_level_and_strength():
-    p = M.Pet(2, 6, 0)                                       # zone 3 Secret
+    p = M.Pet(2, 6, 8)                                       # zone 3 Secret
     p.stars, p.lv = 5, 30
     assert abs(p.strength() - 100 * 4 * 32 * (1 + 0.05 * 29)) < 1e-6
-    assert M.R_STR[7:] == [400, 2000]                        # Ultra Secret, Infinity Secret
+    assert M.TIER_STR == [1, 1.5, 2.5, 4, 10, 25, 100, 400, 2_000, 10_000]
 
 
 # ---------- economy rules ----------
@@ -264,10 +301,10 @@ def test_guarantees():
     assert any(p.r >= 1 for p in pl.pets)
 
 
-def test_quest_difficulty_tiers():                          # owner: zones 1-3 very easy, 4-6 easy, 7 medium, 8 hard
-    assert M.TIER == ["very easy"] * 3 + ["easy"] * 3 + ["medium", "hard"]
+def test_quest_difficulty_tiers():                          # zones 1-3 very easy, 4-6 easy, 7-8 medium, 9-10 hard
+    assert M.TIER == ["very easy"] * 3 + ["easy"] * 3 + ["medium"] * 2 + ["hard"] * 2
     lengths = [len(q) for q in M.QUESTS]
-    assert lengths[0] <= lengths[3] <= lengths[6] <= lengths[7]
+    assert lengths[0] <= lengths[3] <= lengths[6] <= lengths[8]
     assert all(q[-1] == ("power", M.BOSS[z]["rec"]) for z, q in enumerate(M.QUESTS))
 
 
@@ -287,11 +324,11 @@ def test_clash_targets():
 
 
 def test_pacing_targets():                                  # GAME-PLAN design targets (free player, solo)
-    rows = [M.Player("average", 1000 + r).run() for r in range(40)]
+    rows = [M.Player("average", 1000 + r).run() for r in range(30)]
     t = [st.median(x.milestones[f"boss{z + 1}"] / 60 for x in rows) for z in range(M.ZONES)]
     assert 4 <= t[0] <= 9 and 15 <= t[1] <= 30, t
     assert all(b > a for a, b in zip(t, t[1:]))              # every zone takes longer to finish
-    assert 300 <= t[7] <= 540, t                             # first full run: 5-9 hours
+    assert 570 <= t[-1] <= 750, t                            # first full run (free): about 10-12 hours
     med = st.mean(x.med_time / (x.med_time + x.hunt_time) for x in rows)
     pet = st.mean(x.pet_dmg / (x.pet_dmg + x.player_dmg) for x in rows)
     assert 0.15 <= med <= 0.50 and 0.30 <= pet <= 0.50, (med, pet)   # pets never out-damage your blasts

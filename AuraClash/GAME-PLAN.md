@@ -1,4 +1,4 @@
-# AURA CLASH: Game Plan v6 (3 October 2026)
+# AURA CLASH: Game Plan v7 (3 October 2026)
 
 **This file:** the market case, the pitch, the research, the concept test, and the **build order**.
 
@@ -27,7 +27,7 @@
 - **Who:** 8-14-year-olds who play simulators and anime games.
 - **Identity:** a pet simulator with two halves: **meditate (Power)** and **hunt (coins → pets)**.
 - **Scope:**
-  - 8 zones (GAME-BIBLE Part B);
+  - 10 zones at launch (GAME-BIBLE Part B), then a new zone about every 1-2 weeks;
   - a first full run of about 7 hours for an average free player (about 4 h 17 with 62 R$ of ladder tiers, about 2 h 22 with 1,274 R$).
 
 ## 3. Research: what we take (owner: "we don't need to be original")
@@ -37,8 +37,8 @@
 | Pets fight beside you, constant loot stream | Pet Simulator 99 | pets fight and tank crystal monsters |
 | Gold / Rainbow pet machines | Pet Simulator 99 | star fusion up to ★5 |
 | Rank quests | Pet Simulator 99 | 5-9 per zone, very easy → hard; the boss gate opens when they're done |
-| Paid eggs, Huge pets, Limiteds, server boosts | Pet Simulator 99 | Daily + Shop Exclusive Eggs (Huge, Titanic), numbered Limiteds, Server Luck |
-| Luck ladders, crazy-rare tiers | RNG games (Sol's RNG) | Power and Luck ladders, Ultra and Infinity Secrets |
+| Paid eggs, Limiteds, server boosts | Pet Simulator 99 | Daily + Shop Exclusive Eggs, numbered Limiteds (Verity collab), Server Luck, Mutation Storms |
+| Luck ladders, crazy-rare tiers, serials | RNG games (Sol's RNG) | the 2× Boost ladder, Secret → Divine → Impossible → monthly Boundless, serialized |
 | Hourly and daily rewards | most top sims | a 60-minute hourly track and a 7-day login cycle with exclusive eggs |
 | Stat training + AFK progress | Anime Fighting Simulator | meditation (AFK / Focus / offline) |
 | Mutations raise value | Grow a Garden | monster mutations (Gold → Celestial) |
@@ -105,8 +105,8 @@ All of it follows STYLE-SHEET (GPU concepts → Blender, outlines, smooth plasti
 
 ### 5b. After playtest #1 passes (to launch)
 
-1. **Monetization** (MONETIZATION.md v2): the buff system and ladders, store, passes, products, both Exclusive Eggs + PolicyService gating, Limiteds, packs, Aura Pass, hourly / daily / group rewards, pop-ups. Tests P13, P15-P18.
-2. **Zones 3-8** (GAME-BIBLE 14-19), one at a time, each through the art pipeline and the model.
+1. **Monetization** (MONETIZATION.md v3): the buff system and the 2× Boost ladder, store, passes, slot packs, coin packs, both Exclusive Eggs + PolicyService gating, the Verity Limiteds (licence first), packs, Aura Pass, hourly / daily / group rewards, the two pop-ups. Tests P13, P15-P20.
+2. **Zones 3-10** (GAME-BIBLE 14-21), one at a time, each through the art pipeline and the model.
 3. **Full art pass**, then a **private soft launch** (the owner decides access; Winter never changes it), then the Later systems (GAME-BIBLE 22).
 
 ## 6. Design targets (checked by `econ/tests.py`)
@@ -115,11 +115,10 @@ These are **model targets for a free player playing solo, not promises.** The si
 
 | Target | Model (average player) |
 |---|---|
-| Boss 1 at 4-9 min | ~6 min |
-| Boss 2 at 15-30 min | ~20 min |
-| Every zone takes longer than the one before | yes (6 min → 2 h 57 for zone 8) |
-| First full run (boss 8) in 5-9 h | 7 h 11 |
-| 15-50% of play time meditating | 39% (26% in zones 1-2) |
+| Boss 1 at 4-9 min | ~5.5 min |
+| Boss 2 at 15-30 min | ~24 min |
+| Every zone takes longer than the one before | yes |
+| **Free first run (boss 10) in about 10-12 h** (owner) | **10 h 57** |
+| **Whale first run about 3 h** (owner) | **3 h 14** |
 | Pets 30-50% of damage (never more than your blasts) | 37% |
 | Average player wins the clash ≥ 90% at recommended Power; weak ≥ 60%; under-powered (½) average ≤ 40% | 100% / 79% / 23% |
-| Paid boosts are clearly faster, free players still finish | 62 R$: 4 h 17; 1,274 R$: 2 h 22; free 7 h 13 |
