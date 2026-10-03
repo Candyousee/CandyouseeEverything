@@ -1,154 +1,18 @@
-# AURA CLASH: Core Game v5.1 (everything around the core loop)
+# AURA CLASH: Core Game v6 (server authority, saving, tests, playtest, performance)
 
 **Doc map (what wins on a conflict):**
-1. **`CORE-LOOP.md`:** the core rules and numbers (meditation, hunting, mutations, bag / SELL, pets, Soul Food, shop, quests, bosses, first 8 minutes). Backed by `econ/model.py` + `econ/tests.py`.
-2. **This file:** eggs and hatches in detail, the pet catalogue, the aura, the HUD, the tutorial, server authority, **saving (acceptance tests)**, **playtest #1 (acceptance criteria)**, the quality bar, and what comes later.
-3. **`STYLE-SHEET.md`:** the look (glossy toon anime).
-4. **`GAME-PLAN.md`:** the market case and the build order. **`HANDOFF-WINTER.md`:** Winter's start sheet.
+1. **`GAME-BIBLE.md`:** every game rule and number, zone by zone. Backed by `econ/model.py` + `econ/tests.py`. **Wins on any game-rule conflict.**
+2. **`MONETIZATION.md`:** everything that's sold.
+3. **This file:** how the game is made safe and correct (server authority, saving, purchases), the **acceptance tests**, **playtest #1**, and the performance bar.
+4. **`STYLE-SHEET.md`:** the look. **`GAME-PLAN.md`:** market and build order. **`HANDOFF-WINTER.md`:** Winter's start sheet.
 
-Old versions (v2.3 stone training, v4 crystal smashing) are in `archive/`, for history only. **Nothing in `archive/` is a rule.**
+Old versions are in `archive/`, for history only. **Nothing in `archive/` is a rule.**
 
 ---
 
-## 1. What the game is
+## 1. Server authority and anti-cheat
 
-*"Meditate to grow your aura, hunt crystal monsters with your pets, and become the strongest in the server."*
-
-A **pet simulator with two halves:**
-- **meditation** (calm, AFK-friendly) grows **Power**;
-- **hunting** (active, skill-based hold-release blasts) earns **coins** that buy **pets**;
-- pets make both halves faster.
-
-**Who:** 8-14-year-olds who play simulators and anime games.
-
-**Monetization:** designed by the owner after playtest #1. The core has no dependency on it.
-
-## 2. Zones
-
-| # | Zone | Element | Status |
-|---|---|---|---|
-| 1 | **Training Grove** | Light | two-zone test |
-| 2 | **Lava Dojo** | Fire | two-zone test |
-| 3-8 | (e.g. Frost Peaks, Storm Cliffs, Sakura Realm, Void Rift, Galaxy Throne, Celestial Gate) | one element each | later, after playtest #1 |
-
-**Each zone has:**
-- a Shrine hub (mats, Sell Altar, egg stand, shop, Fusion Altar);
-- 3 monster types with that zone's mutations;
-- its own egg (8 species), Soul Food and boss;
-- 5-6 rank quests;
-- a portal to the next zone that opens when its boss is beaten.
-
-**Scaling per zone:** monster HP and shard values ×10, the Shrine ×4, zone pets ×2 Strength (zones 3-8 will be tuned in the model before they're built).
-
-## 3. Eggs, hatches and the pet catalogue
-
-### 3.1 Species (8 per zone)
-
-| Rarity | Zone 1: Light | Zone 2: Fire |
-|---|---|---|
-| Common | **Light Fox** (tutorial), Glow Bunny | Ember Imp, Cinder Pup |
-| Rare | Prism Owl, Sun Pup | Magma Toad, Blaze Ferret |
-| Epic | Halo Lynx | Lava Salamander |
-| Legendary | Dawn Griffin | Inferno Wolf |
-| Mythic | Solar Kirin | Phoenix |
-| Secret | ??? | ??? |
-
-- Each species has **one signature attack** (the fox dash, the imp fireball, the griffin dive…) and **2-3 idle animations**.
-- Rarer pets are bigger, with bigger effects.
-
-### 3.2 The odds card and the honest-crack rule
-
-- **The egg card shows all odds:** Common 60% / Rare 28% / Epic 10% / Legendary 1.9% / Mythic 0.1% / **??? 1 in 500,000**.
-- **Secrets:** the *chance* is always shown; only the *identity* is hidden. After someone hatches it, the card shows its silhouette and "First hatched by ___".
-- **The crack colour always equals the true rarity.** There are no fake near-misses anywhere.
-- **Guarantees** (saved, so rejoining can't repeat or skip them):
-  - the 1st hatch ever is the Light Fox;
-  - the 3rd hatch is a Rare if you have none;
-  - each boss's first clear gives one free egg of the next zone.
-
-### 3.3 The hatch ladder
-
-| Result | Hatch |
-|---|---|
-| Common (1.5 s) | the egg pops, a puff, the pet hops out |
-| Rare (2 s) | blue cracks, a glow burst, a happy jingle |
-| Epic (3 s) | purple cracks, the egg levitates, lightning, a thunder clap |
-| Legendary (4 s) | gold cracks; **the sky dims around you**; a gold pillar; a slow-motion shatter; **a server announcement** |
-| **Mythic: CUTSCENE** (6 s; unskippable the first time) | the world freezes, the camera orbits, the egg rises into a vortex of the zone's element, **the pet forms from raw energy**, a shockwave across the zone, a server announcement with your name |
-| **Secret: CUTSCENE** (8-10 s; unskippable the first time) | the screen cracks, the music cuts to silence, a "???" title card, **the whole server's sky changes for 10 s**, a unique entrance, **a global announcement in every server**, a permanent "Secret Holder" title |
-
-- **Multi-hatch** (Hatch 3, unlocks after boss 1): plays the best result's hatch.
-- **Skip:** after you've seen a rarity's hatch once, a skip button appears for it.
-
-### 3.4 Inventory
-
-- **Capacity:** 250 pets.
-- **Locks:** favourite (lock) a pet so it's never auto-fused.
-- **Auto-fuse:** Commons + Rares, unequipped only (CORE-LOOP 3a).
-- **When full:** new hatches go to a **mailbox** (claim later); they're never deleted.
-
-## 4. Your aura
-
-- **Size grows with Power:** **2.5 + 0.5 × log10(Power) studs** of radius.
-
-| Power | Radius |
-|---|---|
-| 10 | 3.0 |
-| 300 | 3.7 |
-| 10,000 | 4.5 |
-| 1,000,000 | 5.5 |
-
-  Meditation makes it pulse and swell; a Power milestone (×10) gives a burst.
-- **Forms** (from bosses; each changes the shape, colour and flame style):
-
-| Form | From | Look |
-|---|---|---|
-| **Spark** | start | white-gold light flickers, soft |
-| **BLAZE** | Stone Golem | orange anime flames, rising embers |
-| **INFERNO** | Magma Oni | red-black flames, a heat haze, a flame crown |
-| zones 3-8 | later bosses | one per element |
-
-- **Transformation:** a short cutscene (2.5 s), a shockwave and a "BLAZE!" title.
-- **No Bond:** the aura shows your form only. (Aura cosmetics are a possible owner monetization item.)
-
-## 5. HUD (mobile first; see the GUI guide)
-
-**Always on screen:**
-- **Power** (big, top centre);
-- **coins**;
-- the **storm counter** (18 / 60) by your character;
-- **SELL** (bottom right, bounces when full);
-- the **blast button** (mobile);
-- the **quest tracker** (one line + a progress bar);
-- a **pet bar** (equipped pets, Feed badge).
-
-**Context:**
-- the **Focus ring** while meditating;
-- monster HP bars (green when easy);
-- the mutation name over mutated monsters;
-- the "WHILE YOU WERE AWAY" card.
-
-**Menus:**
-- Pets (Equip Best, Feed All, auto toggles, fuse);
-- Shop;
-- Egg card;
-- Settings:
-  - Low effects;
-  - others' effects;
-  - camera shake;
-  - reduced flashing;
-  - show others' pets.
-
-## 6. Tutorial (the first 8 minutes; CORE-LOOP 7)
-
-- **A pulsing hand** points at the one next thing: MEDITATE → a Shardling → SELL → the egg → Feed → the quest tracker.
-- **No text walls:** labels of 1-3 words.
-- **Steps are saved** (14.1), so a rejoin resumes the tutorial instead of repeating it.
-- **The tutorial meditation** is a fixed +40 Power over 20 s, so the first moment is the aura bursting, not waiting.
-
-## 7. Server authority and anti-cheat
-
-- **The server owns:** Power, coins, bag contents, food, pets, quest progress and every reward. The client only sends inputs.
+- **The server owns:** Power, coins, bag contents, pets (with their XP), quest progress, purchases and every reward. The client only sends inputs.
 - **Blasts:**
   - the client reports hold start / release;
   - the server checks the hold length (at least 0.5 s), a blast rate of at most one per 1.4 s (plus a small buffer), the range to the target, and that the target exists;
@@ -159,28 +23,30 @@ A **pet simulator with two halves:**
   - Focus taps are limited to one per breath;
   - Focus can't exceed ×3;
   - offline gains use server timestamps only.
-- **Loot:** the server rolls mutations, drops and eggs. Shared monsters use the server's damage log: **every player who damaged a monster gets their own full drop and quest credit** (CORE-LOOP 8).
-- **Pets:** each pet has a unique id. Fusion is one server transaction (3 removed + 1 added in the same save).
+- **Loot:** the server rolls mutations, drops and eggs. Shared monsters use the server's damage log: **every player whose hit landed gets their own full drop and quest credit** (GAME-BIBLE 4.1).
+- **Pets:** each pet has a unique id. Fusion is one server transaction (3 removed + 1 added in the same save). XP is added by the server on each kill.
+- **Luck:** the total luck multiplier (passes × potions × server boosts) is capped at ×10, and the egg card shows the real odds at the current luck.
 
-## 8. Saving (build requirement for the two-zone test)
+## 2. Saving and purchases (build requirement for the two-zone test)
 
-### 8.1 What's saved (one profile per player, session-locked)
+### 2.1 What's saved (one profile per player, session-locked)
 
 | Saved | Includes |
 |---|---|
 | Progress | Power, coins, zone access, bosses beaten, form, quest progress per zone |
-| Bag + food | shard counts by type and mutation, the food pouch |
-| Pets | every pet (id, species, zone, stars, level, XP, favourite), equipped list, auto-fuse / auto-feed settings, mailbox |
+| Bag | shard counts by type and mutation; unsold Boss Shards |
+| Pets | every pet (id, species, zone, stars 0-5, level, XP, favourite / lock, Exclusive / Limited serial), equipped list, auto-fuse / auto-delete settings, mailbox |
 | Upgrades | Bag, Mat, Surge levels; pet slots |
-| Tutorial / guarantees | tutorial step, **lifetime hatch count**, guaranteed-Rare used, first-clear eggs claimed |
+| Tutorial / guarantees | tutorial step, **lifetime hatch count**, guaranteed-Rare used, Boss Shards claimed per boss, Exclusive Egg pity counter |
+| Purchases | owned passes, active potion end times (server time), Starter Pack used, Aura Pass tier / XP, processed `PurchaseId`s (MONETIZATION.md) |
 | Offline | `lastSeen` (server time), `offlineClaimId` |
-| Operations | each critical operation's id → `committed` (with `revealed` yes/no) or `cancelled`, kept 30 days (8.2) |
+| Operations | each critical operation's id → `committed` (with `revealed` yes/no) or `cancelled`, kept 30 days (2.2) |
 | Settings | effects, camera, flashing, Low effects |
 
-### 8.2 Rules
+### 2.2 Rules
 
 - **Session lock:** one server at a time per profile, so two servers can never both grant.
-- **Ordinary progress** (Power, coins, bag, kills, normal hatches, feeding): queued save + an autosave every 60 s, on leave and on server shutdown (`BindToClose`). **Honest limit:** if a server crashes, up to the last ~60 s of ordinary progress can be lost. That's accepted for ordinary progress; it's why the critical operations below use confirmed saving.
+- **Ordinary progress** (Power, coins, bag, kills, XP, normal hatches): queued save + an autosave every 60 s, on leave and on server shutdown (`BindToClose`). **Honest limit:** if a server crashes, up to the last ~60 s of ordinary progress can be lost. That's accepted for ordinary progress; it's why the critical operations below use confirmed saving.
 - **Confirmed saving: three outcomes, never two.** Roblox documents that a request can fail on the game server's side **after** the write has committed (https://create.roblox.com/docs/cloud-services/data-stores/error-codes-and-limits). So a failed or timed-out response proves nothing. Every critical operation ends in exactly one of three states:
 
   | State | How the server knows | What happens |
@@ -191,7 +57,7 @@ A **pet simulator with two halves:**
 
   **While an operation is UNKNOWN (pending):**
   - its cost is **held**, neither spent nor refunded. The coins show as "held" in the HUD and can't be spent; the pets involved are locked;
-  - **conflicting transactions are blocked:** no other purchase, hatch, fusion, feed or sell that touches the same coins or pets, and no second critical operation, until it resolves. The UI shows "Saving…";
+  - **conflicting transactions are blocked:** no other purchase, hatch, fusion or sell that touches the same coins or pets, and no second critical operation, until it resolves. The UI shows "Saving…";
   - **safe play continues:** hunting, meditating and quests keep working as ordinary progress;
   - the server retries the reconcile with backoff (2, 4, 8, 16… s, capped at 60 s), and resolves to state 1 or 2 on the first successful `UpdateAsync`;
   - **every later write is also a reconcile:** the autosave, the leave save and the shutdown save all run inside `UpdateAsync`, which first resolves pending ids against the stored profile. If the id is present, the stored effect is kept; if it's absent, it's marked cancelled. **No save ever writes the "refunded" or "spent" coins on a guess.**
@@ -204,8 +70,10 @@ A **pet simulator with two halves:**
 
   **Used for:**
   - the offline meditation claim;
-  - Mythic / Secret hatches (the egg's cost and the rolled result, saved before the cutscene);
-  - fusion of ★★ or Epic+ pets.
+  - Mythic / Divine / Secret hatches and every Exclusive Egg hatch (the cost and the rolled result, saved before the cutscene);
+  - fusion to ★2 or higher, and fusion of Epic+ pets;
+  - the Boss Shard reward (once per boss);
+  - **every Robux purchase** (below).
 
   The operation ids (including cancelled ones) are kept in the profile for 30 days, then pruned.
 
@@ -215,32 +83,43 @@ A **pet simulator with two halves:**
   - a rejoin can't claim the same span twice;
   - the device clock does nothing.
 - **AFK rejoin:** the rejoin teleport saves first, then puts you back on a mat (the gain continues).
+- **Robux purchases (developer products):** Roblox calls `MarketplaceService.ProcessReceipt` and retries it until we answer `PurchaseGranted`. So:
+  - the receipt's **`PurchaseId` is the operation id**: grant + record the id in **one** `UpdateAsync`;
+  - return `PurchaseGranted` **only** when that write is **confirmed saved** (state 1), or when a reconcile finds the id already stored;
+  - on state 3 (unknown), return `NotProcessedYet`: Roblox will call again, and the id check makes the retry grant exactly once;
+  - Robux is never charged without the item, and the item is never granted twice.
+- **Game passes** are checked with `UserOwnsGamePassAsync` on join (and `PromptGamePassPurchaseFinished` during play); their effects are never stored as a substitute for that check.
+- **Limited pets:** the global stock is decremented in a MemoryStore / DataStore transaction **before** the purchase prompt. If the count is 0, the prompt never opens. A failed purchase returns the reserved unit after 2 min. Never oversold.
+- **Paid random items:** the Exclusive Egg is shown only when `PolicyService:GetPolicyInfoForPlayerAsync(player).ArePaidRandomItemsRestricted` is false; otherwise the direct-buy shop is shown (MONETIZATION.md 4).
 - **Studio without API access:** play without saving, with a "NOT SAVING" banner. Never stall.
 - **Follow Roblox's data store guidance:** https://create.roblox.com/docs/cloud-services/data-stores/best-practices
 
-### 8.3 Tests (all must pass in the real game before playtest #1; none has been run yet)
+### 2.3 Tests (all must pass in the real game before playtest #1; none has been run yet)
 
 | # | Test | Pass |
 |---|---|---|
-| P1 | Play 5 min, leave, rejoin another server | everything in 8.1 identical |
+| P1 | Play 5 min, leave, rejoin another server | everything in 2.1 identical |
 | P2 | Log off 1 h, rejoin twice quickly (two servers) | offline Power granted exactly once |
 | P3 | Change the device clock ±1 day | no effect on offline gains |
 | P4 | Kill the server during a Mythic hatch (forced shutdown) | after rejoin: the Mythic is there exactly once |
 | P5 | Studio mock of the data store: (a) the write fails before committing; (b) **the write commits, then the call reports a timeout**; (c) the store is down for 2 min after an unknown write | (a) a later successful reconcile finds no id: "nothing spent, try again", the id is stored as cancelled; (b) the reconcile finds the id: the result is shown once, **never refunded**; (c) during the outage the coins are **held** (not refunded, not spendable), conflicting purchases / fusions / hatches are blocked, and hunting / meditating still work; when the store recovers it resolves to (a) or (b) exactly once |
 | P6 | Rejoin before the 3rd hatch and after the tutorial egg | the guarantees happen exactly once, in order |
-| P7 | **Odds test:** 200,000 automated server-side hatches | each rarity within ±4 standard deviations (Mythic: 200 expected, accepted 144-256) |
-| P8 | Crack colour vs result over the same 200,000 hatches | 100% match |
-| P9 | **Mutation test:** 200,000 automated spawns | each mutation within ±4 SD of its chance (CORE-LOOP 2.3) |
+| P7 | **Odds test:** 1,000,000 automated server-side hatches | each rarity Common-Divine within ±4 standard deviations (Mythic: 1,000 expected; Divine: 100 expected, accepted 60-140); Secret 0-6 |
+| P8 | Crack colour vs result over the same 1,000,000 hatches | 100% match |
+| P9 | **Mutation test:** 200,000 automated spawns | each mutation within ±4 SD of its chance (GAME-BIBLE 4.2) |
 | P10 | Fill the bag in Overdrive with mutated shards | never above capacity; every mutated shard sells at its multiplier |
 | P11 | A newcomer (10% of the damage) and a veteran (90%) hit one monster | **both** get their own full drop and quest credit |
-| P12 | Spam SELL / Feed / Fuse (20 clicks), and two devices at once | exactly one sale, feed and fusion each |
-| P13 | A new player does zone 1 quests 2 and 4 in a full server next to veterans who kill everything shared | the quests complete at the solo pace or faster, thanks to the protected pack (CORE-LOOP 8). The model simulates this (`econ/RESULTS.txt` section 7); it must also be run in the game |
+| P12 | Spam SELL / Fuse / Hatch (20 clicks), and two devices at once | exactly one sale, fusion and hatch each |
+| P13 | **Robux product:** buy a Luck Potion with the data store mocked to (a) fail, (b) commit then time out | (a) `NotProcessedYet`, then exactly one grant when Roblox retries; (b) the reconcile finds the `PurchaseId`: granted once, never twice |
 | P14 | Studio mock: every save fails during a Mythic hatch attempt, then the server is shut down | rejoin with the write **not committed**: no Mythic and no coins spent. Rejoin with the write **committed** (response lost): the Mythic and its cost are both there once, and the cutscene plays on join ("finished saving"). No path refunds coins for a committed hatch or shows a result that isn't stored |
+| P15 | **Limited stock:** two servers buy the last 5 units at once (20 buyers) | exactly 5 sold; nobody is charged without receiving one |
+| P16 | **Paid random items:** a test account with `ArePaidRandomItemsRestricted = true` | never sees the Exclusive Egg; sees the direct-buy shop |
+| P17 | **Luck cap + odds card:** stack Super Lucky + Luck Potion + Server Luck | luck ≤ ×10; the card's odds equal the rolled odds over 200,000 hatches (±4 SD) |
 
-## 9. PLAYTEST #1 (behaviour first)
+## 3. PLAYTEST #1 (behaviour first)
 
 **Build:**
-- zones 1-2, complete per CORE-LOOP;
+- zones 1-2, complete per GAME-BIBLE Part A + zones 1-2 (no monetization);
 - the tutorial;
 - the cheat panel (set Power / coins / zone / spawn a mutation);
 - a session log (where the player went, what they bought, how long they meditated vs hunted, when they stopped).
@@ -255,7 +134,7 @@ A **pet simulator with two halves:**
 | 4 | **Switches between hunting and meditating on their own** | 3+ switches on day 1 |
 | 5 | Taps the red flash in the beam clash without being told | by the 2nd boss attempt |
 | 6 | Notices and chases a mutated monster | yes |
-| 7 | Feeds a pet / makes a ★ without being told after the tutorial | yes |
+| 7 | Makes a ★ pet at the Fusion Altar without being told after the tutorial | yes |
 | 8 | Keeps playing after boss 1 with no prompt | 10+ min |
 | 9 | Logs off on a mat (or asks about offline) | yes, or explained in one line |
 | 10 | **Day 2:** sees the offline gain and keeps playing after it | 10+ min |
@@ -271,45 +150,30 @@ A **pet simulator with two halves:**
 - only hunting → raise the Shrine rate or the Power gates;
 - only sitting → raise the monster loot or make Focus faster.
 
-## 10. Quality and performance target
+## 4. Quality and performance target
 
 - **Look:** STYLE-SHEET.md (glossy toon anime, outlines, smooth plastic, calm bases + loud loot).
-- **Early aura** (Spark / Blaze / Inferno): 3.0-4.5 studs, 2 layers, ≤ 40 particles at gameplay distance.
+- **Aura:** early forms (Spark / BLAZE / INFERNO) 3.0-4.5 studs, 2 layers, ≤ 40 particles; later forms up to 8.3 studs, ≤ 4 layers, ≤ 120 particles at gameplay distance.
 - **Others' auras and pets:** full within 40 studs, reduced at 40-100, hidden or a billboard beyond.
 - **Per client:** ≤ 1,500 particles, ≤ 4 overlapping transparent layers.
-- **Storm and mutations:** budgets in CORE-LOOP 9.
+- **Storm and mutations:** budgets in GAME-BIBLE 4.3 (≤ 12 shard meshes + 2 emitters for you, 1 emitter for others).
 - **Roblox guidance:** https://create.roblox.com/docs/performance-optimization/improve
 - **60 fps** on a mid-range phone with a full server at the Shrine.
 - **Settings:** Low effects, others' effects, camera shake, reduced flashing, show others' pets.
 
-## 11. Later (only after playtest #1 passes)
-
-Each must keep the core rules (**Power only from meditation, coins only from hunting**) or be an explicit owner decision.
-
-| System | Idea | Core-rule note |
-|---|---|---|
-| Zones 3-8 | new monsters, eggs, bosses, forms | tuned in the model first |
-| Ascension | reset Power and zones for a permanent meditation multiplier + a halo; keep pets | pets kept, so the reset is fast and feels powerful |
-| Global events (one clock for all servers) | Fire mutations ×5, Secret odds ×5, a Blood Moon… | change chances only |
-| Wild Spirits | a rare roaming pet mini-boss; the final PERFECT catches it; everyone who helped gets a reward | |
-| Trading | safe trade window, both confirm, 3 s lock, server-validated, logged | unlocks after boss 2 |
-| Sanctum | your own island to **display** pets and trophies | **display only, no coin income** (that would break rule 2) |
-| World Boss | server-wide, every 30 min | rewards eggs / food, not coins |
-| Infinity Tower | endless boss floors | |
-| Daily streak / incubator | return rewards | eggs / food / Focus boosts, not coins |
-| **Monetization** | the owner's design | owner decides |
-
-## 12. What the model does and doesn't cover
+## 5. What the model does and doesn't cover
 
 - **It covers:**
   - meditation (AFK / Focus / offline);
   - blasts with PERFECT / combo / Overdrive chains;
-  - the 6 monsters, mutations, the bag cap and SELL;
-  - shop spending, eggs with real odds and guarantees, star fusion, Soul Food levels;
-  - rank quests, boss HP and the beam clash.
+  - all 8 zones: 24 monsters, mutations, the bag cap and SELL, Boss Shards;
+  - shop spending, eggs with real odds (7 rarities) and guarantees, stars 0-5, automatic XP and levels, the team-hit cap;
+  - rank quests by difficulty tier, boss HP and the beam clash;
+  - the effect of the main passes (VIP, 2× Coins, 2× Meditation, Lucky, +3 Slots).
 - **It doesn't cover:**
   - monsters hitting the player (only time lost, assumed small);
   - other players sharing monsters (personal loot means crowded servers pay faster than the model);
   - walking between areas (beyond a per-kill overhead);
-  - saving (tests P1-P14 are for the real game).
+  - potions, paid eggs, Limiteds and the Aura Pass (MONETIZATION.md);
+  - saving and purchases (tests P1-P17 are for the real game).
 - **Decisions** (like when to meditate) follow a simple "average player" policy. **The playtest is the real test.**

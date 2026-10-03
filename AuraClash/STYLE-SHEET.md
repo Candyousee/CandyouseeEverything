@@ -59,6 +59,17 @@ Winter researches the current top games in this style online before the concept 
 | **Sound** | Bright and satisfying: glassy crystal clinks and shatters, deep "thoom" blasts, a rising pitch on combos, a coin cha-ching cascade, upbeat anime-pop / lo-fi music per zone, big orchestral hits for hatches and bosses |
 | **Motion** | **Snappy and bouncy:** squash and stretch on hits and UI, overshoot then settle, fast anticipation then a big release. Pets are bouncy and cute when idle, sharp when attacking |
 
+## Zone palettes (zones 3-8, same rules: calm pastel bases, loud loot)
+
+| Zone | Bases | Accent / crystals | Light mood |
+|---|---|---|---|
+| 3 Frost Peaks | snow white `#EEF6FF`, pale blue rock `#BFD7EA` | ice cyan `#7FE7FF`, aurora green `#7DFFB2` | cool, crisp, aurora sky |
+| 4 Storm Cliffs | slate lilac `#9A90B8`, cloud grey-blue `#C9CDE6` | electric yellow `#FFE34D`, violet `#9B5CFF` | dramatic, flickering lightning |
+| 5 Sakura Realm | blossom pink `#F7C6D9`, moss green `#9ED39A` | hot pink `#FF5FA2`, jade `#2FD6A0` | soft golden afternoon |
+| 6 Void Rift | deep plum `#3B2A55`, dusk violet `#5C4A80` (darker zone, still never black) | void magenta `#E04BFF`, rune cyan `#4BF0FF` | moody, glowing runes |
+| 7 Galaxy Throne | navy space `#1E2A5A`, nebula purple `#4B3C8C` | star gold `#FFD86B`, comet blue `#6BC8FF` | starry, planets in the sky |
+| 8 Celestial Gate | cloud white `#FFF8EC`, soft gold `#F2DFA6` | pure gold `#FFC93D`, halo white `#FFFFFF` with prism edges | radiant, heavenly bloom |
+
 ## Never in this game
 
 - No realistic textures: no photo grass, dirt, bark, rock or wood grain.
