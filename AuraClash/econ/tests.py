@@ -404,11 +404,23 @@ def test_pacing_targets():                                  # GAME-PLAN design t
     assert 0.15 <= med <= 0.50 and 0.30 <= pet <= 0.50, (med, pet)   # pets never out-damage your blasts
 
 
-def test_friction_early_zones():                           # GAME-BIBLE 1.1 (zones 1-3 must pass; 4-10 are open)
-    rows = [M.Player("average", 1000 + r).run(until_zone=3) for r in range(20)]
-    assert all(g <= 5 for g in M.reward_gaps(rows)[:3]), M.reward_gaps(rows)[:3]
-    steps = M.quest_step_minutes(rows)
-    assert all(steps[z][-1] <= 5 for z in range(3))          # the Power-gate wait in zones 1-3
+def test_friction_early_zones():                           # GAME-BIBLE 1.1: worst cases, not medians (zones 1-3)
+    rows = [M.Player("average", 1000 + r).run(until_zone=3) for r in range(40)]
+    allr = M.reward_gaps(rows, levels=True)[:3]
+    assert all(M.pct(g, .9) <= 5 and g[-1] <= 6 for g in allr), [(M.pct(g, .9), g[-1]) for g in allr]
+    assert all(d <= M.PACE_CAP / 60 + 1e-9 for x in rows for _, d in x.gate_sits)   # no forced sitting over 3 min
+
+
+def test_hatch_bonus_follows_the_quest_counter():           # one counter: every hatch in the zone counts
+    pl = M.Player("average", 0)
+    pl.zone, pl.coins = 1, 10 ** 9                            # zone 2: "hatch 8"
+    pl.zone_hatches[1] = 3                                    # 3 hatches already done before the step (they count)
+    pl.hatch(free=True)                                       # a quest-reward egg: counter 4
+    assert pl.subgoal_log == []
+    pl.hatch()                                                # counter 5 -> bonus egg -> counter 6
+    assert pl.subgoal_log == [(1, 5)] and pl.zone_hatches[1] == 6
+    pl.hatch(); pl.hatch()                                    # 7, 8 = target: no bonus at or past the target
+    assert pl.subgoal_log == [(1, 5)]
 
 
 def test_reproducible():

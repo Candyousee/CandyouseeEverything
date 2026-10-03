@@ -38,9 +38,9 @@ Every boost is **permanent**, **timed** or **server-wide**, and they all **multi
 | Spend | Profile | All 10 zones |
 |---|---|---|
 | 0 R$ | free | **~8 h 02** |
-| 31 R$ | starter: 3 ladder tiers | **6 h 03** |
-| 986 R$ | VIP + 2× Coins + 6 ladder tiers | **3 h 16** |
-| 7,164 R$ | whale: every pass + all 11 tiers + 10 slot packs | **2 h 59** |
+| 31 R$ | starter: 3 ladder tiers | **5 h 57** |
+| 986 R$ | VIP + 2× Coins + 6 ladder tiers | **3 h 09** |
+| 7,164 R$ | whale: every pass + all 11 tiers + 10 slot packs | **3 h 03** |
 
 **What these times are (and aren't):** they come from `econ/model.py`, which simulates the **core loop**: blasts, Overdrive, mutations and storms, meditation, eggs and luck, pets (Strength, stars, levels, the Star Forge in zone 5), quests, bosses, the 2× Boost ladder, VIP, 2× Coins / Secret Luck / Hatch Speed, Hatch ×8, Huge Storm, Auto-Sell, Mutation Magnet and slot packs. **Not modeled yet:** enchants, pet mutations, the Nursery, relics, the Codex, Ascension, Exclusive and reward-track pets, potions, the Aura Pass, coin packs, Offline+ (the model plays in one sitting) and raid co-op. Almost all of those only speed a player up, so the real times are probably **shorter**, by an unknown amount. **These are partial-model estimates, not validated pacing**: playtest #1 and the soft launch measure the real times, and each machine is added to the model before it ships (GAME-PLAN 5b). In the whale's 7,164 R$, Offline+ (99) is counted but has no effect in a one-sitting run.
 

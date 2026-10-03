@@ -12,7 +12,7 @@
 | `HANDOFF-WINTER.md` | Winter's start sheet | plan |
 | `econ/model.py` | The balance model: plays the rules second by second with simulated players, zones 1-10, free and paid | the source of every number |
 | `econ/make_bible.py` | Writes GAME-BIBLE Part B from the model (`python make_bible.py`) | |
-| `econ/tests.py` | 33 rule checks (`python tests.py`) | must pass |
+| `econ/tests.py` | 34 rule checks (`python tests.py`) | must pass |
 | `econ/RESULTS.txt` | The model's output (`python model.py`) | |
 | `archive/` | Old versions (v2.3 stone training, v4 crystal smashing, v5.1 core loop, the v2 model) | **history only, not rules** |
 

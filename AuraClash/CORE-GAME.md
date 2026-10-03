@@ -191,7 +191,7 @@ Old versions are in `archive/`, for history only. **Nothing in `archive/` is a r
 | 9 | Logs off on a mat (or asks about offline) | yes, or explained in one line |
 | 10 | **Day 2:** sees the offline gain and keeps playing after it | 10+ min |
 | 11 | Timing behaviour at 15+ min: still aiming for PERFECTs, using Overdrive | not abandoning timing |
-| 12 | **No chores (friction, GAME-BIBLE 1.1):** the longest stretch in the session log with no reward event (a hatch, a quest step or sub-goal, a star, a mutated kill, a boss win) | under ~5 min in zones 1-2 (the model predicts ~3-4 min) |
+| 12 | **No chores (friction, GAME-BIBLE 1.1):** each tester's longest stretch in the session log with no reward event (a hatch, a quest step or bonus, a star, a mutated kill, a boss win, a pet level-up), **reported per tester, not averaged** | at least 9 in 10 testers under ~5 min in zones 1-2, and nobody over ~8 min (the model predicts 90th pct ~3 min); the stretches are also listed **without** level-ups, to see how much they carry |
 | 13 | **Each upgrade does its own job, and the player notices** (measured against its **intended** benefit, never forced onto combat): see the table below | each metric moves by at least ~70% of the model's predicted change, and the before/after card matches what happened |
 | 14 | **Meditation isn't dead time:** total time on a mat with no Focus taps **and** no chosen AFK (the player is sitting but looks at the screen, e.g. the camera moves) | under ~2 min in a row; the Meditate button is used without a prompt by the end of day 1 |
 | 15 | **"Which part felt like a chore?"** (asked last) | no single part named by most testers; anything named gets a fix before art |
@@ -238,7 +238,7 @@ Old versions are in `archive/`, for history only. **Nothing in `archive/` is a r
   - rank quests by difficulty tier, boss HP and the beam clash;
   - the effect of the 2× Boost ladder and the passes (VIP, 2× Coins, 2× Secret Luck, 2× Hatch Speed, Hatch ×3 / ×8, Huge Storm, Auto-Sell, Mutation Magnet, slot packs);
   - the raid reward-share rule (as a unit rule, not a simulated raid).
-  - the friction changes: 5-hatch sub-goals with a free zone egg, meditation paced in ≤ 3-min sittings, the longest stretch with no reward, and minutes per quest step (RESULTS section 9).
+  - the friction changes: the hatch-quest bonus on the quest's own counter (a free zone egg at 5, 10, 15 …), meditation in sittings of at most 3 min (the Power gate included, with hunting in between), the longest stretch with no reward per player (median / 90th percentile / worst, with and without pet level-ups), and minutes per quest step (RESULTS sections 9-10).
 - **It doesn't cover:**
   - monsters hitting the player (only time lost, assumed small);
   - other players sharing monsters (personal loot means crowded servers pay faster than the model);

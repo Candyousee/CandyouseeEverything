@@ -20,7 +20,7 @@ Change a number = change the model and re-run `python make_bible.py`.
 - **Saving:** Robux receipts have a **permanent** ledger (`delivered` only; never cancelled, never pruned); hatch operations count as done only when stored `committed`, never just because the id exists.
 - **Limited promise:** "Numbered. On sale for 7 days or until 1,000 sold. Every buyer gets a numbered copy." No substitute items.
 - **Regional rules** now cover stored paid coins (two balances), paid-tagged eggs, gifts and eligibility changes (MONETIZATION 17.1).
-- **Friction and longevity** (owner): friction rules (1.1) that **don't change** the controls, meditation or quest lists. Sub-goal eggs and paced meditation are simulated; times re-computed. **Free run shortened to about 8 h** (owner): Shrines from zone 4 on are ×1.75 (free ~8 h 02, whale ~2 h 59; late eggs +15%). The after-clear plan is in section 25.
+- **Friction and longevity** (owner): friction rules (1.1) that **don't change** the controls, meditation or quest lists. The hatch-quest bonus (on the quest's own counter) and meditation in sittings of at most 3 min are simulated, judged on the 90th percentile and worst player; times re-computed. **Free run shortened to about 8 h** (owner): Shrines from zone 4 on are ×1.75 (free ~8 h 02, whale ~2 h 59; late eggs +15%). The after-clear plan is in section 25.
 - **Pet hits:** +10% of Power per doubling of team Strength, **no hard cap** (the old cap was reached at Strength 25, so upgrades stopped adding hit by zone 2). Pets stay at about 46% of damage.
 - **Fusion:** the Fusion Altar stops at ★2 until the Star Forge (zone 5), in the model too.
 - **Times are partial-model estimates** (section 27 lists what is and isn't modeled); Huge Storm, Auto-Sell and Mutation Magnet are now modeled for the whale.
@@ -98,15 +98,20 @@ Familiar loops work when **every action feels good on its own** and **every upgr
 |---|---|
 | **Meditation feels like waiting** | **Meditation happens only on a mat** (section 3). To make that easy: a **Meditate button** on the HUD puts you on the **nearest free mat** of your zone (a 1-second teleport, like SELL). **AFK on a mat is full rate,** so Focus taps are an optional bonus. The aura **visibly grows** (a size pulse + "+POWER" pop every ~20 s). The quest bar shows a **Power pace marker**; when your Power falls behind the zone's pace, it suggests "Meditate ~2 min". |
 | **Repeated timed blasts feel like busywork** | **The controls are unchanged:** hold to charge, release to fire; a quick tap under 0.5 s does nothing (section 2). What removes busywork: monsters with a **grey "one-hit" bar** (HP at most 0.5 × your Power) **die to any release**, even a too-late one, so they need no timing. Auto-aim moves to the next monster after a kill. Pets clear one-hit monsters too. **PERFECT timing is for green / Big / mutated monsters and bosses.** Every PERFECT has a distinct hit-stop, sound and shard burst. |
-| **Quests feel like checklists** | **The quest lists are unchanged** (Focus steps stay 20 s in zone 1 up to 3 min in hard zones, shown with a timer; Focus is an active mini-game, not waiting). Quests count **everything you're already doing**, and the bar shows **estimated minutes left**. **New: a "hatch N" step is split into sub-goals of 5 hatches, and each sub-goal gives a free egg of that zone** (modeled; it's why late egg prices rose 15%). A step never asks you to go back to an old zone. |
+| **Quests feel like checklists** | **The quest lists are unchanged** (Focus steps stay 20 s in zone 1 up to 3 min in hard zones, shown with a timer; Focus is an active mini-game, not waiting). Quests count **everything you're already doing**, and the bar shows **estimated minutes left**. **New, one counter: the hatch quest's own counter drives its bonuses.** Every hatch in the zone counts toward "hatch N" (bought, free, quest-reward and bonus eggs alike, including hatches made before that step became active), and **each time that counter reaches 5, 10, 15 … (below N), you get a free egg of that zone**. The quest bar shows one number and "next bonus at 10". A player who sees 5 has always received the 5-bonus. (Modeled and tested; it's why late egg prices rose 15%.) A step never asks you to go back to an old zone. |
 | **Upgrades don't feel noticeable** | **Every upgrade shows its own intended benefit** on a 3-second before/after card, and the shop shows the predicted change before you buy. It never pretends an upgrade does something it doesn't. Examples: a pet "Hunting +34% · Meditation +20%"; a bag "100 → 150 shards: 33% fewer trips to SELL"; a mat "Power +25%/s"; a Surge "Overdrive 8 → 10 s". The playtest measures each one against its own job (CORE-GAME 3, #13). |
-| **Dead stretches between rewards** | **Target: no stretch longer than ~5 min without a reward** (a hatch, a quest step or sub-goal, a star, a mutated kill, a boss win). The model measures it (`econ/RESULTS.txt` section 9), and so does the session log. |
+| **Dead stretches between rewards** | **Target: for 9 in 10 players, no stretch longer than ~5 min without a reward** (a hatch, a quest step or bonus, a star, a mutated kill, a boss win, a pet level-up). Judged on the **90th percentile and the worst player**, never the median. The model measures it (`econ/RESULTS.txt` section 10), and so does the session log. |
 | **Walking** | SELL and Meditate are teleports; the Shrine, egg and altar sit together; machines have hub teleport pads. |
 
-**What the model says now** (RESULTS section 9, average free player; sub-goal eggs, paced meditation and the +15% egg prices included; all times re-computed):
-- **Zones 1-3 pass:** the longest stretch with no reward is about 3-4 min, and the final Power wait is 2-3 min. **This is a model test** (`tests.py`), so the playtest build is covered.
-- **Zones 4-10 (owner, v9: "make it like 8 or 9 hours"):** every Shrine from zone 4 on is now **×1.75**. That made the first run shorter **and** cut the final Power wait from 9-19 min to **about 1-6 min**. The longest stretch with no reward is now **4-8 min** in zones 4-10 (every hatch is a reward, and hatches land every few minutes). **Zones 6-10 are still a little over the ~5 min target** (6-8 min): to be tuned when those zones are built (more sub-goals or a mid-zone reward).
-- **Current model times:** free **~8 h 02**; whale ~2 h 59 (section 27).
+**What the model says now** (RESULTS sections 9-10; 40 average free players per zone; **90th percentile and worst player, not medians**):
+- **Meditation sittings:** the model's player meditates in sittings of **at most 3 min**, the Power gate included: a long gate wait is split into 3-min sittings with a minute of hunting in between. Any player can do the same, and the gate shows "about N min of meditation left". **The total gate meditation is still real:** median 1-6 min per zone, **worst player up to ~12 min** (zones 6-7), spread over several sittings. One long AFK sitting is fine, **if the player chooses it**.
+- **Longest stretch with no reward, counting pet level-ups:**
+  - **zones 1-7:** 90th percentile **≤ 3.8 min**, worst player ≤ 5.8 min;
+  - **zones 8-10:** 90th percentile **7-7.3 min**, worst player **up to ~11 min**.
+- **Without level-ups** (only the big rewards) it's longer: from zone 2 on, the 90th percentile is 6-11 min. So **pet level-ups carry a lot of the reward rhythm**, and their pop must be loud enough to feel like a reward (a sound, "Lv 12!", the pet's little celebration).
+- **Model test (zones 1-3, the playtest build):** 90th percentile ≤ 5 min and worst player ≤ 6 min (counting level-ups), and no forced sitting over 3 min. **Passing it says the model's rhythm is OK, not that players aren't bored.** Only the playtest shows that (CORE-GAME 3, #12).
+- **Still open, before zones 8-10 ship:** worst-case stretches of 7-11 min. Fix options: a bonus every 4 hatches there, or a mid-zone reward on the Power gate's bar (e.g. at 50%).
+- **Current model times:** free **~8 h 02**; whale ~3 h 03 (section 27).
 
 ## 2. Controls: the blast (the only attack)
 
@@ -796,7 +801,7 @@ This is what players do while they wait for the weekly update.
 
 | Time | Power | Slots | Best pet | Best stars | Best level | Bag |
 |---|---|---|---|---|---|---|
-| **~41 min** | 203K | 8 | Epic | ★★ | 26 | 300 |
+| **~41 min** | 203K | 8 | Epic | ★★ | 25 | 300 |
 
 ## 17. ZONE 4: VOLTORA CLIFFS (Lightning) · quests: easy
 
@@ -859,7 +864,7 @@ This is what players do while they wait for the weekly update.
 
 | Time | Power | Slots | Best pet | Best stars | Best level | Bag |
 |---|---|---|---|---|---|---|
-| **~1 h 05** | 4.05M | 9 | Epic | ★★ | 30 | 400 |
+| **~1 h 04** | 4.05M | 9 | Epic | ★★ | 30 | 400 |
 
 ## 18. ZONE 5: BLOSSORA GARDENS (Nature) · quests: easy
 
@@ -922,7 +927,7 @@ This is what players do while they wait for the weekly update.
 
 | Time | Power | Slots | Best pet | Best stars | Best level | Bag |
 |---|---|---|---|---|---|---|
-| **~1 h 38** | 60.6M | 10 | Epic | ★★★ | 30 | 500 |
+| **~1 h 39** | 60.6M | 10 | Epic | ★★★ | 30 | 500 |
 
 ## 19. ZONE 6: NYXORA RIFT (Void) · quests: easy
 
@@ -985,7 +990,7 @@ This is what players do while they wait for the weekly update.
 
 | Time | Power | Slots | Best pet | Best stars | Best level | Bag |
 |---|---|---|---|---|---|---|
-| **~2 h 13** | 1.01B | 10 | Epic | ★★★ | 30 | 500 |
+| **~2 h 12** | 1.01B | 10 | Epic | ★★★ | 30 | 500 |
 
 ## 20. ZONE 7: ASTORA THRONE (Cosmic) · quests: medium
 
@@ -1049,7 +1054,7 @@ This is what players do while they wait for the weekly update.
 
 | Time | Power | Slots | Best pet | Best stars | Best level | Bag |
 |---|---|---|---|---|---|---|
-| **~3 h 15** | 15.1B | 10 | Epic | ★★★ | 30 | 500 |
+| **~3 h 13** | 15.1B | 10 | Epic | ★★★ | 30 | 500 |
 
 ## 21. ZONE 8: SERAPHORA GATE (Holy light) · quests: medium
 
@@ -1178,7 +1183,7 @@ This is what players do while they wait for the weekly update.
 
 | Time | Power | Slots | Best pet | Best stars | Best level | Bag |
 |---|---|---|---|---|---|---|
-| **~6 h 02** | 2.51T | 10 | Epic | ★★★ | 30 | 500 |
+| **~6 h 05** | 2.51T | 10 | Epic | ★★★ | 30 | 500 |
 
 ## 23. ZONE 10: AURORA NEXUS (Every aura) · quests: hard
 
@@ -1252,12 +1257,12 @@ This is what players do while they wait for the weekly update.
 | 1 | Lumora Grove | very easy | 0.5 | 60 | Stone Golem (300) | ~5 min | 314 |
 | 2 | Pyrora Dojo | very easy | 2 | 1,700 | Magma Oni (10K) | ~21 min | 10.3K |
 | 3 | Glacora Peaks | very easy | 8 | 29K | Frost Wyrm (200K) | ~41 min | 203K |
-| 4 | Voltora Cliffs | easy | 56 | 460K | Thunder Roc (4M) | ~1 h 05 | 4.05M |
-| 5 | Blossora Gardens | easy | 280 | 7M | Blossom Ronin (60M) | ~1 h 38 | 60.6M |
-| 6 | Nyxora Rift | easy | 1,400 | 115M | Void Leviathan (1B) | ~2 h 13 | 1.01B |
-| 7 | Astora Throne | medium | 7,000 | 1.7B | Star Emperor (15B) | ~3 h 15 | 15.1B |
+| 4 | Voltora Cliffs | easy | 56 | 460K | Thunder Roc (4M) | ~1 h 04 | 4.05M |
+| 5 | Blossora Gardens | easy | 280 | 7M | Blossom Ronin (60M) | ~1 h 39 | 60.6M |
+| 6 | Nyxora Rift | easy | 1,400 | 115M | Void Leviathan (1B) | ~2 h 12 | 1.01B |
+| 7 | Astora Throne | medium | 7,000 | 1.7B | Star Emperor (15B) | ~3 h 13 | 15.1B |
 | 8 | Seraphora Gate | medium | 35K | 29B | Archangel Sentinel (200B) | ~4 h 24 | 201B |
-| 9 | Drakora Sanctum | hard | 175K | 290B | Elder Dragon Emperor (2.5T) | ~6 h 02 | 2.51T |
+| 9 | Drakora Sanctum | hard | 175K | 290B | Elder Dragon Emperor (2.5T) | ~6 h 05 | 2.51T |
 | 10 | Aurora Nexus | hard | 875K | 4T | The Ascendant (30T) | ~8 h 12 | 30.1T |
 
 <!-- ZONES:END -->
@@ -1268,7 +1273,7 @@ This is what players do while they wait for the weekly update.
 
 ## 25. After zone 10: why players stay (owner's longevity concern)
 
-A heavily upgraded player can clear the ten bosses in about **3 hours** (model: 2 h 59), and a free player in about **8** (8 h 02). That's fine **only if collecting, improving and showing off the team stays appealing afterwards.** This is the plan for every hour after the first clear.
+A heavily upgraded player can clear the ten bosses in about **3 hours** (model: 3 h 03), and a free player in about **8** (8 h 02). That's fine **only if collecting, improving and showing off the team stays appealing afterwards.** This is the plan for every hour after the first clear.
 
 **1. Improve the team (vertical, never "done"):**
 - **★5 pets** (243 copies each), **Shiny** (Nursery), **pet mutations** (Reactor, up to ×5), **enchants** (I-V), **Awakening** to level 50 (XP Shards from the Titan), relics.
@@ -1346,9 +1351,9 @@ A heavily upgraded player can clear the ten bosses in about **3 hours** (model: 
 | Spend | All 10 zones |
 |---|---|
 | free | ~8 h 02 |
-| starter (31 R$) | 6 h 03 |
-| VIP set (986 R$) | 3 h 16 |
-| whale (7,164 R$) | 2 h 59 |
+| starter (31 R$) | 5 h 57 |
+| VIP set (986 R$) | 3 h 09 |
+| whale (7,164 R$) | 3 h 03 |
 
 **What these times are (and aren't):** they come from `econ/model.py`, which simulates the **core loop**: blasts, Overdrive, mutations and storms, meditation, eggs and luck, pets (Strength, stars, levels, the Star Forge in zone 5), quests, bosses, the 2× Boost ladder, VIP, 2× Coins / Secret Luck / Hatch Speed, Hatch ×8, Huge Storm, Auto-Sell, Mutation Magnet and slot packs. **Not modeled yet:** enchants, pet mutations, the Nursery, relics, the Codex, Ascension, Exclusive and reward-track pets, potions, the Aura Pass, coin packs, Offline+ (the model plays in one sitting) and raid co-op. Almost all of those only speed a player up, so the real times are probably **shorter**, by an unknown amount. **These are partial-model estimates, not validated pacing**: playtest #1 and the soft launch measure the real times, and each machine is added to the model before it ships (GAME-PLAN 5b).
 

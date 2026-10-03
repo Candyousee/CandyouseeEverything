@@ -4,7 +4,7 @@
 
 **Status:**
 - the design is v9 (meditation + crystal-monster hunting + pets; 10 zones designed in detail, with machines unlocking zone by zone; server raid bosses; the Nexus Titan endgame);
-- the numbers come from `econ/model.py`, and `python tests.py` passes 33/33;
+- the numbers come from `econ/model.py`, and `python tests.py` passes 34/34;
 - the art style is chosen (STYLE-SHEET).
 
 **Don't rewrite the concept.** The next evidence must come from the real game.
@@ -50,7 +50,8 @@
 **Friction, not originality, is the biggest risk.** GAME-BIBLE 1.1 adds to the controls, meditation and quests **without changing them**:
 - a **Meditate button** (a teleport to the nearest free mat; meditation is still mats only) and a Power pace marker;
 - **grey "one-hit" monsters die to any release** (the controls are unchanged: hold, release; a quick tap does nothing);
-- **"hatch N" steps are split into 5-hatch sub-goals,** each giving a free zone egg (in the model);
+- **one counter for "hatch N":** every hatch in the zone counts (bought, free, reward, bonus), and each time that counter reaches 5, 10, 15 … (below N) a free zone egg is granted; the bar shows "next bonus at …";
+- **pet level-ups carry much of the reward rhythm,** so their pop must be loud (sound, "Lv 12!", a little celebration);
 - **every upgrade shows its own benefit** (bag = fewer SELL trips, mat = Power/s, pet = hunting + meditation).
 
 The greybox fun gate checks these (CORE-GAME 3, #12-#15) **before** any art.

@@ -28,7 +28,7 @@
 - **Identity:** a pet simulator with two halves: **meditate (Power)** and **hunt (coins → pets)**.
 - **Scope:**
   - 10 zones at launch (GAME-BIBLE Part B), then a new zone about every 1-2 weeks;
-  - a first full run of about 8 h 02 for an average free player (6 h 03 with the 31 R$ starter spend, about 2 h 59 for a whale): **partial-model estimates** (GAME-BIBLE 27), to be measured in playtests;
+  - a first full run of about 8 h 02 for an average free player (5 h 57 with the 31 R$ starter spend, about 3 h 03 for a whale): **partial-model estimates** (GAME-BIBLE 27), to be measured in playtests;
   - after zone 10: the endless Nexus Titan, the Weekly Limited Egg and XP Shards keep players busy until the next zone.
 
 ## 3. Research: what we take (owner: "we don't need to be original")
@@ -120,7 +120,7 @@ These are **model targets for a free player playing solo, not promises.** The mo
 | Boss 2 at 15-30 min | ~21 min |
 | Every zone takes longer than the one before | yes |
 | **Free first run (boss 10) in about 8-9 h** (owner, v9) | **8 h 02-8 h 12** (two model samples) |
-| **Whale first run about 3 h** (owner) | **2 h 59** |
+| **Whale first run about 3 h** (owner) | **3 h 03** |
 | Pets 30-50% of damage (never more than your blasts), and every pet upgrade adds hit | 47%; yes (no hard cap) |
-| **No stretch over ~5 min without a reward; final Power wait under ~5 min** (friction, GAME-BIBLE 1.1) | **zones 1-5: yes** (zones 1-3 are a model test); Power waits now 1-6 min everywhere; **zones 6-10: 6-8 min stretches**, to tune when built |
+| **For 9 in 10 players, no stretch over ~5 min without a reward; no forced meditation sitting over 3 min** (friction, GAME-BIBLE 1.1; judged on the 90th percentile and worst player) | **zones 1-7: yes** (90th pct ≤ 3.8 min with level-ups; zones 1-3 are a model test); **zones 8-10: no** (90th pct ~7 min, worst ~11 min), to fix before they ship |
 | Average player wins the clash ≥ 90% at recommended Power; weak ≥ 60%; under-powered (½) average ≤ 40% | 100% / 79% / 23% |

@@ -204,8 +204,12 @@ TIER_QUESTS = {
                             ("mutated", 3, 1), ("stars", 3), ("level", 25)],
 }
 QUESTS = [TIER_QUESTS[TIER[z]](z) + [("power", BOSS[z]["rec"])] for z in range(ZONES)]
-SUBGOAL_HATCHES = 5      # friction: a long "hatch N" step is split into sub-goals of 5 hatches; each gives a free zone egg
-PACE_CAP = 180           # friction: meditate in short sittings along the way, so the final Power gate is not a long wait
+SUBGOAL_HATCHES = 5      # friction: while a "hatch N" step is active, each time ITS counter reaches 5, 10, 15 ... (below N)
+                         # you get a free zone egg. One counter: every hatch in the zone counts, bonus eggs included
+PACE_CAP = 180
+GATE_HUNT = 60           # between gate sittings the player hunts for a minute (coins, eggs, mutations keep coming)
+#          # friction: meditate in short sittings along the way, so the final Power gate is not a long wait
+HATCH_TARGET = [next(q[1] for q in QUESTS[z] if q[0] == "hatch") for z in range(ZONES)]
 SLOT_QUESTS = {(0, 0), (0, 3), (1, 0), (1, 3), (2, 0), (3, 0), (4, 0)}   # 3 + 7 = 10 slots max
 # every other quest (except the last, which opens the boss gate) gives a free egg of that zone
 
@@ -312,7 +316,7 @@ class Player:
         self.bag, self.bag_val = 0, 0
         self.bag_lv = self.mat_lv = self.surge_lv = 0
         self.pets, self.slots, self.hatches, self.zone_hatches = [], BASE_SLOTS + self.paid["slots"], 0, {}
-        self.reward_times, self.step_hatches = [], 0
+        self.reward_times, self.subgoal_log, self.gate_sits, self.level_times = [], [], [], []
         self.zone, self.quest, self.kills, self.mut_kills = 0, 0, {}, {}
         self.combo, self.streak = 0, 0
         self.od_until, self.od_active = -1.0, False   # Overdrive ends at a TIMESTAMP: real time keeps running
@@ -490,6 +494,7 @@ class Player:
                 pet.xp -= XP_TO_NEXT(pet.lv, pet.z)
                 pet.lv += 1
                 self.note("first_level", "first pet level-up")
+                self.level_times.append(self.t)                 # a visible reward ("Fox Lv 12!"), tracked separately
                 self.dirty()
 
     def hunt_blast(self, mi):
@@ -607,11 +612,11 @@ class Player:
         self.pets.append(Pet(z, EGGS[z][sp][1], sp))
         self.note("first_hatch", "first hatch")
         self.reward_times.append(self.t)
-        if not free and self.quest < len(QUESTS[z]) and QUESTS[z][self.quest][0] == "hatch":
-            self.step_hatches += 1
-            if self.step_hatches % SUBGOAL_HATCHES == 0 and self.step_hatches < QUESTS[z][self.quest][1]:
-                self.note(f"subgoal_z{z}_{self.step_hatches}")
-                self.hatch(free=True)                        # sub-goal reward: a free egg of this zone
+        n, target = self.zone_hatches[z], HATCH_TARGET[z]  # THE quest counter: every hatch in this zone counts
+        if n % SUBGOAL_HATCHES == 0 and n < target:          # bought, free, quest-reward and bonus eggs alike
+            self.note(f"subgoal_z{z}_{n}")
+            self.subgoal_log.append((z, n))
+            self.hatch(free=True)                        # sub-goal reward: a free egg of this zone
         self.dirty()
         self.auto_fuse()
         if len(self.pets) > INVENTORY:                       # auto-delete the weakest unequipped pets
@@ -721,7 +726,6 @@ class Player:
     def quest_reward(self, z, i):
         self.note(f"quest_z{z}_{i}")
         self.reward_times.append(self.t)
-        self.step_hatches = 0
         if (z, i) in SLOT_QUESTS:
             self.slots += 1
             self.dirty()
@@ -776,11 +780,15 @@ class Player:
                 continue
             q = QUESTS[z][self.quest] if self.quest < len(QUESTS[z]) else None
             if q and q[0] == "power" and self.quest == len(QUESTS[z]) - 1:
-                self.meditate_until(q[1])
+                t0 = self.t
+                self.meditate_until(q[1], cap=PACE_CAP)          # the gate wait is also split into <= 3-min sittings ...
+                self.gate_sits.append((z, (self.t - t0) / 60))
+                if self.power < q[1]:
+                    self.hunt_session(self.pick_monster(), seconds=GATE_HUNT)   # ... with hunting (and its drops) between
                 continue
             if q and QUESTS[z][-1][0] == "power" and self.sells_since_med >= 1:
                 hi = next(i for i, qq in enumerate(QUESTS[z]) if qq[0] == "hatch")   # the hatch step = the zone's economy
-                done = 0.0 if self.quest < hi else 1.0 if self.quest > hi else min(1.0, self.step_hatches / q[1])
+                done = 0.0 if self.quest < hi else 1.0 if self.quest > hi else min(1.0, self.zone_hatches.get(z, 0) / q[1])
                 pace = QUESTS[z][-1][1] * done                   # keep Power on pace with the zone's progress
                 if self.power < 0.9 * pace:
                     self.meditate_until(pace, cap=PACE_CAP)
@@ -901,8 +909,9 @@ def quest_step_minutes(players):
     return out
 
 
-def reward_gaps(players):
-    """Median (over players) of the longest stretch in each zone with no reward event."""
+def reward_gaps(players, levels=True):
+    """Per zone, every player's longest stretch with no reward event (minutes). levels=True also counts pet level-ups
+    (a visible reward); levels=False counts only the big ones (hatch, quest step or sub-goal, star, mutated kill, boss)."""
     rows = list(players)
     out = []
     for z in range(ZONES):
@@ -911,10 +920,15 @@ def reward_gaps(players):
             a, b = (x.milestones.get(f"boss{z}", 0) if z else 0), x.milestones.get(f"boss{z + 1}")
             if b is None:
                 continue
-            ts = sorted([t for t in x.reward_times if a <= t <= b] + [a, b])
+            ev = x.reward_times + (x.level_times if levels else [])
+            ts = sorted([t for t in ev if a <= t <= b] + [a, b])
             g.append(max(q - p for p, q in zip(ts, ts[1:])) / 60)
-        out.append(st.median(g) if g else float("nan"))
+        out.append(sorted(g))
     return out
+
+
+def pct(sorted_vals, p):
+    return sorted_vals[min(len(sorted_vals) - 1, int(p * len(sorted_vals)))] if sorted_vals else float("nan")
 
 
 def report(n_full=40, n_two=200):
@@ -998,13 +1012,25 @@ def report(n_full=40, n_two=200):
     P("   (rank quests need kills and hatches, which need coins, which only hunting gives).")
     P("")
     P("9. Friction check (GAME-BIBLE 1.1): median minutes per quest step, average free player (steps over 8 min flagged *)")
-    fr = [Player("average", 3000 + r).run() for r in range(20)]
-    gaps = reward_gaps(fr)
+    fr = [Player("average", 3000 + r).run() for r in range(40)]
     for z, ms in enumerate(quest_step_minutes(fr)):
         P(f"   {z + 1:2d} " + "  ".join(f"{QUESTS[z][i][0]} {m:.1f}{'*' if m > STEP_MAX_MIN else ''}"
-                                         for i, m in enumerate(ms)) + f"   | longest stretch with no reward {gaps[z]:.1f}")
-    P("   (rewards = a hatch, a quest step or sub-goal, a star, a mutated kill, a boss win. A 'hatch N' step is split into")
-    P(f"    sub-goals of {SUBGOAL_HATCHES} hatches, each giving a free zone egg; every hatch is itself a reward.)")
+                                         for i, m in enumerate(ms)))
+    P("   (a 'hatch N' step is long by design: it's the zone's economy, and every hatch is itself a reward. While it")
+    P(f"    runs, each time ITS counter reaches a multiple of {SUBGOAL_HATCHES} you get a free zone egg; every hatch counts.)")
+    P("")
+    P("10. Longest stretch with no reward, per player (40 average free players; minutes: median / 90th percentile / worst)")
+    P("    all = hatches, quest steps, sub-goals, stars, mutated kills, boss wins AND pet level-ups; big = without level-ups")
+    bigr, allr = reward_gaps(fr, levels=False), reward_gaps(fr, levels=True)
+    sits = [sorted(d for x in fr for zz, d in x.gate_sits if zz == z) for z in range(ZONES)]
+    gate_tot = [sorted(sum(d for zz, d in x.gate_sits if zz == z) for x in fr) for z in range(ZONES)]
+    P("   zone   all: p50  p90  worst    big: p50  p90  worst    Power gate: total p50 / worst, longest sitting")
+    for z in range(ZONES):
+        P(f"   {z + 1:2d}        {pct(allr[z], .5):4.1f} {pct(allr[z], .9):4.1f} {allr[z][-1]:5.1f}"
+          f"          {pct(bigr[z], .5):4.1f} {pct(bigr[z], .9):4.1f} {bigr[z][-1]:5.1f}"
+          f"              {pct(gate_tot[z], .5):4.1f} / {gate_tot[z][-1]:4.1f}, {max(sits[z] or [0]):.1f}")
+    P(f"   (the model's player meditates in sittings of at most {PACE_CAP // 60} min, hunting {GATE_HUNT} s between")
+    P("    gate sittings; a player who prefers one long AFK sitting can take it, that's voluntary.)")
     return "\n".join(out)
 
 
