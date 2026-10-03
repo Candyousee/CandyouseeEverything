@@ -244,7 +244,7 @@ def test_level_and_strength():
     p = M.Pet(2, 6, 8)                                       # zone 3 Secret
     p.stars, p.lv = 5, 30
     assert abs(p.strength() - 100 * 4 * 32 * (1 + 0.05 * 29)) < 1e-6
-    assert M.TIER_STR == [1, 1.5, 2.5, 4, 10, 25, 100, 400, 2_000, 10_000]
+    assert M.TIER_STR == [1, 1.5, 2.5, 4, 10, 25, 100, 400, 2_000, 100_000]
 
 
 # ---------- economy rules ----------

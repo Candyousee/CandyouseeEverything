@@ -1,4 +1,4 @@
-# AURA CLASH: Monetization v3 (owner rework, 3 October 2026)
+# AURA CLASH: Monetization v3 (final, owner-approved structure, 3 October 2026)
 
 **Goal (owner):** money is the top priority. We **follow Roblox's rules**, because a removed game earns nothing.
 
@@ -16,8 +16,8 @@ Every boost is **permanent**, **timed** or **server-wide**, and they all **multi
 
 | Stat | Multiplied by |
 |---|---|
-| **Power gain** (meditation, incl. AFK and offline) | 2× Boost ladder × VIP 1.5 × Power potions |
-| **Luck** (egg odds; GAME-BIBLE 5.1) | 2× Boost ladder × Luck potions × Server Luck Boost × group 1.1 |
+| **Power gain** (meditation, incl. AFK and offline) | 2× Boost ladder × VIP 1.5 × Power potions × Aura Pass Premium 1.5 (that season) |
+| **Luck** (zone-egg odds; GAME-BIBLE 5.1) | 2× Boost ladder × Luck potions × Server Luck Boost × group 1.1 × Aura Pass Premium 1.5 (that season) |
 | **Secret luck** (Secret and rarer only, on top of luck) | VIP 1.5 × 2× Secret Luck |
 | **Coins** (selling) | 2× Coins × VIP 1.5 × Coin potions × Premium 1.1 |
 | **Hatch speed** | 2× Hatch Speed × VIP 1.5 (Hatch ×3 / ×8 add eggs per hatch) |
@@ -37,7 +37,7 @@ Every boost is **permanent**, **timed** or **server-wide**, and they all **multi
 
 | Spend | Profile | All 10 zones |
 |---|---|---|
-| 0 R$ | free | **10 h 50** |
+| 0 R$ | free | **~10 h 50** (10 h 50-11 h depending on the model sample) |
 | 31 R$ | starter: 3 ladder tiers | **6 h 41** |
 | 1,085 R$ | VIP + 2× Coins + Hatch ×3 + 6 ladder tiers | **3 h 23** |
 | 7,263 R$ | whale: every pass + all 11 tiers + 10 slot packs | **3 h 14** |
@@ -76,7 +76,7 @@ Every boost is **permanent**, **timed** or **server-wide**, and they all **multi
 | **Mega Potion** | 65 | all four, 15 min |
 | **Mutation Storm** | **99** | starts a Mutation Storm (×2 mutation chances) in the server for 10 min, with a "Thanks to [buyer]!" banner. Storms also happen **naturally** for 5 min every 45 min |
 | **Server Luck Boost** | 199 | everyone in the server ×2 luck for 15 min, with the buyer thanked |
-| **Coin packs ("buy gold")** | 49 / 149 / 449 / 999 | coins worth about 15 min / 1 h / 4 h / 12 h of average hunting **in your current zone** (it scales, so it's always useful) |
+| **Coin packs ("buy gold")** | 49 / 149 / 449 / 999 | coins worth about 15 min / 1 h / 4 h / 12 h of the model's average hunting income **in your current zone** (it scales, so it's always useful) |
 | **Aura Pass skip** | 799 | jumps the Aura Pass straight to the last tier (section 10) |
 
 **Removed:** Treasure Shards.
@@ -100,7 +100,7 @@ Add potions, Server Luck and the group bonus, and a maxed player can realistical
 
 ## 6. Exclusive Eggs (tier system: no Huge / Titanic)
 
-Both eggs use the **same tier bands** as zone eggs, so a 1-in-2M exclusive is a real Secret, and both have the **Boundless** line.
+Both eggs use the **same tier bands** as zone eggs, so a 1-in-2M exclusive is a real Secret, and both have the **Boundless** line. **Boundless is always the strongest pet in the game** (base 100,000 at your best zone's scale, the same in every egg).
 
 - **Strength:** exclusive pets are much stronger than zone pets of the same tier, and **scale to your best zone**, so they never go out of date:
   - **Daily Exclusive:** ×5 the tier's base;
@@ -123,7 +123,7 @@ Both eggs use the **same tier bands** as zone eggs, so a 1-in-2M exclusive is a 
 | Neon Seraph | Secret | 1 in 2M | 500 |
 | Neon Leviathan | Divine | 1 in 200M | 2,000 |
 | Neon Infinity | Impossible | 1 in 20B | 10,000 |
-| Boundless (this month's) | Boundless | 1 in 1T | 10,000 |
+| Boundless (this month's) | Boundless | 1 in 1T | 100,000 |
 
 ### 6.2 Shop Exclusive Egg ("Royal Spirits", month 1)
 **Shop only: 99 R$ / 3 for 279 / 10 for 849** (also on the Aura Pass premium track).
@@ -140,7 +140,7 @@ Both eggs use the **same tier bands** as zone eggs, so a 1-in-2M exclusive is a 
 | Royal Sovereign | Secret | 1 in 1M | 1,000 |
 | Royal Emperor | Divine | 1 in 50M | 4,000 |
 | Royal Infinity | Impossible | 1 in 5B | 20,000 |
-| Boundless (this month's) | Boundless | 1 in 1T | 10,000 |
+| Boundless (this month's) | Boundless | 1 in 1T | 100,000 |
 
 - **Guarantees:**
   - every 10-pack contains at least one **Epic or better**;
@@ -148,7 +148,17 @@ Both eggs use the **same tier bands** as zone eggs, so a 1-in-2M exclusive is a 
 - **Fixed odds:** luck does **not** change paid-egg odds, so the card is always exactly what you buy.
 - **Roblox rules for paid random items:**
   - **odds on the card before purchase;**
-  - **`PolicyService` check:** if `ArePaidRandomItemsRestricted`, the player can't buy these eggs and sees a direct-buy shop instead (pick the exact Common to Legendary exclusive pet at a fixed price);
+  - **`PolicyService` check:** if `ArePaidRandomItemsRestricted`, the player can't buy these eggs and sees a **direct-buy shop** instead (the exact pet, fixed price):
+
+    | Tier | Daily Exclusive pet | Shop Exclusive pet |
+    |---|---|---|
+    | Common | 49 | 149 |
+    | Uncommon | 99 | 299 |
+    | Rare | 149 | 499 |
+    | Epic | 299 | 999 |
+    | Legendary | 799 | 2,499 |
+
+    Mythic and rarer are never sold directly;
   - **free eggs from rewards still work** for restricted players (they're not purchases);
   - **no cash-out:** paid items trade only for items, never for Robux.
 
@@ -162,7 +172,7 @@ Both eggs use the **same tier bands** as zone eggs, so a 1-in-2M exclusive is a 
 - **Serial:** shown on the item ("#0042"). The counter on the stand is real; when it sells out, it's gone.
 - **On hold:** titles, other skins and aura colours, as you asked.
 
-> **⚠ Verity needs a signed collab or licence before launch.** Selling a real creator's name or likeness without permission breaks Roblox's rules and can take down the items or the game. As an official collab they'll also promote it to their audience. Without a deal, ship an original design with no name, logo or likeness.
+> **Verity is a meme, so no licence is needed.** One rule: Winter makes **our own** Verity aura and pet art in our style. Never upload someone else's image or video of the meme, since the original picture can still be someone's copyright.
 
 ## 8. Gifting
 Every pass, product, egg pack and Limited has a **Gift** button for a friend in the server, with a big "🎁 from [name]" animation.
@@ -218,9 +228,9 @@ Season pets and rewards are never sold again.
 
 | Pack | Offered | Contents | R$ |
 |---|---|---|---|
-| **Starter Pack** (once per account) | after your first egg; for 48 h | exclusive **Starter Spirit** (Epic tier, Shop Exclusive strength) + **5 Daily Exclusive Eggs** + **5 Mega Potions** + **2× Boost tier 1** | **49** |
+| **Starter Pack** (once per account) | in the store with a "NEW" badge after your first egg; for 48 h (not a pop-up) | exclusive **Starter Spirit** (Epic tier, Shop Exclusive strength) + **5 Daily Exclusive Eggs** + **5 Mega Potions** + **2× Boost tier 1** | **49** |
 | **Zone Pack** | on entering a new zone; for 24 h | **15 eggs of that zone + 5 Daily Exclusive Eggs + 2 Mega Potions** | **149** |
-| **Comeback Pack** | after 3+ days away; for 24 h | **8 Daily Exclusive Eggs + 5 Mega Potions** | **99** |
+| **Comeback Pack** | in the store with a badge after 3+ days away; for 24 h (not a pop-up) | **8 Daily Exclusive Eggs + 5 Mega Potions** | **99** |
 
 ## 12. Pop-up offers (only two)
 

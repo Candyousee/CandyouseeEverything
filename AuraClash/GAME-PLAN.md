@@ -37,7 +37,7 @@
 | Pets fight beside you, constant loot stream | Pet Simulator 99 | pets fight and tank crystal monsters |
 | Gold / Rainbow pet machines | Pet Simulator 99 | star fusion up to ★5 |
 | Rank quests | Pet Simulator 99 | 5-9 per zone, very easy → hard; the boss gate opens when they're done |
-| Paid eggs, Limiteds, server boosts | Pet Simulator 99 | Daily + Shop Exclusive Eggs, numbered Limiteds (Verity collab), Server Luck, Mutation Storms |
+| Paid eggs, Limiteds, server boosts | Pet Simulator 99 | Daily + Shop Exclusive Eggs, numbered Limiteds (Verity meme items), Server Luck, Mutation Storms |
 | Luck ladders, crazy-rare tiers, serials | RNG games (Sol's RNG) | the 2× Boost ladder, Secret → Divine → Impossible → monthly Boundless, serialized |
 | Hourly and daily rewards | most top sims | a 60-minute hourly track and a 7-day login cycle with exclusive eggs |
 | Stat training + AFK progress | Anime Fighting Simulator | meditation (AFK / Focus / offline) |
@@ -105,7 +105,7 @@ All of it follows STYLE-SHEET (GPU concepts → Blender, outlines, smooth plasti
 
 ### 5b. After playtest #1 passes (to launch)
 
-1. **Monetization** (MONETIZATION.md v3): the buff system and the 2× Boost ladder, store, passes, slot packs, coin packs, both Exclusive Eggs + PolicyService gating, the Verity Limiteds (licence first), packs, Aura Pass, hourly / daily / group rewards, the two pop-ups. Tests P13, P15-P20.
+1. **Monetization** (MONETIZATION.md v3): the buff system and the 2× Boost ladder, store, passes, slot packs, coin packs, both Exclusive Eggs + PolicyService gating, the Verity Limiteds (our own art), packs, Aura Pass, hourly / daily / group rewards, the two pop-ups. Tests P13, P15-P20.
 2. **Zones 3-10** (GAME-BIBLE 14-21), one at a time, each through the art pipeline and the model.
 3. **Full art pass**, then a **private soft launch** (the owner decides access; Winter never changes it), then the Later systems (GAME-BIBLE 22).
 

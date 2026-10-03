@@ -25,7 +25,7 @@ Old versions are in `archive/`, for history only. **Nothing in `archive/` is a r
   - offline gains use server timestamps only.
 - **Loot:** the server rolls mutations, drops and eggs. Shared monsters use the server's damage log: **every player whose hit landed gets their own full drop and quest credit** (GAME-BIBLE 4.1).
 - **Pets:** each pet has a unique id. Fusion is one server transaction (3 removed + 1 added in the same save). XP is added by the server on each kill.
-- **Luck:** total luck (2× Boost ladder × potions × server boosts × group; Secret luck × VIP × 2× Secret Luck) has **no cap** and is applied by tier weight (GAME-BIBLE 5.1). The egg card shows the real odds at the player's current luck, computed by the **same server function that rolls**.
+- **Luck:** total luck (2× Boost ladder × potions × server boosts × group × Aura Pass Premium; Secret luck × VIP × 2× Secret Luck) has **no cap** and is applied by tier weight (GAME-BIBLE 5.1). The egg card shows the real odds at the player's current luck, computed by the **same server function that rolls**.
 - **Serials:** every Secret, Divine, Impossible and Boundless hatch (and every Verity Limited) gets the next number from a global counter (DataStore `UpdateAsync` on the species counter) **inside the hatch's confirmed save**. Numbers are never reused or duplicated.
 - **Rewards:** hourly-reward progress counts server time in the game (AFK included, one session at a time). Daily login uses the server's UTC date, and each day can be claimed once (a confirmed save).
 
@@ -40,7 +40,7 @@ Old versions are in `archive/`, for history only. **Nothing in `archive/` is a r
 | Pets | every pet (id, species, zone, stars 0-5, level, XP, favourite / lock, Exclusive / Limited serial), equipped list, auto-fuse / auto-delete settings, mailbox |
 | Upgrades | Bag, Mat, Surge levels; pet slots |
 | Tutorial / guarantees | tutorial step, **lifetime hatch count**, guaranteed-Rare used, Boss Shards claimed per boss, Shop Exclusive pity counters |
-| Purchases + rewards | owned passes, **2× Boost ladder tier**, **slot packs bought (0-10)**, active potion end times (server time), Starter Pack used, Aura Pass season / tier / XP, daily-cycle day (1-7) + week + last claim date, hourly-reward progress, group-chest time, Exclusive Egg pity counters, Limited serials owned, processed `PurchaseId`s (MONETIZATION.md) |
+| Purchases + rewards | owned passes, **2× Boost ladder tier**, **slot packs bought (0-10)**, active potion end times (server time), Starter Pack used, Aura Pass season / tier / XP, daily-cycle day (1-7) + week + last claim date, hourly-reward progress, group-chest time, Limited serials owned, processed `PurchaseId`s (MONETIZATION.md) |
 | Offline | `lastSeen` (server time), `offlineClaimId` |
 | Operations | each critical operation's id → `committed` (with `revealed` yes/no) or `cancelled`, kept 30 days (2.2) |
 | Settings | effects, camera, flashing, Low effects |

@@ -84,7 +84,7 @@ def boss_shard_value(z):
 # ---------------- RULES: pets ----------------
 TIERS = ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Secret", "Divine", "Impossible", "Boundless"]
 RARITIES = TIERS
-TIER_STR = [1, 1.5, 2.5, 4, 10, 25, 100, 400, 2_000, 10_000]     # base Strength by tier
+TIER_STR = [1, 1.5, 2.5, 4, 10, 25, 100, 400, 2_000, 100_000]    # base Strength by tier (Boundless: always the strongest)
 LUCK_EXP = [0, 0, 0, 0, 0.3, 0.5, 0.8, 0.9, 1.0, 1.0]           # luck works hardest on the rarest tiers
 SECRET_TIERS = (6, 7, 8, 9)                                     # Secret and above: serialized; "Secret luck" applies
 # A tier is DEFINED by its odds band (lower bound inclusive). "Secret 1 in 1M+", "Divine 1 in 10M+",

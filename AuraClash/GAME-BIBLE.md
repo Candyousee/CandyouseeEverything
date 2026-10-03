@@ -170,7 +170,7 @@ Every egg has its own pets and its own odds (see each zone). **A pet's tier come
 | **Secret** | **1 in 1M+** | **100** |
 | **Divine** | **1 in 10M+** | **400** |
 | **Impossible** | **1 in 1B+** | **2,000** |
-| **Boundless** | **1 in 1T+** | **10,000** |
+| **Boundless** | **1 in 1T+** | **100,000** (always the strongest pet in the game) |
 
 - **Egg layouts differ:** odd zones have **two Commons** (e.g. 35% / 34%); even zones have **three Commons** (e.g. 30% / 28% / 26%). Every zone has its own numbers for every tier.
 - **Boundless:** **every egg in the game** (zone eggs and Exclusive Eggs) has a 1 in 1T Boundless line. **A new Boundless pet every month,** the same in every egg; its Strength scales to your best zone.
@@ -375,7 +375,7 @@ Every egg has its own pets and its own odds (see each zone). **A pet's tier come
 | ??? (Aurora Dragon) | Secret | 1 in 2.5M | 100 |
 | ??? (Prism Archangel) | Divine | 1 in 100M | 400 |
 | ??? (Lumen the Endless) | Impossible | 1 in 10B | 2,000 |
-| **Boundless** (this month's, the same in every egg) | Boundless | 1 in 1T | 10K |
+| **Boundless** (this month's, the same in every egg) | Boundless | 1 in 1T | 100K |
 
 **Quests:**
 
@@ -443,7 +443,7 @@ Every egg has its own pets and its own odds (see each zone). **A pet's tier come
 | ??? (Volcano Titan) | Secret | 1 in 1.5M | 200 |
 | ??? (Solar Behemoth) | Divine | 1 in 50M | 800 |
 | ??? (Ignis Eternal) | Impossible | 1 in 5B | 4,000 |
-| **Boundless** (this month's, the same in every egg) | Boundless | 1 in 1T | 20K |
+| **Boundless** (this month's, the same in every egg) | Boundless | 1 in 1T | 200K |
 
 **Quests:**
 
@@ -492,7 +492,7 @@ Every egg has its own pets and its own odds (see each zone). **A pet's tier come
 | ??? (Glacial Leviathan) | Secret | 1 in 3M | 400 |
 | ??? (Frostfall Empress) | Divine | 1 in 150M | 1,600 |
 | ??? (Absolute Zero) | Impossible | 1 in 20B | 8,000 |
-| **Boundless** (this month's, the same in every egg) | Boundless | 1 in 1T | 40K |
+| **Boundless** (this month's, the same in every egg) | Boundless | 1 in 1T | 400K |
 
 **Quests:**
 
@@ -541,7 +541,7 @@ Every egg has its own pets and its own odds (see each zone). **A pet's tier come
 | ??? (Raijin) | Secret | 1 in 2M | 800 |
 | ??? (Storm Sovereign) | Divine | 1 in 80M | 3,200 |
 | ??? (Thunder Infinite) | Impossible | 1 in 8B | 16K |
-| **Boundless** (this month's, the same in every egg) | Boundless | 1 in 1T | 80K |
+| **Boundless** (this month's, the same in every egg) | Boundless | 1 in 1T | 800K |
 
 **Quests:**
 
@@ -591,7 +591,7 @@ Every egg has its own pets and its own odds (see each zone). **A pet's tier come
 | ??? (Celestial Koi) | Secret | 1 in 4M | 1,600 |
 | ??? (Eternal Bloom Dragon) | Divine | 1 in 200M | 6,400 |
 | ??? (World Tree Spirit) | Impossible | 1 in 30B | 32K |
-| **Boundless** (this month's, the same in every egg) | Boundless | 1 in 1T | 160K |
+| **Boundless** (this month's, the same in every egg) | Boundless | 1 in 1T | 1.6M |
 
 **Quests:**
 
@@ -641,7 +641,7 @@ Every egg has its own pets and its own odds (see each zone). **A pet's tier come
 | ??? (Null Wyrm) | Secret | 1 in 2.5M | 3,200 |
 | ??? (Abyssal Emperor) | Divine | 1 in 120M | 12.8K |
 | ??? (The Void Itself) | Impossible | 1 in 12B | 64K |
-| **Boundless** (this month's, the same in every egg) | Boundless | 1 in 1T | 320K |
+| **Boundless** (this month's, the same in every egg) | Boundless | 1 in 1T | 3.2M |
 
 **Quests:**
 
@@ -691,7 +691,7 @@ Every egg has its own pets and its own odds (see each zone). **A pet's tier come
 | ??? (Starborn Titan) | Secret | 1 in 5M | 6,400 |
 | ??? (Galaxy Devourer) | Divine | 1 in 300M | 25.6K |
 | ??? (Big Bang) | Impossible | 1 in 50B | 128K |
-| **Boundless** (this month's, the same in every egg) | Boundless | 1 in 1T | 640K |
+| **Boundless** (this month's, the same in every egg) | Boundless | 1 in 1T | 6.4M |
 
 **Quests:**
 
@@ -742,7 +742,7 @@ Every egg has its own pets and its own odds (see each zone). **A pet's tier come
 | ??? (The First Light) | Secret | 1 in 3M | 12.8K |
 | ??? (Seraph Prime) | Divine | 1 in 200M | 51.2K |
 | ??? (Eternal Halo) | Impossible | 1 in 20B | 256K |
-| **Boundless** (this month's, the same in every egg) | Boundless | 1 in 1T | 1.28M |
+| **Boundless** (this month's, the same in every egg) | Boundless | 1 in 1T | 12.8M |
 
 **Quests:**
 
@@ -793,7 +793,7 @@ Every egg has its own pets and its own odds (see each zone). **A pet's tier come
 | ??? (Primordial Dragon) | Secret | 1 in 6M | 25.6K |
 | ??? (Dragon God) | Divine | 1 in 500M | 102K |
 | ??? (Endless Wyrm) | Impossible | 1 in 100B | 512K |
-| **Boundless** (this month's, the same in every egg) | Boundless | 1 in 1T | 2.56M |
+| **Boundless** (this month's, the same in every egg) | Boundless | 1 in 1T | 25.6M |
 
 **Quests:**
 
@@ -845,7 +845,7 @@ Every egg has its own pets and its own odds (see each zone). **A pet's tier come
 | ??? (Spectrum Dragon) | Secret | 1 in 4M | 51.2K |
 | ??? (Nexus Sovereign) | Divine | 1 in 300M | 205K |
 | ??? (Aura Infinite) | Impossible | 1 in 40B | 1.02M |
-| **Boundless** (this month's, the same in every egg) | Boundless | 1 in 1T | 5.12M |
+| **Boundless** (this month's, the same in every egg) | Boundless | 1 in 1T | 51.2M |
 
 **Quests:**
 
@@ -904,7 +904,7 @@ Every egg has its own pets and its own odds (see each zone). **A pet's tier come
 ## 24. Live updates (the plan after launch)
 
 - **A new zone about every 1-2 weeks** (11, 12, …), each with a new egg, monsters, a boss and a form. Each new zone adds roughly 2-4 hours for a free player and is tuned in the model first.
-- **Every month:** a new Boundless pet, new Exclusive Egg themes, a new Aura Pass season, and the Verity collab items (only if the licence is signed).
+- **Every month:** a new Boundless pet, new Exclusive Egg themes, a new Aura Pass season, and new Limited drops like the Verity items.
 - **Later systems** (each keeps the core rules):
   - **Ascension:** reset for a permanent multiplier; keep pets;
   - **global events** on one clock;
@@ -938,23 +938,23 @@ Every egg has its own pets and its own odds (see each zone). **A pet's tier come
   **Auto-Hatch is free.**
 - **Repeatable products:**
   - **+2 Pet Slots:** 199 R$, up to 10 times;
-  - **potions** (half price);
-  - **server boosts:** Mutation Storm 99;
-  - **coin packs.**
+  - **potions:** Luck / Power / Coin 25 (5 for 99), XP 19, Mega 65;
+  - **server boosts:** Mutation Storm 99, Server Luck Boost 199;
+  - **coin packs:** 49 / 149 / 449 / 999.
 - **Exclusive Eggs:**
   - **Daily Exclusive:** also free from rewards; 49 / 99 / 249;
   - **Shop Exclusive:** 99 / 279 / 849;
   - both use the tier system, with a Boundless line, and have no Huge or Titanic.
-- **Limited:** only the Verity pet and aura for now (serialized to #1,000, **licence required**).
+- **Limited:** only the Verity pet and aura for now (a meme, so no licence; our own art), serialized to #1,000.
 - **Aura Pass:** 799 R$ (+799 to skip straight to the end).
-- **Packs:** half price and 50% more in them.
+- **Packs:** Starter 49, Zone 149, Comeback 99.
 - **Free rewards:** hourly, daily (missed days never reset the cycle) and group rewards.
 - **Pop-ups:** only two: the 3 R$ 2× Boost after your first meditation, and the Zone Pack when you enter a new zone.
 - **What payers get (model, all 10 zones):**
 
 | Spend | All 10 zones |
 |---|---|
-| free | 10 h 50 |
+| free | ~10 h 50 |
 | starter (31 R$) | 6 h 41 |
 | VIP set (1,085 R$) | 3 h 23 |
 | whale (7,263 R$) | 3 h 14 |
