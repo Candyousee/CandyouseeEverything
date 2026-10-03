@@ -28,7 +28,7 @@
 - **Identity:** a pet simulator with two halves: **meditate (Power)** and **hunt (coins → pets)**.
 - **Scope:**
   - 10 zones at launch (GAME-BIBLE Part B), then a new zone about every 1-2 weeks;
-  - a first full run of about 10 h 06 for an average free player (6 h 18 with the 31 R$ starter spend, about 2 h 59 for a whale): **partial-model estimates** (GAME-BIBLE 27), to be measured in playtests;
+  - a first full run of about 8 h 02 for an average free player (6 h 03 with the 31 R$ starter spend, about 2 h 59 for a whale): **partial-model estimates** (GAME-BIBLE 27), to be measured in playtests;
   - after zone 10: the endless Nexus Titan, the Weekly Limited Egg and XP Shards keep players busy until the next zone.
 
 ## 3. Research: what we take (owner: "we don't need to be original")
@@ -119,8 +119,8 @@ These are **model targets for a free player playing solo, not promises.** The mo
 | Boss 1 at 4-9 min | ~5.5 min |
 | Boss 2 at 15-30 min | ~21 min |
 | Every zone takes longer than the one before | yes |
-| **Free first run (boss 10) in about 10-12 h** (owner) | **10 h 06-10 h 07** (two model samples) |
+| **Free first run (boss 10) in about 8-9 h** (owner, v9) | **8 h 02-8 h 12** (two model samples) |
 | **Whale first run about 3 h** (owner) | **2 h 59** |
-| Pets 30-50% of damage (never more than your blasts), and every pet upgrade adds hit | 46%; yes (no hard cap) |
-| **No stretch over ~5 min without a reward; final Power wait under ~5 min** (friction, GAME-BIBLE 1.1) | **zones 1-3: yes** (model test); **zones 4-10: no** (Power-gate wait 9-19 min). **Open decision (GAME-BIBLE 1.1) before zones 4-10 ship** |
+| Pets 30-50% of damage (never more than your blasts), and every pet upgrade adds hit | 47%; yes (no hard cap) |
+| **No stretch over ~5 min without a reward; final Power wait under ~5 min** (friction, GAME-BIBLE 1.1) | **zones 1-5: yes** (zones 1-3 are a model test); Power waits now 1-6 min everywhere; **zones 6-10: 6-8 min stretches**, to tune when built |
 | Average player wins the clash ≥ 90% at recommended Power; weak ≥ 60%; under-powered (½) average ≤ 40% | 100% / 79% / 23% |

@@ -20,7 +20,7 @@ Change a number = change the model and re-run `python make_bible.py`.
 - **Saving:** Robux receipts have a **permanent** ledger (`delivered` only; never cancelled, never pruned); hatch operations count as done only when stored `committed`, never just because the id exists.
 - **Limited promise:** "Numbered. On sale for 7 days or until 1,000 sold. Every buyer gets a numbered copy." No substitute items.
 - **Regional rules** now cover stored paid coins (two balances), paid-tagged eggs, gifts and eligibility changes (MONETIZATION 17.1).
-- **Friction and longevity** (owner): friction rules (1.1) that **don't change** the controls, meditation or quest lists. Sub-goal eggs and paced meditation are simulated; times re-computed (free ~10 h 06, whale ~2 h 59; late eggs +15%). The after-clear plan is in section 25.
+- **Friction and longevity** (owner): friction rules (1.1) that **don't change** the controls, meditation or quest lists. Sub-goal eggs and paced meditation are simulated; times re-computed. **Free run shortened to about 8 h** (owner): Shrines from zone 4 on are ×1.75 (free ~8 h 02, whale ~2 h 59; late eggs +15%). The after-clear plan is in section 25.
 - **Pet hits:** +10% of Power per doubling of team Strength, **no hard cap** (the old cap was reached at Strength 25, so upgrades stopped adding hit by zone 2). Pets stay at about 46% of damage.
 - **Fusion:** the Fusion Altar stops at ★2 until the Star Forge (zone 5), in the model too.
 - **Times are partial-model estimates** (section 27 lists what is and isn't modeled); Huge Storm, Auto-Sell and Mutation Magnet are now modeled for the whale.
@@ -37,7 +37,7 @@ Change a number = change the model and re-run `python make_bible.py`.
 
 **v7 owner changes:**
 - **10 zones** (zones 9 and 10 added; now Drakora Sanctum and Aurora Nexus):
-  - **free player:** about 11 h for a first run;
+  - **free player:** about 11 h for a first run (v9: now about 8 h, owner);
   - **whale:** about 3 h 15.
 - **New rarity system:** Common, Uncommon, Rare, Epic, Legendary, Mythic, **Secret (1 in 1M+)**, **Divine (1 in 10M+)**, **Impossible (1 in 1B+)**, **Boundless (1 in 1T+, in every egg, a new one every month)**.
   - **Odds:** **every egg has its own odds**; a tier is defined by its odds band.
@@ -105,11 +105,8 @@ Familiar loops work when **every action feels good on its own** and **every upgr
 
 **What the model says now** (RESULTS section 9, average free player; sub-goal eggs, paced meditation and the +15% egg prices included; all times re-computed):
 - **Zones 1-3 pass:** the longest stretch with no reward is about 3-4 min, and the final Power wait is 2-3 min. **This is a model test** (`tests.py`), so the playtest build is covered.
-- **Zones 4-10 don't pass yet.** Every hatch is a reward, and hatches land every few minutes even in zone 10. But the **final Power gate is still a 9-19 min wait**, and that's the longest rewardless stretch. The model's player already meditates in ≤ 3-min sittings to stay on pace; the rest comes from the gate itself.
-- **Open decision before zones 4-10 ship** (re-tuned in the model, with times re-computed):
-  - (a) Set the gate to **0.75× the recommended Power**. The model's average player still wins the clash 98% of the time there (RESULTS section 6). Late egg prices then rise to keep the 10-12 h free target.
-  - (b) Or let a share of Power come from kills in that zone. This breaks the "Power only from meditation" rule, so (a) is preferred.
-- **Current model times:** free ~10 h 06; whale ~2 h 59 (section 27).
+- **Zones 4-10 (owner, v9: "make it like 8 or 9 hours"):** every Shrine from zone 4 on is now **×1.75**. That made the first run shorter **and** cut the final Power wait from 9-19 min to **about 1-6 min**. The longest stretch with no reward is now **4-8 min** in zones 4-10 (every hatch is a reward, and hatches land every few minutes). **Zones 6-10 are still a little over the ~5 min target** (6-8 min): to be tuned when those zones are built (more sub-goals or a mid-zone reward).
+- **Current model times:** free **~8 h 02**; whale ~2 h 59 (section 27).
 
 ## 2. Controls: the blast (the only attack)
 
@@ -148,7 +145,7 @@ Familiar loops work when **every action feels good on its own** and **every upgr
 | **Focus** | a breathing ring grows and shrinks; tap when it's fullest. Good tap = +1 Focus level (max 5); a miss = −1 | up to ×3 (average about ×2.4) |
 
 - **Power per second** = Shrine rate × Focus × (1 + 0.10 × equipped pets' total Strength) × (1 + 0.25 × Mat level) × your Power buffs (MONETIZATION.md).
-- **Shrine rates:** **×4 per zone up to zone 4, then ×5 per zone**, from 0.5/s in Lumora Grove to 500,000/s in Aurora Nexus.
+- **Shrine rates:** **×4 per zone up to zone 3, then ×7 into zone 4 and ×5 per zone after** (every Shrine from zone 4 on is ×1.75, owner v9: an ~8-9 h free run), from 0.5/s in Lumora Grove to 875,000/s in Aurora Nexus.
 - **AFK in game:** full rate. Before Roblox's 20-minute idle kick, the game rejoins you to a server and sits you back on a mat.
 - **Offline:** 25% of your AFK rate, for up to 8 h (the Offline+ pass: 50%, 16 h), timed by the server. On return: "WHILE YOU WERE AWAY: +X POWER".
 
@@ -439,13 +436,13 @@ New systems **unlock when you enter each new zone** (the Pet Simulator "new mach
 | 2 Pyrora Dojo | **Hatch ×3** (after boss 1), **Spirit Codex** | the Scroll Hall | ~5 min |
 | 3 Glacora Peaks | **Enchant Forge**; **trading** in the hub | the Ice Forge | ~21 min |
 | 4 Voltora Cliffs | **Spirit Nursery** (daycare) | the Sky Nest | ~41 min |
-| 5 Blossora Gardens | **Star Forge** (★3-★5) | the Lantern Shrine | ~1 h 10 |
-| 6 Nyxora Rift | **Mutation Reactor** | the Rift Reactor | ~1 h 50 |
-| 7 Astora Throne | **Aura Forge** | the Star Anvil | ~2 h 34 |
-| 8 Seraphora Gate | **Relic Shrine** | the Halo Vault | ~3 h 50 |
-| 9 Drakora Sanctum | **Infinity Tower** | the Dragon Spire | ~5 h 17 |
-| 10 Aurora Nexus | **Ascension Gate**, Boundless Hall | the Nexus Core | ~7 h 25 |
-| After beating zone 10 | **the Nexus Titan** (an always-respawning raid boss), the **Weekly Limited Egg**, **XP Shards** and **Awakening** | the Heart of Aura | ~10 h 07 |
+| 5 Blossora Gardens | **Star Forge** (★3-★5) | the Lantern Shrine | ~1 h 05 |
+| 6 Nyxora Rift | **Mutation Reactor** | the Rift Reactor | ~1 h 38 |
+| 7 Astora Throne | **Aura Forge** | the Star Anvil | ~2 h 13 |
+| 8 Seraphora Gate | **Relic Shrine** | the Halo Vault | ~3 h 15 |
+| 9 Drakora Sanctum | **Infinity Tower** | the Dragon Spire | ~4 h 24 |
+| 10 Aurora Nexus | **Ascension Gate**, Boundless Hall | the Nexus Core | ~6 h 02 |
+| After beating zone 10 | **the Nexus Titan** (an always-respawning raid boss), the **Weekly Limited Egg**, **XP Shards** and **Awakening** | the Heart of Aura | ~8 h 12 |
 
 Every machine also gets a pad on the hub's teleporter ring once unlocked.
 
@@ -816,7 +813,7 @@ This is what players do while they wait for the weekly update.
 | Mutation Storm here | **Thunderstorm:** lightning everywhere, energy bridges overcharge and glow |
 | **New in this zone** | the **Spirit Nursery** (pet daycare, section 13.4) in the **Sky Nest** |
 
-**Numbers:** Shrine 32 Power/s · Egg 460K coins.
+**Numbers:** Shrine 56 Power/s · Egg 460K coins.
 
 | Monster | Look | HP | Behaviour | Drops (coins) | XP per kill |
 |---|---|---|---|---|---|
@@ -862,7 +859,7 @@ This is what players do while they wait for the weekly update.
 
 | Time | Power | Slots | Best pet | Best stars | Best level | Bag |
 |---|---|---|---|---|---|---|
-| **~1 h 10** | 4.03M | 9 | Epic | ★★ | 30 | 400 |
+| **~1 h 05** | 4.05M | 9 | Epic | ★★ | 30 | 400 |
 
 ## 18. ZONE 5: BLOSSORA GARDENS (Nature) · quests: easy
 
@@ -879,7 +876,7 @@ This is what players do while they wait for the weekly update.
 | Mutation Storm here | **Petal Storm:** a whirlwind of petals, the koi leap |
 | **New in this zone** | the **Star Forge** (fusion to ★3-★5) |
 
-**Numbers:** Shrine 160 Power/s · Egg 7M coins.
+**Numbers:** Shrine 280 Power/s · Egg 7M coins.
 
 | Monster | Look | HP | Behaviour | Drops (coins) | XP per kill |
 |---|---|---|---|---|---|
@@ -925,7 +922,7 @@ This is what players do while they wait for the weekly update.
 
 | Time | Power | Slots | Best pet | Best stars | Best level | Bag |
 |---|---|---|---|---|---|---|
-| **~1 h 50** | 60.3M | 10 | Epic | ★★ | 30 | 500 |
+| **~1 h 38** | 60.6M | 10 | Epic | ★★★ | 30 | 500 |
 
 ## 19. ZONE 6: NYXORA RIFT (Void) · quests: easy
 
@@ -942,7 +939,7 @@ This is what players do while they wait for the weekly update.
 | Mutation Storm here | **Eclipse:** the moon covers the sun, runes blaze |
 | **New in this zone** | the **Mutation Reactor** (section 13.6) |
 
-**Numbers:** Shrine 800 Power/s · Egg 115M coins.
+**Numbers:** Shrine 1,400 Power/s · Egg 115M coins.
 
 | Monster | Look | HP | Behaviour | Drops (coins) | XP per kill |
 |---|---|---|---|---|---|
@@ -988,7 +985,7 @@ This is what players do while they wait for the weekly update.
 
 | Time | Power | Slots | Best pet | Best stars | Best level | Bag |
 |---|---|---|---|---|---|---|
-| **~2 h 34** | 1.01B | 10 | Epic | ★★ | 30 | 500 |
+| **~2 h 13** | 1.01B | 10 | Epic | ★★★ | 30 | 500 |
 
 ## 20. ZONE 7: ASTORA THRONE (Cosmic) · quests: medium
 
@@ -1005,7 +1002,7 @@ This is what players do while they wait for the weekly update.
 | Mutation Storm here | **Meteor Shower:** the sky fills with falling stars |
 | **New in this zone** | the **Aura Forge** (customize your aura; section 13.7) |
 
-**Numbers:** Shrine 4,000 Power/s · Egg 1.7B coins.
+**Numbers:** Shrine 7,000 Power/s · Egg 1.7B coins.
 
 | Monster | Look | HP | Behaviour | Drops (coins) | XP per kill |
 |---|---|---|---|---|---|
@@ -1052,7 +1049,7 @@ This is what players do while they wait for the weekly update.
 
 | Time | Power | Slots | Best pet | Best stars | Best level | Bag |
 |---|---|---|---|---|---|---|
-| **~3 h 50** | 15B | 10 | Epic | ★★★ | 30 | 500 |
+| **~3 h 15** | 15.1B | 10 | Epic | ★★★ | 30 | 500 |
 
 ## 21. ZONE 8: SERAPHORA GATE (Holy light) · quests: medium
 
@@ -1069,7 +1066,7 @@ This is what players do while they wait for the weekly update.
 | Mutation Storm here | **Holy Rain:** golden rain and feathers |
 | **New in this zone** | the **Relic Shrine** (section 13.8) |
 
-**Numbers:** Shrine 20K Power/s · Egg 29B coins.
+**Numbers:** Shrine 35K Power/s · Egg 29B coins.
 
 | Monster | Look | HP | Behaviour | Drops (coins) | XP per kill |
 |---|---|---|---|---|---|
@@ -1116,7 +1113,7 @@ This is what players do while they wait for the weekly update.
 
 | Time | Power | Slots | Best pet | Best stars | Best level | Bag |
 |---|---|---|---|---|---|---|
-| **~5 h 17** | 201B | 10 | Epic | ★★★ | 30 | 500 |
+| **~4 h 24** | 201B | 10 | Epic | ★★★ | 30 | 500 |
 
 ## 22. ZONE 9: DRAKORA SANCTUM (Dragon) · quests: hard
 
@@ -1133,7 +1130,7 @@ This is what players do while they wait for the weekly update.
 | Mutation Storm here | **Dragonfire:** dragons fly overhead breathing harmless fire |
 | **New in this zone** | the **Infinity Tower** entrance (endless boss floors; section 13.9) |
 
-**Numbers:** Shrine 100K Power/s · Egg 290B coins.
+**Numbers:** Shrine 175K Power/s · Egg 290B coins.
 
 | Monster | Look | HP | Behaviour | Drops (coins) | XP per kill |
 |---|---|---|---|---|---|
@@ -1181,7 +1178,7 @@ This is what players do while they wait for the weekly update.
 
 | Time | Power | Slots | Best pet | Best stars | Best level | Bag |
 |---|---|---|---|---|---|---|
-| **~7 h 25** | 2.51T | 10 | Epic | ★★★ | 30 | 500 |
+| **~6 h 02** | 2.51T | 10 | Epic | ★★★ | 30 | 500 |
 
 ## 23. ZONE 10: AURORA NEXUS (Every aura) · quests: hard
 
@@ -1198,7 +1195,7 @@ This is what players do while they wait for the weekly update.
 | Mutation Storm here | **Aurora Surge:** every zone's storm at once |
 | **New in this zone** | the **Ascension Gate** (rebirth; section 13.10) and the **Boundless Hall** (statues of every Boundless owner). After the Ascendant: the **Nexus Titan** (an always-respawning raid boss), the **Weekly Limited Egg** and **XP Shards** with Awakening (section 13.12) |
 
-**Numbers:** Shrine 500K Power/s · Egg 4T coins.
+**Numbers:** Shrine 875K Power/s · Egg 4T coins.
 
 | Monster | Look | HP | Behaviour | Drops (coins) | XP per kill |
 |---|---|---|---|---|---|
@@ -1246,7 +1243,7 @@ This is what players do while they wait for the weekly update.
 
 | Time | Power | Slots | Best pet | Best stars | Best level | Bag |
 |---|---|---|---|---|---|---|
-| **~10 h 07** | 30.1T | 10 | Epic | ★★ | 30 | 500 |
+| **~8 h 12** | 30.1T | 10 | Epic | ★★★ | 30 | 500 |
 
 ## 24. Progression at a glance (average free player, solo, model medians)
 
@@ -1255,13 +1252,13 @@ This is what players do while they wait for the weekly update.
 | 1 | Lumora Grove | very easy | 0.5 | 60 | Stone Golem (300) | ~5 min | 314 |
 | 2 | Pyrora Dojo | very easy | 2 | 1,700 | Magma Oni (10K) | ~21 min | 10.3K |
 | 3 | Glacora Peaks | very easy | 8 | 29K | Frost Wyrm (200K) | ~41 min | 203K |
-| 4 | Voltora Cliffs | easy | 32 | 460K | Thunder Roc (4M) | ~1 h 10 | 4.03M |
-| 5 | Blossora Gardens | easy | 160 | 7M | Blossom Ronin (60M) | ~1 h 50 | 60.3M |
-| 6 | Nyxora Rift | easy | 800 | 115M | Void Leviathan (1B) | ~2 h 34 | 1.01B |
-| 7 | Astora Throne | medium | 4,000 | 1.7B | Star Emperor (15B) | ~3 h 50 | 15B |
-| 8 | Seraphora Gate | medium | 20K | 29B | Archangel Sentinel (200B) | ~5 h 17 | 201B |
-| 9 | Drakora Sanctum | hard | 100K | 290B | Elder Dragon Emperor (2.5T) | ~7 h 25 | 2.51T |
-| 10 | Aurora Nexus | hard | 500K | 4T | The Ascendant (30T) | ~10 h 07 | 30.1T |
+| 4 | Voltora Cliffs | easy | 56 | 460K | Thunder Roc (4M) | ~1 h 05 | 4.05M |
+| 5 | Blossora Gardens | easy | 280 | 7M | Blossom Ronin (60M) | ~1 h 38 | 60.6M |
+| 6 | Nyxora Rift | easy | 1,400 | 115M | Void Leviathan (1B) | ~2 h 13 | 1.01B |
+| 7 | Astora Throne | medium | 7,000 | 1.7B | Star Emperor (15B) | ~3 h 15 | 15.1B |
+| 8 | Seraphora Gate | medium | 35K | 29B | Archangel Sentinel (200B) | ~4 h 24 | 201B |
+| 9 | Drakora Sanctum | hard | 175K | 290B | Elder Dragon Emperor (2.5T) | ~6 h 02 | 2.51T |
+| 10 | Aurora Nexus | hard | 875K | 4T | The Ascendant (30T) | ~8 h 12 | 30.1T |
 
 <!-- ZONES:END -->
 
@@ -1271,7 +1268,7 @@ This is what players do while they wait for the weekly update.
 
 ## 25. After zone 10: why players stay (owner's longevity concern)
 
-A heavily upgraded player can clear the ten bosses in about **3 hours** (model: 2 h 59), and a free player in about **10** (10 h 06). That's fine **only if collecting, improving and showing off the team stays appealing afterwards.** This is the plan for every hour after the first clear.
+A heavily upgraded player can clear the ten bosses in about **3 hours** (model: 2 h 59), and a free player in about **8** (8 h 02). That's fine **only if collecting, improving and showing off the team stays appealing afterwards.** This is the plan for every hour after the first clear.
 
 **1. Improve the team (vertical, never "done"):**
 - **★5 pets** (243 copies each), **Shiny** (Nursery), **pet mutations** (Reactor, up to ×5), **enchants** (I-V), **Awakening** to level 50 (XP Shards from the Titan), relics.
@@ -1348,9 +1345,9 @@ A heavily upgraded player can clear the ten bosses in about **3 hours** (model: 
 
 | Spend | All 10 zones |
 |---|---|
-| free | ~10 h 06 |
-| starter (31 R$) | 6 h 18 |
-| VIP set (986 R$) | 3 h 13 |
+| free | ~8 h 02 |
+| starter (31 R$) | 6 h 03 |
+| VIP set (986 R$) | 3 h 16 |
 | whale (7,164 R$) | 2 h 59 |
 
 **What these times are (and aren't):** they come from `econ/model.py`, which simulates the **core loop**: blasts, Overdrive, mutations and storms, meditation, eggs and luck, pets (Strength, stars, levels, the Star Forge in zone 5), quests, bosses, the 2× Boost ladder, VIP, 2× Coins / Secret Luck / Hatch Speed, Hatch ×8, Huge Storm, Auto-Sell, Mutation Magnet and slot packs. **Not modeled yet:** enchants, pet mutations, the Nursery, relics, the Codex, Ascension, Exclusive and reward-track pets, potions, the Aura Pass, coin packs, Offline+ (the model plays in one sitting) and raid co-op. Almost all of those only speed a player up, so the real times are probably **shorter**, by an unknown amount. **These are partial-model estimates, not validated pacing**: playtest #1 and the soft launch measure the real times, and each machine is added to the model before it ships (GAME-PLAN 5b).

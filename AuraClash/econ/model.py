@@ -52,7 +52,8 @@ def shard_val(z):
     return tuple(v * VAL_STEP ** z for v in VAL_BASE)
 
 
-SHRINE = [0.5 * 4 ** min(z, 3) * 5 ** max(0, z - 3) for z in range(ZONES)]   # Power / s, AFK: x4 per zone, x5 from zone 5
+SHRINE_LATE_X = 1.75   # v9 (owner: free run ~8-9 h): every Shrine from zone 4 on is x1.75; also shortens the Power waits
+SHRINE = [0.5 * 4 ** min(z, 3) * 5 ** max(0, z - 3) * (SHRINE_LATE_X if z >= 3 else 1) for z in range(ZONES)]   # Power / s, AFK
 EGG_PRICE = [60, 1_700, 29_000, 460_000, 7_000_000, 115_000_000, 1_700_000_000, 29_000_000_000,
              290_000_000_000, 4_000_000_000_000]   # +15% from zone 2 on (v9): pays for the friction sub-goal eggs
 BOSS = [dict(name="Stone Golem", rec=300, form="BLAZE"),

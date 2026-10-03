@@ -74,10 +74,10 @@ def test_ladder_doubles_luck_and_power_together():         # owner: one "2x Boos
     assert M.SLOT_PACK_PRICE == 199 and M.SLOT_PACK_MAX == 10
 
 
-def test_paid_player_is_faster_but_free_player_finishes():   # targets: free ~10-12 h, whale ~3 h
+def test_paid_player_is_faster_but_free_player_finishes():   # targets: free ~8-9 h (owner, v9), whale ~3 h
     free = st.median(M.Player("average", 3000 + r).run().milestones[f"boss{M.ZONES}"] for r in range(8)) / 3600
     whale = st.median(M.Player("average", 3000 + r, paid="whale").run().milestones[f"boss{M.ZONES}"] for r in range(8)) / 3600
-    assert 9.5 <= free <= 12.5, free
+    assert 7.5 <= free <= 9.5, free
     assert 2.5 <= whale <= 4.0, whale
 
 
@@ -398,7 +398,7 @@ def test_pacing_targets():                                  # GAME-PLAN design t
     t = [st.median(x.milestones[f"boss{z + 1}"] / 60 for x in rows) for z in range(M.ZONES)]
     assert 4 <= t[0] <= 9 and 15 <= t[1] <= 30, t
     assert all(b > a for a, b in zip(t, t[1:]))              # every zone takes longer to finish
-    assert 570 <= t[-1] <= 750, t                            # first full run (free): about 10-12 hours
+    assert 470 <= t[-1] <= 560, t                            # first full run (free): about 8-9 hours (owner, v9)
     med = st.mean(x.med_time / (x.med_time + x.hunt_time) for x in rows)
     pet = st.mean(x.pet_dmg / (x.pet_dmg + x.player_dmg) for x in rows)
     assert 0.15 <= med <= 0.50 and 0.30 <= pet <= 0.50, (med, pet)   # pets never out-damage your blasts
