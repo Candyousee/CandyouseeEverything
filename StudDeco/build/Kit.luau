@@ -1,191 +1,160 @@
 --!strict
--- Stud Deco kit: tiny helpers that turn shapes into part lists.
--- Every item is a list of parts { name, shape, size, cf, color, studs, neon } plus point lights.
--- Shapes: "block" (Part), "ball" (SpecialMesh Sphere: an ellipsoid filling its box),
--- "cyl" (Part, Shape = Cylinder, axis along X), "wedge" (WedgePart).
--- Units are studs. Y is up, the item faces -Z (towards the camera), its base sits on Y = 0.
+-- Stud Deco kit: BRICK-BUILT helpers (owner: "blocky, not smooth").
+-- Everything is made of blocks (and the odd wedge), with Roblox's built-in Studs surface on every top face,
+-- so items look like toy bricks. Round things are stepped layers; faces are pixel art in glowing blocks.
+-- Units are studs. Y is up, the item faces -Z, its base sits on Y = 0.
 
 local roblox = require("@lune/roblox")
-local CFrame, Vector3 = roblox.CFrame, roblox.Vector3
+local CFrame = roblox.CFrame
 
 local Kit = {}
 
 Kit.C = {
-	orange = { 232, 116, 30 }, orangeDark = { 180, 80, 26 }, orangeLight = { 246, 150, 60 },
+	orange = { 232, 116, 30 }, orangeDark = { 196, 90, 22 }, orangeLight = { 246, 146, 52 },
 	purple = { 106, 63, 160 }, purpleDeep = { 59, 37, 96 }, toxic = { 123, 224, 74 },
-	bone = { 239, 227, 200 }, boneDark = { 200, 186, 156 }, stone = { 110, 106, 120 }, stoneDark = { 62, 58, 70 },
-	wood = { 107, 68, 38 }, woodDark = { 63, 40, 22 }, black = { 30, 26, 36 }, gold = { 232, 184, 74 },
-	moss = { 94, 138, 58 }, mossDark = { 64, 100, 40 }, stem = { 86, 120, 48 }, wax = { 240, 232, 210 },
+	bone = { 239, 227, 200 }, boneDark = { 206, 192, 160 }, stone = { 120, 116, 130 }, stoneDark = { 72, 68, 80 },
+	wood = { 107, 68, 38 }, woodDark = { 63, 40, 22 }, black = { 38, 34, 44 }, gold = { 232, 184, 74 },
+	moss = { 104, 150, 62 }, mossDark = { 70, 108, 44 }, stem = { 86, 128, 48 }, wax = { 242, 234, 214 },
 	glowOrange = { 255, 150, 40 }, glowYellow = { 255, 214, 110 }, glowPurple = { 190, 120, 255 }, glowGreen = { 140, 255, 90 },
-	dirt = { 92, 62, 40 },
+	dirt = { 104, 70, 44 },
 }
 
+local CF, A = CFrame.new, CFrame.Angles
+Kit.CF, Kit.A = CF, A
+
 export type Part = { name: string, shape: string, size: { number }, cf: any, color: { number }, studs: boolean?, neon: boolean? }
-export type Light = { pos: { number }, color: { number }, range: number, brightness: number }
-export type Item = { name: string, category: string, parts: { Part }, lights: { Light } }
 
 function Kit.new(name: string, category: string)
-	local self = { name = name, category = category, parts = {} :: { Part }, lights = {} :: { Light }, n = 0 }
-
-	local function add(shape: string, partName: string?, size: { number }, cf: any, color: { number }, opts: { studs: boolean?, neon: boolean? }?)
+	local self = { name = name, category = category, parts = {} :: { Part }, lights = {}, n = 0 }
+	local function add(shape, partName, size, cf, color, opts)
 		self.n += 1
 		table.insert(self.parts, {
-			name = partName or (shape .. self.n),
-			shape = shape,
-			size = size,
-			cf = cf,
-			color = color,
-			studs = opts and opts.studs or false,
+			name = partName or (shape .. self.n), shape = shape, size = size, cf = cf, color = color,
+			-- studs on top by default: that's the look
+			studs = if opts and opts.studs ~= nil then opts.studs else not (opts and opts.neon),
 			neon = opts and opts.neon or false,
 		})
 	end
-
-	-- a block; studs = true puts Roblox's built-in Studs surface on top
-	function self.block(name: string?, size, cf, color, opts) add("block", name, size, cf, color, opts) end
-	function self.ball(name: string?, size, cf, color, opts) add("ball", name, size, cf, color, opts) end
-	function self.wedge(name: string?, size, cf, color, opts) add("wedge", name, size, cf, color, opts) end
-	-- a vertical cylinder of diameter d and height h, standing on its centre point
-	function self.vcyl(name: string?, d: number, h: number, cf, color, opts)
-		add("cyl", name, { h, d, d }, cf * CFrame.Angles(0, 0, math.rad(90)), color, opts)
-	end
-	-- a cylinder lying along the item's X axis
-	function self.hcyl(name: string?, d: number, len: number, cf, color, opts)
-		add("cyl", name, { len, d, d }, cf, color, opts)
-	end
-	function self.light(pos: { number }, color: { number }, range: number, brightness: number?)
+	function self.block(name, size, cf, color, opts) add("block", name, size, cf, color, opts) end
+	function self.wedge(name, size, cf, color, opts) add("wedge", name, size, cf, color, opts) end
+	function self.light(pos, color, range, brightness)
 		table.insert(self.lights, { pos = pos, color = color, range = range, brightness = brightness or 1.5 })
 	end
 	return self
 end
 
-local CF, A = CFrame.new, CFrame.Angles
-Kit.CF, Kit.A = CF, A
+-- One stepped "round" layer: a plus-shaped octagon from 3 non-overlapping blocks (no z-fighting).
+-- `d` = full width (studs), `h` = layer height, `at` = the layer's bottom centre.
+function Kit.roundLayer(it, name: string, at, d: number, h: number, color, sideColor)
+	local side = if d >= 3 then 1 else 0.5 -- whole studs so the studs line up
+	local core = d - 2 * side
+	it.block(name, { core, h, d }, at * CF(0, h / 2, 0), color)
+	if side >= 0.25 then
+		it.block(name .. "L", { side, h, core }, at * CF(-(core + side) / 2, h / 2, 0), sideColor or color)
+		it.block(name .. "R", { side, h, core }, at * CF((core + side) / 2, h / 2, 0), sideColor or color)
+	end
+end
 
--- A ribbed pumpkin: a core plus `lobes` ellipsoid lobes around it, a stem, and a few stud bumps.
--- `at` is the CFrame of the pumpkin's bottom centre. Returns its height.
-function Kit.pumpkin(it, at, w: number, h: number, color, opts: { lobes: number?, stem: boolean?, bumps: boolean?, darkTone: { number }? }?)
-	local lobes = opts and opts.lobes or 8
-	local dark = opts and opts.darkTone or Kit.C.orangeDark
-	local mid = at * CF(0, h / 2, 0)
-	it.ball("Core", { w * 0.82, h * 0.96, w * 0.82 }, mid, dark)
-	for i = 0, lobes - 1 do
-		local a = (i + 0.5) / lobes * math.pi * 2
-		local lobeCF = mid * A(0, a, 0) * CF(0, 0, -w * 0.2)
-		it.ball("Lobe", { w * 0.42, h, w * 0.62 }, lobeCF, if i % 2 == 0 then color else Kit.C.orangeLight)
+-- A brick-built pumpkin: stepped layers in whole-stud widths, darker side ribs, a block stem.
+-- Returns its height and the layer table (for the face).
+function Kit.pumpkin(it, at, w: number, opts: { lh: number?, stem: boolean?, layers: number? }?)
+	local lh = opts and opts.lh or 0.8
+	local widths = if opts and opts.layers == 3 then { w - 1, w, w - 1 } else { w - 1, w, w, w, w - 1 }
+	local y = 0
+	local layers = {}
+	for i, d in widths do
+		Kit.roundLayer(it, "Pumpkin" .. i, at * CF(0, y, 0), d, lh, Kit.C.orange, Kit.C.orangeDark)
+		table.insert(layers, { y0 = y, y1 = y + lh, d = d })
+		y += lh
 	end
 	if not opts or opts.stem ~= false then
-		it.vcyl("Stem", w * 0.16, h * 0.28, at * CF(0, h * 1.0, 0) * A(0, 0, math.rad(12)), Kit.C.stem)
-		it.vcyl("StemTip", w * 0.13, h * 0.12, at * CF(w * 0.06, h * 1.14, 0) * A(0, 0, math.rad(40)), Kit.C.stem)
+		it.block("Stem", { 0.6, 0.7, 0.6 }, at * CF(0, y + 0.35, 0), Kit.C.stem)
+		it.block("StemTip", { 0.6, 0.4, 0.4 }, at * CF(0.35, y + 0.75, 0), Kit.C.stem)
+		it.block("Leaf", { 1.0, 0.2, 0.6 }, at * CF(-0.55, y + 0.1, 0.2), Kit.C.moss)
 	end
-	if opts and opts.bumps then
-		-- little stud bumps on the sides and back (never on the face)
-		for i, q in { { 1.3, 0.45 }, { -1.25, -0.2 }, { 2.4, 0.1 }, { -2.3, 0.5 }, { 3.1, -0.35 } } do
-			local u, v = q[1], q[2]
-			local a, b, c = 0.5 * w, 0.5 * h, 0.48 * w
-			local phi = math.asin(v * 0.9)
-			local p = Vector3.new(a * math.cos(phi) * math.sin(u), b * math.sin(phi), -c * math.cos(phi) * math.cos(u))
-			local bumpCF = at * CF(0, h / 2, 0) * CF(p)
-			it.ball("Bump" .. i, { w * 0.1, w * 0.1, w * 0.1 }, bumpCF, color)
+	return y, layers
+end
+
+-- Pixel-art glowing face on the front of a stepped shape.
+-- rows = strings top to bottom ("#" = glow, "." = empty); `cell` = pixel size; `cy` = face centre height;
+-- `frontZ(y)` = the shape's front surface at height y (negative Z). Runs of "#" merge into one block.
+function Kit.pixelFace(it, at, rows: { string }, cell: number, cy: number, frontZ: (number) -> number, glow)
+	local n = #rows
+	for r, row in rows do
+		local y = cy + ((n + 1) / 2 - r) * cell
+		local z = frontZ(y)
+		local c = 1
+		local len = #row
+		while c <= len do
+			if string.sub(row, c, c) == "#" then
+				local s = c
+				while c + 1 <= len and string.sub(row, c + 1, c + 1) == "#" do
+					c += 1
+				end
+				local x = ((s + c) / 2 - (len + 1) / 2) * cell
+				it.block("Face" .. r .. "_" .. s, { (c - s + 1) * cell, cell, 0.3 }, at * CF(x, y, z + 0.1), glow, { neon = true })
+			end
+			c += 1
 		end
 	end
-	return h
 end
 
--- A frame sitting on the surface of the pumpkin ellipsoid (semi-axes 0.5w, 0.5h, 0.48w around its centre),
--- with its -Z (front) pointing outwards. x, y = offsets from the front centre, in studs.
--- `inset` = how far behind the surface the part's centre sits (half its depth minus how proud it stands).
-function Kit.onPumpkin(at, w: number, h: number, x: number, y: number, inset: number)
-	local a, b, c = 0.5 * w, 0.5 * h, 0.48 * w
-	local u = math.asin(math.clamp(x / a, -0.95, 0.95))
-	local phi = math.asin(math.clamp(y / b, -0.95, 0.95))
-	local px, py, pz = a * math.cos(phi) * math.sin(u), b * math.sin(phi), -c * math.cos(phi) * math.cos(u)
-	-- ellipsoid normal: (px/a^2, py/b^2, pz/c^2)
-	local n = Vector3.new(px / (a * a), py / (b * b), pz / (c * c)).Unit
-	local centre = at * CF(0, h / 2, 0)
-	local p = centre * Vector3.new(px, py, pz)
-	local nw = centre:VectorToWorldSpace(n)
-	return CFrame.lookAt(p, p + nw) * CF(0, 0, inset)
-end
+Kit.FACES = {
+	grin = { "##....##", "###..###", "...##...", "#......#", ".######.", "..#..#.." },
+	wicked = { "#......#", "##....##", ".##..##.", "........", "#.####.#", ".#.##.#." },
+	happy = { ".##..##.", ".##..##.", "........", "#......#", ".######." },
+}
 
--- An isosceles triangle facing -Z, made of two mirrored wedges. pointDown flips it.
-function Kit.tri(it, name: string, at, width: number, height: number, depth: number, color, opts, pointDown: boolean?)
-	local flip = if pointDown then A(0, 0, math.rad(180)) else CF()
-	local half = math.max(0.12, width / 2)
-	it.wedge(name .. "L", { depth, height, half }, at * flip * CF(-half / 2, 0, 0) * A(0, math.rad(90), 0), color, opts)
-	it.wedge(name .. "R", { depth, height, half }, at * flip * CF(half / 2, 0, 0) * A(0, math.rad(-90), 0), color, opts)
-end
-
--- A glowing jack-o'-lantern face set into the front of a pumpkin of width w, height h.
--- style: "grin" (triangle eyes, toothy grin) | "wicked" (slanted eyes, fangs) | "happy" (round eyes, smile)
-function Kit.face(it, at, w: number, h: number, glow, style: string?)
-	style = style or "grin"
-	local s = w / 3 -- designed on a 3-stud-wide pumpkin
-	local depth = 0.4
-	local neon = { neon = true }
-	-- each feature's centre sits (depth/2 - 0.05) behind the surface, so it stands 0.05 proud
-	local function F(x, y) return Kit.onPumpkin(at, w, h, x * s, y * s, depth / 2 - 0.05) end
-	if style == "happy" then
-		it.ball("EyeL", { 0.42 * s, 0.5 * s, depth }, F(-0.46, 0.3), glow, neon)
-		it.ball("EyeR", { 0.42 * s, 0.5 * s, depth }, F(0.46, 0.3), glow, neon)
-	elseif style == "wicked" then
-		it.wedge("EyeL", { depth, 0.4 * s, 0.62 * s }, F(-0.48, 0.3) * A(0, math.rad(-90), 0), glow, neon)
-		it.wedge("EyeR", { depth, 0.4 * s, 0.62 * s }, F(0.48, 0.3) * A(0, math.rad(90), 0), glow, neon)
-	else
-		Kit.tri(it, "EyeL", F(-0.46, 0.34), 0.56 * s, 0.48 * s, depth, glow, neon)
-		Kit.tri(it, "EyeR", F(0.46, 0.34), 0.56 * s, 0.48 * s, depth, glow, neon)
-	end
-	Kit.tri(it, "Nose", F(0, 0.02), 0.34 * s, 0.26 * s, depth, glow, neon)
-	-- the mouth: a wide smile (centre bar + two raised corners); teeth stay in the pumpkin's colour
-	it.block("Mouth", { 1.0 * s, 0.28 * s, depth }, F(0, -0.36), glow, neon)
-	it.block("MouthL", { 0.44 * s, 0.24 * s, depth }, F(-0.66, -0.25) * A(0, 0, math.rad(30)), glow, neon)
-	it.block("MouthR", { 0.44 * s, 0.24 * s, depth }, F(0.66, -0.25) * A(0, 0, math.rad(-30)), glow, neon)
-	local tooth = Kit.C.orange
-	local tSize = { math.max(0.14, 0.17 * s), math.max(0.12, 0.13 * s), depth + 0.04 }
-	if style == "wicked" then
-		it.block("FangL", tSize, F(-0.25, -0.27), tooth)
-		it.block("FangR", tSize, F(0.25, -0.27), tooth)
-	elseif style == "grin" then
-		it.block("ToothTop", tSize, F(-0.2, -0.27), tooth)
-		it.block("ToothBottom", tSize, F(0.24, -0.45), tooth)
+-- front surface of a stepped pumpkin, from its layers (the centre block reaches d/2)
+function Kit.pumpkinFront(layers)
+	return function(y: number)
+		for _, l in layers do
+			if y >= l.y0 - 1e-6 and y <= l.y1 + 1e-6 then
+				return -l.d / 2
+			end
+		end
+		return -layers[1].d / 2
 	end
 end
 
--- A chunky round base (stone / dirt) with studs on top. Returns the top height.
-function Kit.roundBase(it, at, d: number, h: number, color)
-	it.vcyl("Base", d, h, at * CF(0, h / 2, 0), color)
-	it.block("BaseTop", { d * 0.62, 0.2, d * 0.62 }, at * CF(0, h + 0.1, 0), color, { studs = true })
+-- A pumpkin with a glowing pixel face; returns its height.
+function Kit.jack(it, at, w: number, style: string, glow, opts)
+	local h, layers = Kit.pumpkin(it, at, w, opts)
+	local cell = (w - 2) / 8 -- the face fits the front (centre) block
+	Kit.pixelFace(it, at, Kit.FACES[style], cell, h * 0.5, Kit.pumpkinFront(layers), glow)
 	return h
 end
 
--- A chunky square base with studs. Returns the top height.
-function Kit.slabBase(it, at, x: number, h: number, z: number, color)
-	it.block("Base", { x, h, z }, at * CF(0, h / 2, 0), color, { studs = true })
-	return h
+-- A stepped round base: two plates, the top one smaller. Returns its top.
+function Kit.roundBase(it, at, d: number, color)
+	Kit.roundLayer(it, "Base", at, d, 0.4, color)
+	Kit.roundLayer(it, "BaseTop", at * CF(0, 0.4, 0), d - 1, 0.4, color)
+	return 0.8
 end
 
--- A candle with a wax drip and a neon flame; returns the flame position (for a light).
+-- A square candle with a stepped neon flame. Returns the flame position.
 function Kit.candle(it, at, d: number, h: number, wax, flame)
-	it.vcyl("Candle", d, h, at * CF(0, h / 2, 0), wax)
-	it.block("Drip", { math.max(0.15, d * 0.28), h * 0.35, math.max(0.12, d * 0.2) }, at * CF(d * 0.32, h * 0.78, -d * 0.4), wax)
-	it.vcyl("Wick", 0.12, math.max(0.15, d * 0.25), at * CF(0, h + d * 0.1, 0), Kit.C.black)
-	it.ball("Flame", { d * 0.42, d * 0.85, d * 0.42 }, at * CF(0, h + d * 0.5, 0), flame, { neon = true })
-	it.ball("FlameCore", { math.max(0.12, d * 0.2), d * 0.4, math.max(0.12, d * 0.2) }, at * CF(0, h + d * 0.4, -d * 0.08), Kit.C.glowYellow, { neon = true })
-	local p = (at * CF(0, h + d * 0.55, 0)).Position
+	it.block("Candle", { d, h, d }, at * CF(0, h / 2, 0), wax)
+	it.block("Drip", { 0.2, h * 0.4, 0.2 }, at * CF(d / 2 - 0.05, h * 0.75, -d / 2), wax, { studs = false })
+	it.block("Wick", { 0.12, 0.2, 0.12 }, at * CF(0, h + 0.1, 0), Kit.C.black, { studs = false })
+	it.block("Flame", { 0.4, 0.4, 0.4 }, at * CF(0, h + 0.4, 0), flame, { neon = true })
+	it.block("FlameTip", { 0.22, 0.3, 0.22 }, at * CF(0, h + 0.75, 0), Kit.C.glowYellow, { neon = true })
+	local p = (at * CF(0, h + 0.5, 0)).Position
 	return { p.X, p.Y, p.Z }
 end
 
--- A cartoon skull (cream): cranium, cheekbones, jaw, dark sockets. `at` = the skull's centre.
-function Kit.skull(it, at, s: number, socket, eyeGlow: boolean?)
-	it.ball("Cranium", { 1.2 * s, 1.05 * s, 1.1 * s }, at, Kit.C.bone)
-	it.block("Cheeks", { 0.95 * s, 0.4 * s, 0.8 * s }, at * CF(0, -0.42 * s, -0.12 * s), Kit.C.bone)
-	it.block("Jaw", { 0.7 * s, 0.25 * s, 0.6 * s }, at * CF(0, -0.68 * s, -0.16 * s), Kit.C.boneDark)
-	for i, x in { -0.28, -0.09, 0.09, 0.28 } do
-		it.block("Tooth" .. i, { 0.13 * s, 0.14 * s, 0.12 }, at * CF(x * s, -0.6 * s, -0.54 * s), Kit.C.bone)
+-- A brick-built skull: head, crown, cheeks, dark eye sockets, nose, teeth. `at` = bottom centre; s = scale (1 = 2 studs wide).
+function Kit.skull(it, at, s: number, socket, glowEyes: boolean?)
+	it.block("Skull", { 2 * s, 1.2 * s, 1.6 * s }, at * CF(0, 1.1 * s, 0), Kit.C.bone)
+	it.block("SkullTop", { 1.4 * s, 0.4 * s, 1.2 * s }, at * CF(0, 1.9 * s, 0.05 * s), Kit.C.bone)
+	it.block("Cheeks", { 1.6 * s, 0.5 * s, 1.4 * s }, at * CF(0, 0.25 * s, -0.05 * s), Kit.C.bone)
+	local opts = if glowEyes then { neon = true } else { studs = false }
+	it.block("EyeL", { 0.5 * s, 0.5 * s, 0.2 }, at * CF(-0.45 * s, 1.0 * s, -0.8 * s - 0.05), socket, opts)
+	it.block("EyeR", { 0.5 * s, 0.5 * s, 0.2 }, at * CF(0.45 * s, 1.0 * s, -0.8 * s - 0.05), socket, opts)
+	it.block("Nose", { 0.25 * s, 0.25 * s, 0.2 }, at * CF(0, 0.62 * s, -0.8 * s - 0.05), Kit.C.black, { studs = false })
+	for i, x in { -0.45, -0.15, 0.15, 0.45 } do
+		it.block("Tooth" .. i, { 0.22 * s, 0.25 * s, 0.2 }, at * CF(x * s, 0.25 * s, -0.7 * s - 0.05), Kit.C.boneDark, { studs = false })
 	end
-	local opts = if eyeGlow then { neon = true } else nil
-	it.ball("SocketL", { 0.34 * s, 0.36 * s, 0.2 * s }, at * CF(-0.26 * s, -0.08 * s, -0.5 * s), socket, opts)
-	it.ball("SocketR", { 0.34 * s, 0.36 * s, 0.2 * s }, at * CF(0.26 * s, -0.08 * s, -0.5 * s), socket, opts)
-	it.wedge("NoseHole", { 0.14 * s, 0.16 * s, 0.1 * s }, at * CF(0, -0.32 * s, -0.55 * s), Kit.C.black)
 end
 
 return Kit
