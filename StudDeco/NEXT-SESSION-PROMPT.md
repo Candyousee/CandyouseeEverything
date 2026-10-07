@@ -42,11 +42,12 @@ The repo is `candyousee/candyouseeeverything`. Start from branch `claude/keen-pt
    - small displacement / jitter so it doesn't look machine-perfect.
    - One reusable function per common element: pumpkin, skull, stone base with moss, stud scatter, flame, candle, plank, chain.
 2. **Export per item for Roblox:**
-   - an FBX (or OBJ);
-   - **≤ 10,000 triangles per item (aim for 2-5k)**, ≤ 3 materials, colours in materials or vertex colours;
+   - an FBX;
+   - **≤ 10,000 triangles per item (aim for 2-5k)**;
+   - **colours baked into one small texture per item (512 px)**, so Roblox's 3D Importer keeps them. Plain material colours or vertex colours may not survive the import;
    - glowing parts as a separate mesh named `*_Glow`, so they get Neon material + a PointLight in Studio;
    - the pivot at the base centre, real Roblox scale (an avatar is ~5 studs tall).
-   - I'll import them into Studio myself with the 3D Importer (free). **Don't open or touch Studio, and don't upload anything.**
+   - I'll import them into Studio myself with the 3D Importer (free). **The first 3 items double as my import test:** if anything breaks in Studio (colours, scale, pivot), we fix the export before the batch. **Don't open or touch Studio, and don't upload anything.**
 3. **Render every item** next to a grey 5-stud blocky avatar on a dark backdrop with warm key light, like the reference sheet.
    - **Make a side-by-side image: your render next to the crop of its reference item.**
    - Be brutally honest: if it isn't close to the reference, iterate before showing me.
