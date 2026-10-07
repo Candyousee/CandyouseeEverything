@@ -1,3 +1,5 @@
+> **Superseded:** use `HANDOFF-PROMPT.md` and `StudDeco-Halloween-Handoff.zip` (the Stud Pets style). This older version asked for sculpted clay models in Blender.
+
 # Master prompt: continue Stud Deco: Halloween in a new cloud session
 
 Paste everything below the line into a new Claude Code cloud session that has the GitHub repo **candyousee/candyouseeeverything** connected.
