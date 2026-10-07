@@ -107,6 +107,9 @@ def reset():
     w.use_nodes = True
     bg = w.node_tree.nodes["Background"]
     bg.inputs[0].default_value = (0.03, 0.03, 0.04, 1)
+    if os.environ.get("STYLE") == "day":  # the Stud Pets look: soft blue-grey daylight
+        bg.inputs[0].default_value = (0.62, 0.74, 0.92, 1)
+        bg.inputs[1].default_value = 0.55
     bg.inputs[1].default_value = 1.0
     return s
 
@@ -171,7 +174,7 @@ def stage(target, dist, yaw=-30, pitch=16, lens=50):
     mesh = bpy.data.meshes.new("ground")
     bm.to_mesh(mesh)
     bm.free()
-    add_obj("Ground", mesh, material((40, 38, 46), rough=0.7), Matrix.Identity(4))
+    add_obj("Ground", mesh, material((196, 202, 210) if os.environ.get("STYLE") == "day" else (40, 38, 46), rough=0.7), Matrix.Identity(4))
     # warm key + cool rim, dim enough that the glow reads
     for name, energy, rot, col in (("Key", 2.4, (50, -15, 140), (1.0, 0.92, 0.84)), ("Fill", 0.6, (65, 10, -150), (0.75, 0.78, 1.0)), ("Rim", 1.6, (70, 0, -10), (0.6, 0.65, 1.0))):
         ld = bpy.data.lights.new(name, "SUN")

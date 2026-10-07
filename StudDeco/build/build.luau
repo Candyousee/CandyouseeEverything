@@ -9,7 +9,7 @@ local process = require("@lune/process")
 local roblox = require("@lune/roblox")
 local Instance, CFrame, Vector3, Color3, Enum = roblox.Instance, roblox.CFrame, roblox.Vector3, roblox.Color3, roblox.Enum
 
-local SOURCES = { require("../items/Heroes") }
+local SOURCES = if process.env.DECO_SRC == "pet" then { require("../items_petstyle/Proto") } else { require("../items/Heroes") }
 
 local MIN_SIZE = 0.1 -- Roblox's own minimum part size is 0.001; below 0.1 nothing reads in game
 
@@ -154,6 +154,32 @@ for _, item in built do
 end
 fs.writeFile("assets/StudDeco_Halloween.rbxm", roblox.serializeModel({ pack }))
 print(`[build] {#built} items, QA problems: {problems}`)
+
+-- Studio command-bar scripts: studio/<Item>.lua = the builder with this item's data (paste into the Command Bar)
+if process.args[1] == "studio" then
+	local template = fs.readFile("studio/StudDecoBuilder.lua")
+	local function n(v) return tostring(math.round(v * 1000) / 1000) end
+	for _, item in built do
+		local lines = { "{", `\tname = "{item.name}", category = "{item.category}",`, "\tparts = {" }
+		for _, p in item.parts do
+			local pos = p.cf.Position
+			local rx, ry, rz = p.cf:ToEulerAnglesXYZ()
+			table.insert(lines, `\t\t\{ "{if p.shape == "wedge" then "wedge" else "block"}", "{p.name}", \{ {n(p.size[1])}, {n(p.size[2])}, {n(p.size[3])} \}, `
+				.. `\{ {n(pos.X)}, {n(pos.Y)}, {n(pos.Z)} \}, \{ {n(math.deg(rx))}, {n(math.deg(ry))}, {n(math.deg(rz))} \}, `
+				.. `\{ {p.color[1]}, {p.color[2]}, {p.color[3]} \}, studs = {tostring(p.studs == true)}, neon = {tostring(p.neon == true)} \},`)
+		end
+		table.insert(lines, "\t},")
+		table.insert(lines, "\tlights = {")
+		for _, l in item.lights do
+			table.insert(lines, `\t\t\{ pos = \{ {n(l.pos[1])}, {n(l.pos[2])}, {n(l.pos[3])} \}, color = \{ {l.color[1]}, {l.color[2]}, {l.color[3]} \}, range = {l.range}, brightness = {l.brightness} \},`)
+		end
+		table.insert(lines, "\t},")
+		table.insert(lines, "}")
+		local out = string.gsub(template, "%-%-ITEM_DATA%-%-", function() return table.concat(lines, "\n") end)
+		fs.writeFile(`studio/{item.name}.lua`, out)
+		print(`[build] studio/{item.name}.lua`)
+	end
+end
 
 if process.args[1] == "preview" then
 	local out = { items = {} }
